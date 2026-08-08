@@ -1,0 +1,4682 @@
+# CODEX MASTER PROMPT — ZYLORA V2 CLEAN PRODUCTION SAAS REBUILD
+
+You are acting as the **Principal Software Architect, Staff Full-Stack Engineer, Product Engineer, Database Architect, Security Engineer, DevOps Engineer, QA Lead, UI/UX Lead, Accessibility Engineer, SEO Engineer, and Production Readiness Owner** for the complete rebuild of **Zylora V2**.
+
+This is NOT:
+
+* a refactor of V1
+* a patching exercise
+* a redesign layered onto old architecture
+* a prototype
+* a hackathon build
+* a generic SaaS starter
+* an MVP filled with placeholders
+
+This is a **clean production rebuild from first principles**.
+
+The objective is to produce a secure, maintainable, observable, scalable, high-quality SaaS platform that can handle real users, websites, templates, subscriptions, payments, domains, deployments, leads, AI operations, chatbot indexes, analytics, emails, campaigns, and administrative operations.
+
+Do not optimize for the amount of code written.
+
+Optimize for:
+
+* architectural correctness
+* reliability
+* maintainability
+* testability
+* security
+* data integrity
+* UX quality
+* visual quality
+* accessibility
+* SEO
+* performance
+* operational simplicity
+* failure recovery
+* future template scale
+
+---
+
+# 1. SOURCE OF TRUTH
+
+This prompt is the authoritative specification for Zylora V2.
+
+When:
+
+* V1 code
+* an installed Skill
+* plugin guidance
+* framework defaults
+* generic SaaS recommendations
+* old database structures
+* existing environment variables
+* old tests
+
+conflict with this specification:
+
+# THIS SPECIFICATION WINS.
+
+Do not preserve legacy behavior merely because code already exists.
+
+Do not silently reinterpret the business model.
+
+Do not resurrect removed features under different names.
+
+---
+
+# 2. REPOSITORY STRATEGY
+
+Existing V1:
+
+```text
+C:\Zylora
+```
+
+Treat it as:
+
+# READ-ONLY REFERENCE MATERIAL.
+
+You may inspect V1 to understand:
+
+* useful integrations
+* Cloudflare behavior
+* deployment mechanisms
+* payment history/integration clues
+* API conventions
+* utilities
+* tests
+* infrastructure decisions
+* environment configuration
+* lessons learned
+* business logic that still matches V2
+
+However:
+
+# NEVER MODIFY C:\Zylora.
+
+Build V2 separately in:
+
+```text
+C:\Zylora-V2
+```
+
+Initialize a fresh Git repository there.
+
+Do not blindly copy V1 modules.
+
+If V1 code appears useful:
+
+1. understand it;
+2. determine whether it matches this specification;
+3. redesign it where necessary;
+4. implement a clean V2 equivalent.
+
+V1 must remain available for comparison and recovery.
+
+---
+
+# 3. CODEX SKILLS ARE MANDATORY WHERE RELEVANT
+
+Before implementing each phase:
+
+1. inspect the actual Codex environment;
+2. identify available Skills, plugins, MCP capabilities, AGENTS.md instructions, browser/testing tools, and framework-specific guidance;
+3. read relevant Skill instructions;
+4. use them where compatible with this specification;
+5. combine complementary Skills intelligently.
+
+Do not pretend a Skill exists.
+
+Do not claim to have used a Skill without actually following it.
+
+For frontend/design work, actively look for relevant capabilities involving:
+
+* UI/UX
+* design systems
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* shadcn/ui
+* typography
+* motion
+* accessibility
+* responsive design
+* SEO
+* Core Web Vitals
+* Playwright/browser inspection
+
+For backend/infrastructure work, inspect capabilities involving:
+
+* FastAPI
+* Python
+* PostgreSQL
+* SQLAlchemy
+* Alembic
+* Redis
+* Celery/background jobs
+* API architecture
+* security
+* authentication
+* payments
+* testing
+* CI/CD
+* Cloudflare
+* monitoring
+* backups
+
+Do not blindly install unknown third-party Skills.
+
+If a Skill would materially improve implementation:
+
+1. inspect its source/instructions;
+2. determine that it is trustworthy and maintained;
+3. confirm it is not redundant;
+4. only then use/install it.
+
+Skills improve methodology.
+
+They NEVER override Zylora product rules.
+
+At every phase report:
+
+```text
+SKILLS / SPECIALIZED CAPABILITIES USED
+
+- <name>
+  Purpose:
+  How it influenced implementation:
+```
+
+If none were needed, state that honestly.
+
+---
+
+# 4. CREATE AGENTS.md
+
+During Phase 0 create:
+
+```text
+C:\Zylora-V2\AGENTS.md
+```
+
+This must permanently encode Zylora's core engineering invariants for future Codex sessions.
+
+At minimum:
+
+```text
+ZYLORA V2 CORE RULES
+
+- Product specification is authoritative.
+- Exactly two account types: USER and SUPER_ADMIN.
+- No Freelancer role.
+- No Client role.
+- No Support Admin.
+- No Template Admin.
+- No Marketing Admin.
+- No Freelancer Admin.
+- No Client Admin.
+- One User portal.
+- One live website maximum per User.
+- Multiple drafts are allowed.
+- Every website begins from an approved existing template.
+- No blank-canvas creation.
+- No arbitrary drag-and-drop-from-scratch builder.
+- Manual and AI editing use the same structured website model.
+- Backend authorization is authoritative.
+- Critical business rules have one canonical implementation.
+- No hard-coded pricing.
+- Never trust frontend payment success.
+- Exactly one current owner per Website.
+- Ownership transfer is transactional.
+- Lead deductions are atomic/idempotent.
+- One successful valid lead consumes exactly one lead credit.
+- FAISS data is isolated by Website/User.
+- No Pinecone.
+- No Chroma.
+- Only validated templates reach production.
+- Fix root causes instead of repeatedly patching symptoms.
+- No TODO/FIXME placeholders in completed work.
+- Required tests must pass before phase completion.
+- Use relevant installed Skills.
+- C:\Zylora is read-only.
+- V2 lives in C:\Zylora-V2.
+```
+
+Add actual install/dev/lint/typecheck/test/E2E/build/migration commands as they become available.
+
+---
+
+# 5. FOUR NON-NEGOTIABLE ARCHITECTURAL GUARDRAILS
+
+## GUARDRAIL A — MULTI-TENANCY MEANS DATA ISOLATION, NOT EXTRA ROLES
+
+Zylora requires strict isolation between:
+
+* Users
+* Websites
+* assets
+* domains
+* leads
+* analytics
+* billing
+* chatbot data
+* FAISS indexes
+* payments
+* exports
+* other owned resources
+
+But this must NOT create:
+
+* Organizations
+* Workspaces
+* Teams as account containers
+* Agency accounts
+* Client tenants
+* Freelancer tenants
+* Organization Owners
+* Workspace Admins
+* organization RBAC
+* collaborator role hierarchies
+* additional customer account types
+
+There are exactly:
+
+```text
+USER
+SUPER_ADMIN
+```
+
+Freelancers, agencies, consultants, business owners, and developers are all simply Users.
+
+Internal tenant identifiers are allowed only as an implementation detail.
+
+They must not become new customer-facing account models.
+
+---
+
+## GUARDRAIL B — FEATURE FLAGS CANNOT PRESERVE DELETED ARCHITECTURE
+
+Feature flags are allowed for:
+
+* staged rollout
+* beta functionality
+* temporarily disabling risky integrations
+* experiments
+* operational rollout
+
+They may NEVER preserve or reactivate:
+
+```text
+Freelancer role
+Client role
+Support Admin
+Template Admin
+Marketing Admin
+Freelancer Admin
+Client Admin
+blank canvas
+old editor
+Craft.js
+Pinecone
+Chroma
+legacy portals
+legacy staff sessions
+old duplicate lead systems
+obsolete pricing systems
+```
+
+Do not create flags such as:
+
+```text
+ENABLE_FREELANCER_ROLE
+ENABLE_OLD_EDITOR
+ENABLE_BLANK_CANVAS
+ENABLE_PINECONE
+```
+
+These features are REMOVED, not temporarily disabled.
+
+Feature flags that legitimately exist must have:
+
+* clear purpose
+* default
+* rollout strategy
+* owner
+* removal criteria
+
+---
+
+## GUARDRAIL C — PAYMENT ABSTRACTION MUST NOT RESURRECT OLD PROVIDERS
+
+Create a clean payment-provider boundary, but implement only payment provider(s) explicitly approved by the final V2 configuration/specification.
+
+V1 providers are reference material only.
+
+The existence of:
+
+* provider code
+* environment variables
+* webhook handlers
+* old tests
+* old database rows
+
+does NOT mean that provider remains active.
+
+A clean interface may conceptually expose:
+
+```text
+PaymentProvider
+├── create_checkout()
+├── verify_payment()
+├── verify_webhook()
+├── reconcile()
+└── refund() where supported
+```
+
+Do not implement unused providers merely to make the abstraction look complete.
+
+Historical payment data from retired providers may remain readable for accounting/audit purposes without enabling new payments.
+
+---
+
+## GUARDRAIL D — ACCOUNT DATA EXPORT ≠ PAID WEBSITE ZIP EXPORT
+
+These are entirely different capabilities.
+
+### Website ZIP Export
+
+A commercial Zylora product:
+
+```text
+Export Website
+→ Current Admin-Controlled Price
+→ ExportPurchase
+→ Checkout
+→ Server Payment Verification
+→ Generate ZIP
+→ Secure Download
+```
+
+It remains:
+
+* paid
+* Super-Admin-priced
+* payment-gated
+* server-verified
+
+### Account/Privacy Data Export
+
+May include:
+
+* profile
+* settings
+* website metadata
+* leads
+* credit ledger
+* billing records where appropriate
+* personal/account records
+
+It exists only for privacy/administrative/data-portability purposes.
+
+It must NOT provide a deployable Website package.
+
+It must NEVER:
+
+* bypass ExportPurchase
+* unlock paid ZIP Export
+* expose deployable source for free
+* expose internal deployment artifacts
+
+Use separate services, endpoints, permissions, artifacts, and audit events.
+
+Before each phase passes, explicitly verify that none of these four guardrails were violated.
+
+---
+
+# 6. PRODUCT IDENTITY
+
+Zylora's core journey is:
+
+> Choose a professional template → customize it manually or with AI → publish, transfer, or export → manage the live website, chatbot, leads, analytics, credits, domains, and billing from one portal.
+
+Zylora consists of tightly connected product layers:
+
+### WEBSITE BUILDER
+
+Thousands of editable professional templates.
+
+### AI EDITOR
+
+Structured AI modifications to those templates.
+
+### HOSTING PLATFORM
+
+Zylora subdomains and custom domains.
+
+### LEAD PLATFORM
+
+Forms + FAISS chatbot + lead management.
+
+### FREELANCER DELIVERY MECHANISM
+
+Build → Transfer or paid ZIP Export.
+
+No Freelancer account role is required.
+
+### BUSINESS SAAS
+
+Plans, subscriptions, billing, credits, analytics, notifications, domains, and management.
+
+---
+
+# 7. ACCOUNT MODEL
+
+Exactly TWO account types exist.
+
+## USER
+
+Can:
+
+* create Websites
+* maintain multiple drafts
+* edit Websites
+* use AI editing
+* preview
+* publish/unpublish
+* connect domains
+* transfer Website ownership
+* purchase ZIP exports
+* manage leads
+* manage lead credits
+* view analytics
+* manage billing
+* receive notifications
+* manage account/security settings
+
+## SUPER ADMIN
+
+Exactly one privileged Super Admin operates Zylora.
+
+Super Admin manages:
+
+* Users
+* Websites
+* Templates
+* plan pricing
+* plan entitlements/limits
+* ZIP export pricing
+* subscriptions
+* invoices
+* payments
+* credits
+* leads
+* domains
+* analytics
+* emails
+* campaigns
+* blog/SEO content
+* system health
+* audit logs
+* platform configuration
+
+---
+
+# 8. ARCHITECTURE THAT MUST NEVER RETURN
+
+V2 must contain no assumptions around:
+
+* Freelancer role
+* Client role
+* Freelancer Admin
+* Client Admin
+* Support Admin
+* Template Admin
+* Marketing Admin
+* separate freelancer/client portals
+* staff permission matrices
+* old staff-session architecture
+* Super Admin OTP every login
+* independent dashboard per Website
+* blank-site creation
+* business-name wizard before templates
+* business-type wizard before templates
+* mandatory website-name onboarding before templates
+* arbitrary blank-canvas drag-and-drop editor
+* Craft.js dependency
+* hard-coded plans
+* hard-coded ZIP pricing
+* Pinecone
+* Chroma
+* duplicate lead systems
+* frontend-only authorization
+* frontend-only entitlements
+* fake first-time analytics
+
+Search for these concepts while implementing.
+
+Do not accidentally rebuild them.
+
+---
+
+# 9. CORE TECHNOLOGY DIRECTION
+
+Prefer the proven high-level stack unless there is a documented technical reason to change:
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+
+### Backend
+
+* FastAPI
+* Python
+
+### Database
+
+* PostgreSQL
+* SQLAlchemy
+* Alembic
+
+### Jobs/cache
+
+* Redis
+* Celery or equivalent production worker
+
+### AI/RAG
+
+* FAISS
+
+### Domains/edge
+
+* Cloudflare for SaaS or explicitly approved equivalent
+
+Use current supported production versions.
+
+Pin dependencies.
+
+Avoid unnecessary dependencies.
+
+---
+
+# 10. REPOSITORY STRUCTURE
+
+Use a clean monorepo, approximately:
+
+```text
+C:\Zylora-V2
+
+apps/
+  web/
+  api/
+  worker/
+
+packages/
+  ai/
+  contracts/
+  config/
+  ui/
+  template-schema/
+  shared/
+
+docs/
+  product/
+  architecture/
+  design/
+  api/
+  security/
+  testing/
+  operations/
+
+scripts/
+infra/
+```
+
+Adjust only when technically justified.
+
+Maintain explicit boundaries.
+
+---
+
+# 11. CANONICAL DOMAIN SERVICES
+
+Important business rules must have ONE authoritative implementation.
+
+Examples:
+
+```text
+PublishEligibilityService
+OwnershipService
+EntitlementService
+WebsiteRequirementService
+PlanRecommendationService
+PaymentService
+CreditLedgerService
+TemplateValidationService
+DeploymentService
+DomainService
+LeadService
+```
+
+Do not separately implement the same rule in:
+
+* React
+* API endpoints
+* background workers
+* billing modules
+
+Frontend displays evaluated state.
+
+Backend/domain logic decides critical state.
+
+---
+
+# 12. DATABASE
+
+Design relational domains before feature implementation.
+
+Core entities include at minimum:
+
+```text
+User
+SuperAdmin
+Session
+EmailVerification
+
+Website
+WebsiteVersion
+WebsiteOwnership
+
+Template
+TemplateVersion
+TemplateCategory
+TemplateTag
+TemplateValidation
+
+Domain
+Deployment
+
+Plan
+PlanPrice
+PlanEntitlement
+Subscription
+Invoice
+Payment
+
+ExportPurchase
+
+Lead
+LeadCreditLedger
+
+Chatbot
+ChatbotKnowledgeIndex
+ChatConversation
+
+AnalyticsEvent
+AnalyticsAggregate
+
+Notification
+
+Campaign
+CampaignRecipient
+CampaignDelivery
+
+BlogPost
+BlogCategory
+BlogTag
+
+AuditLog
+PlatformSetting
+```
+
+Add supporting entities only when justified.
+
+Use:
+
+* PKs
+* FKs
+* unique constraints
+* indexes
+* DB-level invariants
+* transactions
+* appropriate cascading rules
+
+If the database can enforce an important invariant safely, do not rely solely on application code.
+
+Money must use exact integer minor units or equivalent exact decimal representation.
+
+Never binary floating-point.
+
+Store currency explicitly.
+
+Store timestamps consistently, preferably UTC internally.
+
+---
+
+# 13. WEBSITE OWNERSHIP
+
+Every Website has exactly ONE current owner.
+
+Ownership controls:
+
+* editing
+* publishing
+* domain management
+* billing association
+* leads
+* analytics
+* chatbot
+* transfer
+* export
+
+Ownership transfer must be transactional.
+
+Concurrent transfers must never create two current owners.
+
+Maintain ownership history.
+
+---
+
+# 14. WEBSITE LIFECYCLE
+
+Do not use scattered booleans.
+
+Use a state machine conceptually equivalent to:
+
+```text
+DRAFT
+READY
+PUBLISHING
+PUBLISHED
+UNPUBLISHING
+UNPUBLISHED
+TRANSFERRED
+EXPORTING
+EXPORTED
+FAILED
+```
+
+Validate transitions.
+
+A shortcut such as:
+
+```text
+DRAFT → PUBLISHED
+```
+
+must never bypass:
+
+* eligibility
+* billing
+* validation
+* deployment
+* domain setup
+
+---
+
+# 15. ONE LIVE WEBSITE RULE
+
+A User may have multiple Website projects/drafts.
+
+But:
+
+# MAXIMUM ONE LIVE WEBSITE PER USER.
+
+Allowed:
+
+```text
+Website A = PUBLISHED
+Website B = DRAFT
+Website C = DRAFT
+```
+
+Blocked:
+
+```text
+Website A = PUBLISHED
+Website B = PUBLISHED
+```
+
+To publish B:
+
+```text
+Unpublish A
+→ Publish B
+```
+
+Transfer and ZIP Export remain available even when another Website is live.
+
+Enforce this transactionally on the backend.
+
+---
+
+# 16. PUBLIC ZYLORA WEBSITE
+
+Create:
+
+* Home
+* Templates
+* Features
+* Pricing
+* Blog
+* Login
+* Sign Up
+* Contact
+* Privacy Policy
+* Terms
+* Cookie Policy
+* Refund/Cancellation Policy
+
+Public marketing pages must be:
+
+* SEO-focused
+* accessible
+* fast
+* semantic
+* responsive
+* visually exceptional
+
+Marketing/blog/useful public Template pages may be indexable.
+
+Portal/admin/private pages must be noindex.
+
+Do NOT block all of Zylora in robots.txt.
+
+Abuse prevention belongs to:
+
+* WAF
+* rate limits
+* bot protection
+* challenges
+
+not blanket SEO blocking.
+
+---
+
+# 17. USER AUTHENTICATION
+
+## GOOGLE
+
+```text
+Continue with Google
+→ OAuth verification
+→ User account authenticated/created
+```
+
+Successful Google identity verification does not require an additional Zylora OTP.
+
+Handle:
+
+* user cancellation
+* denied scopes
+* invalid callback
+* duplicate-email/account cases
+* provider outage
+
+Never leave half-created accounts.
+
+## EMAIL + PASSWORD
+
+```text
+Email
+→ Choose Password
+→ Send Verification Code
+→ Enter Code
+→ Server Verification
+→ Account Activated
+```
+
+Account does not become active before verification succeeds.
+
+Verification codes must:
+
+* expire
+* be securely stored
+* be single-use
+* support safe resend
+* invalidate old codes where appropriate
+* limit attempts
+* throttle sends
+* resist brute-force
+
+Returning Users log in normally.
+
+Use Argon2id or equivalent strong password hashing.
+
+Include secure password reset.
+
+---
+
+# 18. SUPER ADMIN AUTH
+
+Use an isolated entry point such as:
+
+```text
+admin.zylora.com
+```
+
+or equivalent private admin route.
+
+Do NOT require six-digit email OTP every login.
+
+Use:
+
+* strong password/session architecture
+* HTTP-only secure cookies
+* CSRF protection
+* session expiration
+* session revocation
+* device/session management
+* brute-force protection
+* suspicious-login logging/detection
+* WAF/rate limits
+* audit logging
+
+Admin UI must never appear as normal User functionality.
+
+---
+
+# 19. AUTH ABUSE PROTECTION
+
+Layer:
+
+```text
+IP rate limit
++ account rate limit
++ progressive backoff/temporary lock
++ adaptive challenge/CAPTCHA
++ WAF
++ suspicious activity logging
+```
+
+Protect all alternate auth endpoints.
+
+UX must remain useful:
+
+* resend cooldown visible
+* lock reason clear
+* expired sessions recover gracefully
+
+---
+
+# 20. FIRST-TIME USER EXPERIENCE
+
+A brand-new User without meaningful analytics must NOT see:
+
+* empty line graphs
+* empty bar charts
+* empty pie charts
+* fake metrics
+* decorative charts
+* 0 visitors / 0 leads dashboards
+
+Instead prominently show:
+
+# Publish your first website
+
+with CTA and concise explanation such as:
+
+```text
+Choose a template → Customize → Publish
+```
+
+Only show analytics prominently after real data exists.
+
+---
+
+# 21. WEBSITE CREATION
+
+Clicking:
+
+```text
+Publish your first website
+```
+
+or:
+
+```text
+Create Website
+```
+
+goes DIRECTLY to Template Gallery.
+
+Do not first ask:
+
+* business name
+* industry
+* website name
+* business type
+* number of pages
+* onboarding questionnaire
+
+The Template is the starting point.
+
+---
+
+# 22. TEMPLATE-FIRST PLATFORM
+
+No blank website creation exists.
+
+The catalogue must be able to scale to thousands/tens of thousands of Templates.
+
+Categories may include:
+
+* restaurants
+* schools
+* clinics
+* SaaS
+* agencies
+* portfolios
+* photographers
+* gyms
+* salons
+* consultants
+* contractors
+* real estate
+* law firms
+* ecommerce
+* coaching
+* events
+* hotels
+* other businesses
+
+Catalogue supports:
+
+* full-text search
+* categories
+* tags
+* filters
+* sorting
+* pagination/infinite loading
+* featured Templates
+* popularity
+* new indicators
+* responsive preview
+* metadata
+* supported pages
+* supported features
+* interaction/animation information
+
+Use scalable server-side search/pagination.
+
+Do not fetch thousands of Templates and filter in React.
+
+---
+
+# 23. TEMPLATE PREVIEW
+
+Before selection Users can inspect:
+
+* desktop
+* tablet
+* mobile
+* pages
+* features
+* interactions
+* animations
+
+Then:
+
+```text
+Use this template
+```
+
+creates a private Draft Website.
+
+---
+
+# 24. TEMPLATE DATA MODEL
+
+Do not store Templates as uncontrolled arbitrary HTML.
+
+Use a structured versioned schema containing conceptually:
+
+```text
+metadata
+theme
+pages
+sections
+components
+responsive rules
+design tokens
+editable properties
+animations
+interactions
+SEO defaults
+assets
+feature requirements
+schema version
+```
+
+Every Template has a schema version.
+
+Provide schema migration strategy.
+
+Manual editing and AI editing operate on this same structured representation.
+
+---
+
+# 25. TEMPLATE VALIDATION
+
+Automated validation must check:
+
+* schema validity
+* rendering
+* missing assets
+* broken asset refs
+* invalid links
+* metadata
+* responsive breakpoints
+* editor compatibility
+* component compatibility
+* accessibility baseline
+* animations
+* unsupported components
+* build failures
+* runtime failures
+* console errors
+* SEO metadata
+* unsafe content
+* performance where practical
+
+Only validated, approved Templates become visible.
+
+---
+
+# 26. TEMPLATE QUALITY > QUANTITY
+
+100 excellent Templates are more valuable than 1,000 superficial variants.
+
+Do NOT consider these meaningfully new Templates:
+
+* same DOM + another color
+* same layout + another font
+* same layout + different images
+* tiny spacing changes
+* trivial section reorder
+
+Templates must vary meaningfully in:
+
+* art direction
+* typography
+* information architecture
+* navigation
+* hero composition
+* section composition
+* content density
+* imagery
+* color system
+* interaction design
+* conversion structure
+* mobile behavior
+* page architecture
+* animation style where appropriate
+
+A restaurant Template and law firm Template should not be the same page with different photos.
+
+Use realistic industry-appropriate demo content.
+
+No meaningless lorem ipsum where better demo content can be written.
+
+Never use improperly licensed/copyrighted assets.
+
+Track asset provenance where necessary.
+
+Do not scrape random commercial sites.
+
+---
+
+# 27. DRAFTS
+
+Selecting a Template creates a Draft.
+
+Users can maintain multiple Drafts.
+
+Drafts appear under:
+
+```text
+Websites → Drafts
+```
+
+Support:
+
+* create-from-template
+* open
+* rename where appropriate
+* duplicate
+* preview
+* delete
+* transfer
+* export
+* publish
+
+Drafts remain private until published.
+
+They do not get separate dashboard applications.
+
+---
+
+# 28. ONE USER PORTAL
+
+One unified User portal.
+
+Approximate navigation:
+
+```text
+Home
+Websites
+Templates
+Leads
+Analytics
+Credits
+Billing
+Domains
+Notifications
+Settings
+```
+
+Selected Website provides context.
+
+Do not create separate portal products.
+
+---
+
+# 29. WEBSITE EDITOR
+
+Two editing methods:
+
+```text
+MANUAL EDITING ↔ AI EDITING
+```
+
+Both modify the same Website model.
+
+Do not maintain separate AI-generated Website format.
+
+## MANUAL EDITING
+
+At minimum allow:
+
+### Text
+
+* content
+* font family
+* font size
+* weight
+* alignment
+* line height
+* color
+
+### Buttons
+
+* label
+* URL
+* colors
+* size
+* radius
+* style
+
+### Images
+
+* source
+* crop
+* alt
+* dimensions
+
+### Containers
+
+* spacing
+* background
+* borders
+* supported layout properties
+
+### Navigation
+
+* labels
+* links
+* menus
+* dropdowns
+
+### Forms
+
+* fields
+* labels
+* validation
+* lead destination
+
+### Cards
+
+* content
+* media
+* CTA
+
+### Sections
+
+* content
+* visibility
+* supported styling
+
+### Footer
+
+* links
+* business details
+* socials where supported
+
+### SEO
+
+* title
+* description
+* social metadata
+* page settings
+
+This is deep editing of existing Templates.
+
+Not arbitrary freeform Website construction.
+
+---
+
+# 30. ADVANCED TEMPLATE CAPABILITIES
+
+Renderer/schema must support:
+
+* scroll animations
+* hover interactions
+* reveal animations
+* parallax
+* sticky sections
+* carousels
+* sliders
+* accordions
+* tabs
+* dropdown navigation
+* transitions
+* galleries
+* modals
+* responsive animations
+* mobile navigation
+* counters
+* testimonials
+* forms
+* dynamic sections
+
+Manual and AI editing must preserve these safely.
+
+---
+
+# 31. RESPONSIVE EDITOR/TEMPLATES
+
+Every production Template supports:
+
+```text
+Desktop
+Tablet
+Mobile
+```
+
+User gets device previews.
+
+Template validation catches obvious responsive failures.
+
+---
+
+# 32. AUTOSAVE + VERSION HISTORY
+
+Implement continuous autosave.
+
+Show states such as:
+
+```text
+Saving…
+Saved
+```
+
+Handle:
+
+* network failures
+* retries
+* conflicts
+* stale versions
+
+Maintain WebsiteVersion history.
+
+Allow restoration architecture for:
+
+* destructive AI edits
+* accidental manual edits
+* bad Template changes
+* failed deployments
+
+---
+
+# 33. AI EDITING
+
+AI acts as a structured editing engine.
+
+Example requests:
+
+* Rewrite this for a dental clinic.
+* Change the entire theme to premium black and white.
+* Add testimonials below services.
+* Increase this heading.
+* Change every primary CTA to Book Appointment.
+* Improve this page for SEO.
+
+AI must respect:
+
+* Template constraints
+* responsiveness
+* schema
+* design system
+* accessibility
+* animations
+* allowed modifications
+* existing content
+* security
+
+AI produces structured patches/commands.
+
+Validate patches before committing.
+
+Rejected AI edits must not corrupt the Draft.
+
+Track enough AI usage to understand:
+
+* provider/model
+* calls
+* usage/tokens where available
+* latency
+* failures
+* embedding volume
+* approximate operational cost where feasible
+
+Add rate/cost controls to prevent abuse.
+
+---
+
+# 34. WEBSITE SEO
+
+Allow page-level:
+
+* title
+* meta description
+* slug
+* canonical
+* OG title
+* OG description
+* OG image
+* alt text
+* sitemap inclusion
+* robots directives
+* structured data
+* heading hierarchy
+
+Published Websites automatically generate correct technical SEO artifacts.
+
+---
+
+# 35. THREE FINAL WEBSITE ACTIONS
+
+Every ready Website has exactly three major actions:
+
+```text
+PUBLISH
+TRANSFER
+EXPORT ZIP
+```
+
+---
+
+# 36. FOUR PLANS
+
+Exactly FOUR subscription plans.
+
+Do not permanently hard-code:
+
+* names
+* prices
+* billing intervals
+* entitlements
+* limits
+* visibility
+* display order
+* active state
+
+Use backend/database configuration.
+
+Super Admin controls commercial values.
+
+---
+
+# 37. ENTITLEMENT + REQUIREMENT ENGINE
+
+Build one canonical entitlement system.
+
+Never scatter:
+
+```ts
+if (plan === "growth")
+```
+
+through UI/backend.
+
+Capabilities should be evaluated conceptually as:
+
+```text
+can_use_custom_domain
+max_pages
+included_lead_credits
+can_use_feature_x
+...
+```
+
+Website Requirement Engine determines what the current Website requires, such as:
+
+* pages
+* custom domain
+* advanced components
+* entitlement-sensitive features
+
+Eligibility compares:
+
+```text
+Website Requirements
+vs
+Plan Entitlements
+```
+
+Backend remains authoritative.
+
+---
+
+# 38. PUBLISH PLAN UX
+
+When plan selection is required:
+
+show ALL four plans.
+
+### Ineligible
+
+* greyed out
+* not selectable
+* exact reason shown
+
+Example:
+
+```text
+This Website exceeds this plan's page limit.
+```
+
+### Eligible
+
+Selectable.
+
+### Best Match
+
+Highlight the best eligible plan:
+
+```text
+Recommended for this website
+```
+
+Explain why.
+
+Recommendation comes from canonical backend rules.
+
+---
+
+# 39. EXISTING SUBSCRIPTION
+
+If User already pays for a plan and the Website fits within current entitlements:
+
+DO NOT force pricing selection again.
+
+Proceed using current entitlement.
+
+If Website exceeds it:
+
+show applicable upgrade choices.
+
+---
+
+# 40. PUBLISHING DESTINATION
+
+User chooses:
+
+### ZYLORA SUBDOMAIN
+
+Example:
+
+```text
+business.zylora.com
+```
+
+Validate:
+
+* format
+* availability
+* uniqueness
+* reserved names
+* ownership
+
+### CUSTOM DOMAIN
+
+Flow:
+
+```text
+Enter Domain
+→ Normalize
+→ Validate
+→ Show DNS instructions
+→ User configures DNS
+→ Verify
+→ Provision
+→ TLS
+→ Activate
+```
+
+Prefer Cloudflare for SaaS where approved.
+
+Domain errors must be actionable.
+
+---
+
+# 41. DEPLOYMENT PIPELINE
+
+Publishing is a real deployment pipeline:
+
+```text
+Validate
+→ Check Ownership
+→ Check One-Live-Site Rule
+→ Check Entitlements
+→ Confirm Billing
+→ Create Immutable WebsiteVersion
+→ Build
+→ Deploy
+→ Configure Domain
+→ Provision TLS
+→ Invalidate Cache
+→ Health Check
+→ Build/Refresh FAISS Index
+→ Enable Analytics
+→ Mark Published
+```
+
+Never mark PUBLISHED prematurely.
+
+Never replace a known-good Website with a broken deployment.
+
+Build new deployment separately:
+
+```text
+Current Live Version
+→ Build Next Version
+→ Validate
+→ Health Check
+→ Controlled/Atomic Switch
+```
+
+If new deployment fails:
+
+KEEP PREVIOUS LIVE VERSION.
+
+Store deployment history and recovery metadata.
+
+---
+
+# 42. TRANSFER OWNERSHIP
+
+Any User can transfer a Website to another existing Zylora User.
+
+Flow:
+
+```text
+Transfer
+→ Recipient Email
+→ Validate Recipient
+→ Confirm
+→ Atomic Ownership Change
+→ Old Owner Loses Ownership
+→ Website Appears in New Owner Portal
+→ New Owner Chooses Domain
+→ Normal Eligibility/Publish Flow
+```
+
+Protect against:
+
+* same-owner transfer
+* nonexistent recipient
+* concurrent transfer
+* race conditions
+* partial ownership state
+
+Every transfer is audited.
+
+---
+
+# 43. ZIP EXPORT
+
+Flow:
+
+```text
+Export Website
+→ Read Current Super-Admin Price
+→ Create ExportPurchase
+→ Checkout
+→ Trusted Server-Side Verification
+→ PAID
+→ Generate ZIP
+→ Secure Download
+```
+
+NEVER trust:
+
+* frontend flags
+* callback query params
+* client-supplied status
+
+ZIP must contain no:
+
+* credentials
+* internal tokens
+* secrets
+* API keys
+* other User data
+
+Generated ZIP artifacts should use private temporary storage, authenticated/signed access, and expiration.
+
+Document export contract.
+
+---
+
+# 44. PRICING
+
+Super Admin controls:
+
+### Plans
+
+* prices
+* currency
+* visibility
+* ordering
+* active state
+* entitlements
+* limits
+
+### Export
+
+* current ZIP export price
+* currency
+* active state
+* effective timing if needed
+
+When a purchase/invoice is created, snapshot exact price/currency.
+
+Changing future prices must not rewrite historical transactions.
+
+---
+
+# 45. PAYMENT ARCHITECTURE
+
+Use only explicitly approved current provider(s).
+
+Regardless of provider:
+
+* server verification
+* signed webhook verification
+* idempotency
+* replay protection
+* provider event IDs
+* payment IDs
+* payment reconciliation
+* failure logging
+* auditable state
+
+Do not activate paid capabilities from frontend trust.
+
+Where practical reconcile provider state to handle:
+
+* lost webhooks
+* delayed webhooks
+* duplicates
+* conflicting states
+* partial failures
+
+---
+
+# 46. PAYMENT STATE MACHINES
+
+Subscription conceptually:
+
+```text
+PENDING
+AUTHENTICATING
+ACTIVE
+RENEWAL_PENDING
+PAST_DUE
+FAILED
+CANCELLED
+EXPIRED
+```
+
+Export purchase conceptually:
+
+```text
+CREATED
+PAYMENT_PENDING
+PAID
+GENERATING
+READY
+FAILED
+REFUNDED
+```
+
+Transitions must be deterministic and idempotent.
+
+Only authorized states expose paid capability.
+
+---
+
+# 47. CHATBOT
+
+Every successfully published Zylora-hosted Website automatically gets a chatbot.
+
+Flow:
+
+```text
+Published Website
+→ Extract Published Knowledge
+→ Chunk
+→ Embed
+→ FAISS Index
+→ Associate Index With Website
+→ Activate Chatbot
+```
+
+Knowledge may come from:
+
+* homepage
+* services
+* about
+* FAQ
+* contact
+* business information
+* other published content
+
+Re-index when relevant published content changes.
+
+Never expose unpublished Draft content.
+
+---
+
+# 48. FAISS ISOLATION
+
+FAISS only.
+
+No Pinecone.
+
+No Chroma.
+
+Website A chatbot must NEVER retrieve Website B knowledge.
+
+Use robust Website/User index mapping.
+
+Aggressively test cross-tenant retrieval.
+
+---
+
+# 49. LEADS
+
+Chatbot and Website forms feed one centralized Lead service.
+
+Possible Lead fields:
+
+* name
+* email
+* phone where appropriate
+* enquiry
+* Website
+* timestamp
+* page/source
+* conversation context where permitted
+
+Do not create disconnected FormLead and ChatbotLead systems.
+
+Use source attribution on one normalized Lead model.
+
+---
+
+# 50. LEAD CREDIT ATOMICITY
+
+Successful valid lead operation:
+
+```text
+Validate
+→ Check Idempotency
+→ Store Lead
+→ Consume Exactly 1 Lead Credit
+→ Generate Notification
+→ Update Analytics/Event Stream
+```
+
+Exactly one credit.
+
+Prevent:
+
+* retry double-deduction
+* duplicate webhook deduction
+* fractional deduction
+* duplicate Lead creation where preventable
+
+Use transactions/idempotency.
+
+---
+
+# 51. CREDIT LEDGER
+
+Do not rely only on mutable:
+
+```text
+credit_balance = 183
+```
+
+Maintain append-only ledger entries such as:
+
+```text
+Purchase       +100
+Lead Captured    -1
+Admin Grant      +20
+Refund           +10
+Correction        ±N
+```
+
+Current balance may be derived or safely cached.
+
+Every manual Super Admin adjustment requires audit logging.
+
+---
+
+# 52. ZERO-CREDIT POLICY
+
+Do not scatter assumptions around what happens at zero credits.
+
+Create centralized configurable policy such as:
+
+```text
+lead_zero_balance_policy
+```
+
+Architecture should support future policies such as:
+
+* prevent further Lead capture
+* allow deficit
+* capture current Lead then restrict future lead generation
+* other approved commercial rule
+
+Never silently discard valid contact information already submitted by a visitor.
+
+---
+
+# 53. LEADS UI
+
+Dedicated searchable/filterable area:
+
+```text
+Name
+Contact
+Website
+Source
+Date
+Status
+```
+
+Possible statuses:
+
+```text
+New
+Contacted
+Qualified
+Closed
+Archived
+```
+
+Lead detail may include relevant chatbot context where compliant.
+
+---
+
+# 54. NOTIFICATIONS
+
+A successful Lead produces immediate:
+
+* in-app notification
+* email notification
+
+Architecture may support additional channels later without changing Lead storage.
+
+Separate:
+
+## TRANSACTIONAL
+
+* verification
+* password/security
+* publishing success/failure
+* payment receipt
+* export confirmation
+* ownership transfer
+* Lead alert
+
+## MARKETING
+
+* campaigns
+* newsletters
+* product announcements
+
+Marketing unsubscribe must NEVER block transactional messages.
+
+---
+
+# 55. ANALYTICS
+
+When meaningful data exists, show real metrics.
+
+### Website
+
+* unique visitors
+* visits
+* page views
+* traffic trend
+* top pages
+* device category
+* referrers
+
+### Leads
+
+* total Leads
+* conversion rate
+* trend
+* chatbot Leads
+* form Leads
+
+### Chatbot
+
+* conversations
+* engagement
+* Leads generated
+* conversion
+
+### Website status
+
+* domain
+* publish state
+* active plan
+* SSL status
+* latest deployment
+
+No decorative fake charts.
+
+Separate:
+
+* event ingestion
+* aggregation
+* dashboard querying
+
+Use background jobs where appropriate.
+
+---
+
+# 56. USER PORTAL
+
+Approximate navigation:
+
+```text
+Home
+Websites
+Templates
+Leads
+Analytics
+Credits
+Billing
+Domains
+Notifications
+Settings
+```
+
+One coherent product.
+
+---
+
+# 57. SUPER ADMIN APPLICATION
+
+Primary areas:
+
+```text
+Dashboard
+Users
+Websites
+Templates
+Plans & Pricing
+Export Pricing
+Subscriptions
+Payments
+Lead Credits
+Leads
+Domains
+Analytics
+Emails
+Campaigns
+Blog / SEO
+System Health
+Audit Logs
+Settings
+```
+
+Admin is operational software.
+
+Prioritize:
+
+* information density
+* clarity
+* filters/search
+* useful tables
+* auditability
+* safe destructive actions
+* system status
+
+Do not make Admin visually decorative at the expense of usability.
+
+---
+
+# 58. SUPER ADMIN DASHBOARD
+
+Use real data:
+
+* total Users
+* new Users
+* active subscriptions
+* plan distribution
+* revenue
+* MRR
+* ZIP exports
+* published Websites
+* Drafts
+* custom domains
+* Leads
+* credits consumed
+* chatbot activity
+* visitor counts
+* failed payments
+* deployment/system errors
+* important recent activity
+
+No fake metrics.
+
+---
+
+# 59. USER SUPPORTABILITY
+
+Without a Support Admin role, Super Admin must be able to diagnose issues using:
+
+* User account
+* Website state
+* latest deployment
+* domain state
+* subscription
+* payment history
+* credit ledger
+* Leads
+* notifications
+* recent failures
+* audit trail
+
+Do not expose secrets unnecessarily.
+
+---
+
+# 60. SUPER ADMIN TEMPLATE MANAGEMENT
+
+Super Admin can:
+
+* add/import
+* edit metadata
+* preview
+* validate
+* categorize
+* tag
+* feature
+* publish
+* unpublish
+* deprecate
+* restore
+
+Only approved Templates reach Users.
+
+---
+
+# 61. MANUAL EMAIL + CAMPAIGNS
+
+Super Admin can send individual administrative email through normal Zylora email infrastructure.
+
+Record:
+
+* actor
+* recipient
+* type
+* timestamp
+* delivery status
+* provider result
+
+Campaign flow:
+
+```text
+Create
+→ Draft
+→ Preview
+→ Select Audience
+→ Schedule/Send
+→ Delivery
+→ Analytics
+```
+
+Potential segments:
+
+* all Users
+* free Users
+* paid Users
+* particular plan
+* new Users
+* Users with Drafts
+* Users without live Websites
+* low-credit Users
+
+Support:
+
+* unsubscribe
+* suppression
+* bounce/failure handling
+* provider failures
+* delivery analytics
+
+---
+
+# 62. BLOG CMS
+
+Super Admin manages the Blog.
+
+Support:
+
+* title
+* slug
+* content editor
+* excerpt
+* featured image
+* categories
+* tags
+* author
+* draft/published
+* scheduling
+* SEO title
+* meta description
+* canonical
+* OG image
+* structured data
+* internal links
+
+Clean URL:
+
+```text
+/blog/how-to-build-a-website-for-a-dental-clinic
+```
+
+not query-string canonical URLs.
+
+Automatically support:
+
+* sitemap
+* canonical
+* Article schema
+* OG
+* breadcrumbs
+* metadata
+* related content
+* internal links
+* semantic HTML
+
+---
+
+# 63. EMAIL DELIVERABILITY
+
+Account for:
+
+* SPF
+* DKIM
+* DMARC
+* verified sender domains
+* bounce handling
+* complaint handling
+* suppression lists
+* unsubscribe
+* retries
+* provider outage
+* transactional vs marketing separation
+
+Do not repeatedly send to known hard-bounced/suppressed recipients.
+
+---
+
+# 64. WORLD-CLASS DESIGN REQUIREMENT
+
+Zylora V2 must NOT look:
+
+* vibe coded
+* AI-generated
+* generic Tailwind
+* generic shadcn
+* like a hackathon
+* like a component demo
+* like disconnected templates stitched together
+
+UI quality is part of Definition of Done.
+
+A technically working page may still FAIL because its design quality is poor.
+
+---
+
+# 65. DESIGN PROCESS
+
+Before major UI implementation:
+
+1. inspect available UI/UX Skills;
+2. establish art direction;
+3. create design tokens;
+4. create reusable components;
+5. implement;
+6. run real application;
+7. inspect visually;
+8. critique;
+9. refine.
+
+Do not jump directly from requirements to JSX.
+
+Create:
+
+```text
+docs/design/BRAND_DIRECTION.md
+docs/design/DESIGN_SYSTEM.md
+docs/design/LANDING_PAGE_ART_DIRECTION.md
+docs/design/PRODUCT_UI_PRINCIPLES.md
+docs/design/COMPONENT_RULES.md
+docs/design/MOTION_GUIDELINES.md
+docs/design/RESPONSIVE_GUIDELINES.md
+```
+
+Do not copy another company's identity.
+
+---
+
+# 66. DESIGN SYSTEM
+
+Define explicit tokens for:
+
+* colors
+* semantic colors
+* surfaces
+* text hierarchy
+* typography
+* spacing
+* radii
+* borders
+* elevation/shadow
+* motion timing/easing
+* breakpoints
+* layout widths
+* focus states
+* form states
+
+Avoid random one-off values throughout components.
+
+Typography should establish:
+
+* display hierarchy
+* headings
+* body
+* labels
+* captions
+* numeric styles where useful
+* responsive sizes
+* readable line length
+
+Use one coherent icon family.
+
+Do not mix random SVG packs/emojis/mismatched strokes.
+
+---
+
+# 67. SHADCN + TAILWIND RULE
+
+shadcn/ui may be an implementation foundation.
+
+It must NOT become Zylora's visual identity.
+
+Do not ship:
+
+> default shadcn dashboard + Zylora logo.
+
+Adapt primitives into Zylora's system.
+
+Tailwind is allowed, but avoid utility chaos and arbitrary-value sprawl.
+
+Extract tokens, reusable components, variants, and layout primitives.
+
+---
+
+# 68. ANTI-VIBE-CODED RULES
+
+Do not default to:
+
+* purple/violet gradients
+* blue-purple gradients everywhere
+* giant glow blobs
+* neon
+* excessive glassmorphism
+* blur everywhere
+* every element in rounded cards
+* excessive pills
+* gradient borders
+* floating decorative cards
+* fake dashboard cards
+* huge soft shadows
+* giant radii
+* repetitive three-card grids
+* icon/heading/paragraph repeated endlessly
+* meaningless dots/grid backgrounds
+* pointless noise
+* decorative 3D shapes
+* empty whitespace merely to look premium
+* arbitrary parallax
+* scroll hijacking
+* meaningless counters
+* fake activity
+* generic AI orbs
+* fake chatbot bubbles
+* irrelevant illustrations
+
+Never equate:
+
+```text
+premium = purple gradient + glass cards
+```
+
+Prefer:
+
+* typography
+* composition
+* hierarchy
+* intentional whitespace
+* grids
+* real product UI
+* product storytelling
+* restrained motion
+
+---
+
+# 69. NO FAKE SOCIAL PROOF
+
+Never invent:
+
+* customer logos
+* customer counts
+* revenue
+* testimonials
+* ratings
+* case studies
+* awards
+* press
+* usage statistics
+
+Do not write:
+
+```text
+Trusted by 10,000+ businesses
+```
+
+unless verified real data exists.
+
+---
+
+# 70. NO GENERIC AI COPY
+
+Avoid meaningless clichés like:
+
+* Supercharge your workflow
+* Unlock your potential
+* Revolutionize your business
+* The future of website building
+* Transform your digital presence
+* Build better, faster
+* Next-generation platform
+* Everything you need to succeed
+* AI-powered magic
+* Take your business to the next level
+
+Copy must explain concrete Zylora value.
+
+---
+
+# 71. LANDING PAGE
+
+A visitor must understand within seconds:
+
+1. choose a professional existing Template;
+2. manually or AI edit it;
+3. publish on Zylora or own domain;
+4. alternatively Transfer or Export;
+5. live Websites capture Leads automatically.
+
+Do NOT automatically build:
+
+```text
+Hero
+3 Cards
+3 More Cards
+Testimonials
+Pricing
+CTA
+```
+
+Create a Zylora-specific narrative.
+
+A strong conceptual structure:
+
+```text
+Navigation
+↓
+Clear Hero
+↓
+Real Template Discovery
+↓
+Choose → Customize → Publish
+↓
+Manual ↔ AI Editing
+↓
+Template Catalogue
+↓
+Zylora Subdomain / Custom Domain
+↓
+Publish / Transfer / Export
+↓
+FAISS Chatbot + Lead Capture
+↓
+Real Four-Plan Pricing
+↓
+FAQ
+↓
+Final CTA
+↓
+SEO Footer
+```
+
+This structure is guidance, not a mandatory exact layout.
+
+Prefer real product visuals:
+
+* actual Templates
+* actual editor
+* actual publishing UI
+* actual lead dashboard
+
+over fake illustrations or fabricated dashboards.
+
+---
+
+# 72. RESPONSIVE + ACCESSIBLE UI
+
+Application must work on:
+
+* large desktop
+* laptop
+* tablet
+* practical mobile surfaces
+
+Editor may prioritize full desktop workflow, but management remains usable responsively.
+
+Do not treat mobile as desktop simply stacked vertically.
+
+Inspect representative widths:
+
+```text
+1440
+1280
+1024
+768
+390
+```
+
+Accessibility requirements:
+
+* semantic HTML
+* keyboard navigation
+* visible focus
+* accessible labels
+* alt text
+* contrast
+* logical reading order
+* dialog focus management
+* reduced motion
+* appropriate targets
+* ARIA only where appropriate
+
+---
+
+# 73. STATES
+
+Design intentional:
+
+### Empty states
+
+* first Website CTA
+* no Leads
+* no Drafts
+* no notifications
+
+### Loading states
+
+* skeleton/progress where useful
+* stable layout
+* background operation feedback
+
+### Error states
+
+* cause
+* action
+* retry if applicable
+* reference ID where useful
+
+Do not collapse everything into:
+
+```text
+Something went wrong
+```
+
+or a generic toast.
+
+---
+
+# 74. MOTION
+
+Motion communicates:
+
+* state change
+* causality
+* hierarchy
+* continuity
+* feedback
+
+Do not animate for spectacle.
+
+Respect reduced motion.
+
+Landing page may use richer motion than application UI while remaining purposeful.
+
+---
+
+# 75. VISUAL QA
+
+Frontend is not finished because TypeScript builds.
+
+For every major surface:
+
+1. run actual app;
+2. inspect via browser automation where available;
+3. test desktop/tablet/mobile;
+4. exercise interactions;
+5. inspect console;
+6. inspect failed requests;
+7. inspect loading/error states;
+8. inspect keyboard behavior;
+9. check overflow/layout shift;
+10. refine.
+
+Perform dedicated landing-page review as:
+
+### Senior Product Designer
+
+* hierarchy?
+* typography?
+* authored composition?
+* unnecessary elements?
+* coherent system?
+
+### Conversion SaaS Designer
+
+* instantly understandable?
+* clear CTA?
+* real product value?
+* actual buying questions answered?
+* pricing understandable?
+
+### Senior Frontend Engineer
+
+* maintainable?
+* responsive?
+* accessible?
+* performant?
+* robust?
+
+Then ask:
+
+> Does any part still look like a generic AI-generated SaaS landing page?
+
+If yes, redesign the composition/root cause.
+
+Do not merely recolor it.
+
+---
+
+# 76. PERFORMANCE
+
+Generated customer Websites should prioritize:
+
+* responsive images
+* lazy loading
+* modern formats
+* code splitting
+* compression
+* CDN
+* caching
+* minimal client JS
+* optimized fonts
+* static/server rendering where suitable
+* good Core Web Vitals
+
+Establish reasonable performance expectations for:
+
+* Zylora landing
+* Template previews
+* customer Websites
+* portal
+* editor
+
+Avoid unnecessary:
+
+* JS
+* huge images
+* libraries
+* fonts
+* animation dependencies
+
+Templates with catastrophic performance must fail validation.
+
+---
+
+# 77. IMAGE + FONT PIPELINE
+
+Images:
+
+* MIME validation
+* extension validation
+* dimensions
+* size limits
+* compression
+* responsive variants
+* modern formats
+* metadata stripping where useful
+* width/height reservation
+* lazy loading
+
+Fonts:
+
+* legal/licensed/open source
+* controlled families
+* minimal weights
+* appropriate fallback
+* sensible preloading
+* no downloading dozens of unused files
+
+---
+
+# 78. STORAGE
+
+Use proper object/file storage abstraction for:
+
+* uploaded Website assets
+* Template assets
+* Blog images
+* OG images
+* processed images
+* ZIP exports
+* generated artifacts
+
+Support:
+
+* secure upload
+* validation
+* unique keys
+* private/public access policies
+* deletion
+* expiration/lifecycle
+* signed access
+
+Do not trust browser-provided MIME alone.
+
+Do not permanently store arbitrary assets on local application disk.
+
+---
+
+# 79. ENVIRONMENTS
+
+Separate:
+
+```text
+development
+test
+staging
+production
+```
+
+Production must not share with dev:
+
+* DB
+* Redis
+* OAuth credentials
+* webhook credentials
+* secrets
+* storage namespace
+
+Staging should meaningfully resemble production.
+
+Maintain `.env.example`.
+
+Never commit real secrets.
+
+Separate:
+
+* static config
+* environment config
+* secrets
+* Super-Admin-managed business config
+
+Validate critical configuration at startup.
+
+---
+
+# 80. SECRET MANAGEMENT
+
+Never:
+
+* commit secrets
+* expose server secrets to frontend
+* log tokens
+* log passwords
+* log verification codes
+* log payment credentials
+* put secrets inside ZIP exports
+
+Fail safely when critical production configuration is missing.
+
+---
+
+# 81. BACKUPS + DISASTER RECOVERY
+
+Production PostgreSQL needs documented:
+
+* automated backups
+* frequency
+* retention
+* encryption
+* restore process
+* restore testing
+* point-in-time recovery where available
+
+Create:
+
+```text
+docs/operations/DISASTER_RECOVERY.md
+```
+
+Cover:
+
+* DB corruption
+* accidental deletion
+* failed release
+* bad migration
+* Redis outage
+* worker outage
+* storage outage
+* DNS/domain provider outage
+* payment webhook outage
+* email outage
+* deployment failure
+* compromised secret
+* FAISS corruption
+
+For each:
+
+* detection
+* containment
+* recovery
+* expected impact
+* validation after recovery
+
+A backup is not trusted until restoration is periodically tested.
+
+---
+
+# 82. CI/CD
+
+Production release flow:
+
+```text
+Code
+→ Format
+→ Typecheck
+→ Lint
+→ Unit Tests
+→ Integration Tests
+→ Security Checks
+→ Migration Validation
+→ Production Build
+→ Staging
+→ Smoke Tests
+→ Production
+→ Post-Deploy Health Check
+```
+
+Known failing builds do not deploy.
+
+Where supported, failed health checks block or roll back promotion.
+
+---
+
+# 83. DATABASE MIGRATION SAFETY
+
+Every database change uses Alembic.
+
+Test:
+
+```text
+Empty DB
+→ Apply all migrations
+→ Current Schema
+```
+
+Test downgrade where safe.
+
+Consider:
+
+* backward-compatible rollout
+* table locks
+* destructive changes
+* data migrations
+* nullable-to-required transitions
+* index creation
+
+For destructive schema changes:
+
+```text
+Deprecate
+→ Deploy compatible code
+→ Migrate
+→ Verify
+→ Remove later
+```
+
+Never casually mutate production schema manually.
+
+---
+
+# 84. ROLLBACK
+
+Document rollback for:
+
+* frontend
+* API
+* workers
+* configuration
+* deployment
+* database changes where safely possible
+
+Customer Website rollback is separate from platform rollback.
+
+---
+
+# 85. FEATURE FLAGS
+
+Feature flags are for staged production behavior, not permanent architectural clutter.
+
+Use only where justified.
+
+Document:
+
+* purpose
+* owner
+* default
+* rollout
+* removal criteria
+
+Remove abandoned flags.
+
+Never use them to preserve deleted V1 concepts.
+
+---
+
+# 86. PRIVACY + DATA LIFECYCLE
+
+Define lifecycle/retention for:
+
+* account data
+* leads
+* conversations
+* analytics
+* assets
+* ZIPs
+* notifications
+* audits
+* payment records
+* invoices
+* deleted Websites
+* FAISS indexes
+
+Distinguish:
+
+* deletable
+* legally/financially retained
+* temporary
+* security/audit
+
+Architect proper User account deletion covering:
+
+* sessions
+* Websites
+* Drafts
+* live deployments
+* domains
+* assets
+* chatbot data
+* Leads
+* analytics
+* notifications
+* marketing preferences
+* subscriptions
+* exports
+* financial/audit records
+
+Do not simply delete the User row and leave orphaned data.
+
+---
+
+# 87. COOKIE + CONSENT
+
+Where legally required distinguish:
+
+* essential session technology
+* analytics
+* marketing
+
+Public Zylora and customer Websites may have different needs.
+
+Do not make unsupported legal claims.
+
+---
+
+# 88. BACKGROUND JOBS
+
+Use workers for expensive/long operations such as:
+
+* FAISS indexing
+* ZIP generation
+* deployment
+* campaigns
+* analytics aggregation
+* notifications
+* image processing
+* sitemap generation
+* domain verification polling
+
+Jobs must be:
+
+* retryable
+* idempotent
+* observable
+* bounded
+* appropriately stateful
+
+Use failure/dead-letter handling where appropriate.
+
+No silent exceptions.
+
+---
+
+# 89. IDEMPOTENCY + CONCURRENCY
+
+Design retries safely for:
+
+* payments
+* webhooks
+* leads
+* credit deductions
+* ownership transfers
+* exports
+* deployments
+* notifications
+* campaigns
+* chatbot indexing
+
+Test races such as:
+
+```text
+two publishes
+two transfers
+two credit deductions
+duplicate Leads
+duplicate payment webhooks
+simultaneous subdomain claims
+simultaneous export triggers
+```
+
+Use DB constraints/transactions to protect invariants.
+
+---
+
+# 90. API CONTRACTS
+
+Use explicit stable API request/response contracts.
+
+Avoid frontend/backend drift.
+
+Use shared/generated contracts where appropriate.
+
+Frontend should not guess payload shapes.
+
+---
+
+# 91. SEARCH + PAGINATION
+
+Use scalable server-side search/filtering for:
+
+### User
+
+* Templates
+* Websites
+* Leads
+
+### Super Admin
+
+* Users
+* Websites
+* transactions
+* Templates
+* Blog
+* campaigns
+
+Paginate potentially large collections:
+
+* Templates
+* Leads
+* Users
+* payments
+* invoices
+* Websites
+* audit logs
+* campaigns
+* posts
+* notifications
+
+Never fetch 10,000 records for client-side filtering.
+
+---
+
+# 92. SECURITY BASELINE
+
+Implement:
+
+* Argon2id
+* OAuth verification
+* email verification
+* secure session lifecycle
+* revocation
+* secure cookies
+* CSRF
+* XSS mitigation
+* ORM/query safety
+* server-side authorization
+* rate limiting
+* API throttling
+* bot protection
+* WAF compatibility
+* upload validation
+* signed webhook verification
+* secrets management
+* audit logs
+* strict data isolation
+* dependency scanning
+* safe errors
+
+Hiding a React button is NEVER authorization.
+
+---
+
+# 93. COST PROTECTION
+
+Rate-limit expensive surfaces:
+
+* login
+* OTP send
+* AI editing
+* chatbot
+* lead submission
+* upload
+* ZIP generation
+* Template search
+* domain verification
+* public APIs
+* analytics ingestion where needed
+
+Prevent uncontrolled:
+
+* AI/model cost
+* embedding cost
+* email cost
+* CPU
+* worker load
+* storage
+
+---
+
+# 94. OBSERVABILITY
+
+Implement:
+
+* structured logs
+* request/correlation IDs
+* deployment logs
+* worker logs
+* payment webhook logs
+* domain verification logs
+* security event logs
+* error monitoring hooks
+* metrics
+
+Monitor:
+
+* HTTP failures
+* latency
+* queue backlog
+* failed jobs
+* DB health
+* Redis health
+* email failures
+* payment failures
+* deployment failures
+* domain errors
+* AI failures
+* indexing failures
+* export failures
+
+Provide:
+
+```text
+/liveness
+/readiness
+```
+
+or equivalent.
+
+Readiness should include critical dependency health without allowing optional providers to unnecessarily make the whole platform unavailable.
+
+Super Admin System Health consumes meaningful operational data.
+
+---
+
+# 95. AUDIT LOGGING
+
+Immutable audit records for:
+
+* ownership transfer
+* plan price change
+* export price change
+* entitlement change
+* credit adjustment
+* Template publishing/deprecation
+* campaign sending
+* Blog publishing
+* account administration
+* payment/export state
+* subscription changes
+
+Store appropriate:
+
+```text
+actor
+action
+resource
+resource ID
+old value
+new value
+timestamp
+IP
+request/correlation ID
+```
+
+Never log passwords, secrets, raw OTPs, or payment credentials.
+
+Prefer historical records over destructive mutation for:
+
+* credit ledger
+* payments
+* invoices
+* ownership
+* prices
+* deployment history
+
+---
+
+# 96. ERROR HANDLING
+
+Use stable structured backend error codes and user-safe messages.
+
+Bad:
+
+```text
+Something went wrong.
+```
+
+Good:
+
+```text
+Your domain is not verified yet. Add the displayed CNAME record and check again.
+```
+
+or:
+
+```text
+This plan is unavailable because your Website exceeds its page limit.
+```
+
+Include:
+
+* actionable next step
+* retry guidance
+* correlation/reference ID where useful
+
+Never expose stack traces or sensitive internals.
+
+---
+
+# 97. EXTERNAL PROVIDERS
+
+Maintain clean boundaries for:
+
+* payment
+* email
+* OAuth
+* DNS/domain
+* object storage
+* AI/model
+
+Do not build a giant unnecessary generic provider framework.
+
+Do not scatter provider-specific logic across unrelated domains.
+
+Provider outages must degrade safely.
+
+Examples:
+
+Email outage:
+
+* Lead remains stored
+* notification job retries
+
+Indexing failure:
+
+* state is visible
+* retry possible
+* previous good live Website remains safe
+
+---
+
+# 98. CODE QUALITY
+
+Prefer:
+
+* cohesive modules
+* clear domain boundaries
+* typed contracts
+* dependency injection where useful
+* predictable names
+* deterministic behavior
+
+Avoid:
+
+* god classes
+* giant React components
+* duplicate utilities
+* hidden global state
+* fragile magic
+* deeply nested conditional logic
+* business rules scattered through UI
+
+---
+
+# 99. NO PLACEHOLDER COMPLETION
+
+A completed phase may not contain required-functionality placeholders such as:
+
+* TODO
+* FIXME
+* fake API data
+* fake analytics
+* fake payment success
+* fake domain verification
+* dead buttons
+* unimplemented handlers
+* hard-coded success
+* static data pretending to be persistence
+
+If an external credential is unavailable:
+
+implement real integration boundaries plus deterministic test doubles and document required configuration.
+
+---
+
+# 100. TEST STRATEGY
+
+Testing is mandatory.
+
+## UNIT
+
+At minimum:
+
+* entitlement evaluation
+* Website requirement calculation
+* plan recommendation
+* state transitions
+* ownership
+* credit transactions
+* payment state
+* Template validation
+* AI patch validation
+* authorization
+
+## INTEGRATION
+
+At minimum:
+
+* DB transactions
+* authentication
+* transfer
+* billing
+* payment webhooks
+* publishing
+* credits
+* chatbot isolation
+* domains
+* Template publishing
+
+## E2E
+
+Use actual browser automation for critical customer/admin flows.
+
+---
+
+# 101. MANDATORY E2E JOURNEYS
+
+Test at minimum:
+
+```text
+Landing → Email Signup → Verification → Portal
+Landing → Google Authentication
+Login → Portal
+
+New User → Publish First Website CTA
+CTA → Template Gallery
+Template Preview
+Template Selection
+Draft Creation
+
+Manual Editing
+AI Editing
+Autosave
+Version Restore
+Desktop Preview
+Tablet Preview
+Mobile Preview
+
+Draft → Publish
+Publish → Subdomain
+Publish → Custom Domain
+
+Plan Eligibility
+Ineligible Plan Reason
+Recommended Plan
+Existing Subscription Reuse
+Upgrade Required
+Payment Verification
+Deployment
+Live Website
+
+Website A Published + Website B Draft
+Attempt Publish B → Block
+Unpublish A
+Publish B → Success
+
+Transfer
+Recipient Validation
+Old Owner Revoked
+New Owner Granted
+New Owner Publish Flow
+
+Export
+Admin Price Read
+Failed Payment → No ZIP
+Verified Payment → ZIP
+Export Security
+
+Chatbot Provisioning
+Chatbot Query
+Cross-Tenant Retrieval Attack
+Chatbot Lead
+Form Lead
+Exactly One Credit
+Duplicate Retry
+Notification
+Analytics
+
+Super Admin Login
+Plan Price Change
+Export Price Change
+Entitlement Change
+Credit Adjustment
+Template Publish
+Template Deprecate
+Manual Email
+Campaign
+Blog Publish
+Audit Log
+```
+
+---
+
+# 102. SECURITY TESTS
+
+Explicitly test:
+
+* unauthorized User access
+* unauthorized admin
+* horizontal privilege escalation
+* IDOR
+* cross-User Website
+* cross-User Lead
+* cross-User Domain
+* cross-tenant FAISS
+* CSRF
+* XSS
+* HTML injection
+* brute force
+* rate-limit bypass
+* duplicate webhook
+* payment replay
+* transfer race
+* publish race
+* credit race
+* malicious uploads
+* ZIP traversal
+* malicious Templates
+
+---
+
+# 103. BROWSER QA
+
+For every major page inspect:
+
+* console
+* failed requests
+* overflow
+* responsive state
+* loading
+* empty state
+* error state
+* focus behavior
+* keyboard behavior
+* validation
+* every button
+* modal lifecycle
+* refresh
+* back navigation
+* deep link
+* session expiry
+
+Rendering alone is not sufficient.
+
+Use Playwright or relevant browser Skills where available.
+
+Browser E2E and visual critique are BOTH required.
+
+---
+
+# 104. LIGHTHOUSE / WEB VITALS
+
+Where tooling supports it evaluate important public surfaces for:
+
+* performance
+* accessibility
+* best practices
+* SEO
+* Core Web Vitals
+
+Do not chase a meaningless perfect score, but investigate serious regressions.
+
+---
+
+# 105. ROOT-CAUSE POLICY
+
+This rebuild exists to eliminate patch-on-patch development.
+
+If multiple bugs share a pattern:
+
+STOP.
+
+Find the common abstraction.
+
+Examples:
+
+```text
+8 plan bugs
+→ Entitlement Engine
+
+6 publish bugs
+→ Deployment State Machine
+
+10 ownership bugs
+→ Ownership Service
+
+many style inconsistencies
+→ Design System
+
+hundreds of similar bad Templates
+→ Template-generation methodology
+```
+
+Fix root cause.
+
+Then add regression tests.
+
+Do not patch hundreds of symptoms.
+
+---
+
+# 106. NO FEATURE CREEP
+
+Once Phase 0 freezes this specification:
+
+Do not add unrelated features merely because they sound useful.
+
+New ideas go into a post-V2 backlog unless required for:
+
+* correctness
+* security
+* production reliability
+* an explicit requirement here
+
+Finish the coherent product.
+
+---
+
+# 107. PHASED IMPLEMENTATION
+
+Do NOT build everything in one giant pass.
+
+Codex knows the full end-state from the beginning, but implementation occurs sequentially.
+
+---
+
+# PHASE 0 — PRODUCT + ARCHITECTURE FREEZE
+
+Before feature code:
+
+* inspect V1 read-only
+* create V2 repository
+* inspect relevant Skills
+* create AGENTS.md
+* freeze product invariants
+* define architecture/boundaries
+* design database
+* define APIs/contracts
+* define state machines
+* define Template schema
+* define ownership
+* define entitlements
+* define payment boundary
+* define deployment architecture
+* define security
+* define test strategy
+* define design direction
+* define production environments/operations
+
+Create at minimum:
+
+```text
+docs/product/ZYLORA_V2_PRODUCT_SPEC.md
+
+docs/architecture/SYSTEM_ARCHITECTURE.md
+docs/architecture/DATA_MODEL.md
+docs/architecture/STATE_MACHINES.md
+docs/architecture/SECURITY_MODEL.md
+
+docs/testing/TEST_STRATEGY.md
+
+docs/design/BRAND_DIRECTION.md
+docs/design/DESIGN_SYSTEM.md
+docs/design/LANDING_PAGE_ART_DIRECTION.md
+docs/design/PRODUCT_UI_PRINCIPLES.md
+
+docs/operations/DISASTER_RECOVERY.md
+```
+
+Do not proceed while architecture contradicts this prompt.
+
+---
+
+# PHASE 1 — PLATFORM FOUNDATION
+
+Implement:
+
+* monorepo
+* frontend/backend/worker
+* PostgreSQL
+* SQLAlchemy
+* Alembic
+* Redis/jobs
+* shared contracts
+* configuration
+* storage abstraction
+* logging
+* health endpoints
+* CI foundation
+* `.env.example`
+
+Gate:
+
+* clean install
+* typecheck
+* lint
+* backend tests
+* frontend tests
+* migrations
+* production builds
+
+---
+
+# PHASE 2 — AUTH + ROLE MODEL
+
+Implement:
+
+* User
+* Super Admin
+* Google OAuth
+* email/password
+* verification code
+* password reset
+* sessions
+* abuse controls
+* admin isolation
+* authorization
+* audit foundation
+
+Test every authentication state.
+
+---
+
+# PHASE 3 — DESIGN SYSTEM + PORTAL SHELLS
+
+Implement:
+
+* Zylora visual system
+* navigation/layouts
+* User portal shell
+* Super Admin shell
+* responsive behavior
+* empty/loading/error patterns
+* first-time User CTA
+
+No fake analytics.
+
+Run visual QA.
+
+---
+
+# PHASE 4 — TEMPLATE PLATFORM
+
+Implement:
+
+* Template schema
+* versions
+* categories
+* tags
+* search
+* filtering
+* preview
+* responsive preview
+* validation
+* Super Admin Template management
+* approved catalogue
+* asset pipeline
+
+Test quality/compatibility.
+
+---
+
+# PHASE 5 — WEBSITE + DRAFT ENGINE
+
+Implement:
+
+* Website
+* WebsiteVersion
+* ownership
+* lifecycle
+* create-from-Template
+* Drafts
+* multiple Drafts
+* one-live-site rules
+* Draft management
+
+Enforce exactly one owner.
+
+---
+
+# PHASE 6 — EDITOR
+
+Implement:
+
+* manual editing
+* component controls
+* responsive preview
+* advanced Template interactions
+* autosave
+* revisions
+* restore
+* AI structured patch system
+* AI editing
+* Website SEO controls
+
+No blank canvas.
+
+---
+
+# PHASE 7 — PLANS + ENTITLEMENTS + BILLING CORE
+
+Implement:
+
+* exactly four dynamic plans
+* plan prices
+* entitlements
+* requirement engine
+* eligibility
+* recommendation
+* existing subscription reuse
+* subscriptions
+* invoices
+* payment abstraction
+* payment states
+
+Test rule combinations aggressively.
+
+---
+
+# PHASE 8 — DOMAINS + DEPLOYMENT + PUBLISHING
+
+Implement:
+
+* subdomain
+* custom domain
+* DNS
+* TLS
+* Cloudflare
+* deployment state machine
+* health check
+* rollback
+* one-live-site enforcement
+* publish
+* unpublish
+
+Test failure recovery.
+
+---
+
+# PHASE 9 — TRANSFER + EXPORT
+
+Implement:
+
+* recipient validation
+* atomic transfer
+* transfer auditing
+* export price
+* ExportPurchase
+* checkout
+* server verification
+* ZIP generation
+* secure storage/download
+
+Test payment bypass attempts.
+
+---
+
+# PHASE 10 — FAISS CHATBOT + LEADS + CREDITS
+
+Implement:
+
+* chatbot provisioning
+* content extraction
+* FAISS
+* index isolation
+* conversations
+* chatbot Lead capture
+* form Lead capture
+* unified Lead system
+* credit ledger
+* atomic one-credit deduction
+* configurable zero-credit policy
+* notifications
+
+Stress concurrency and cross-tenant isolation.
+
+---
+
+# PHASE 11 — ANALYTICS + NOTIFICATIONS
+
+Implement:
+
+* analytics events
+* aggregation
+* real dashboard
+* Website metrics
+* Lead metrics
+* chatbot metrics
+* notifications
+* transactional email
+
+Only replace first-time CTA when meaningful data exists.
+
+---
+
+# PHASE 12 — SUPER ADMIN OPERATIONS
+
+Complete:
+
+* Users
+* Websites
+* Templates
+* pricing
+* entitlements
+* subscriptions
+* payments
+* credits
+* Leads
+* domains
+* analytics
+* manual email
+* system health
+* audit logs
+* settings
+
+---
+
+# PHASE 13 — CAMPAIGNS + BLOG
+
+Implement:
+
+* campaigns
+* segmentation
+* unsubscribe
+* suppression
+* campaign analytics
+* Blog CMS
+* scheduled publishing
+* Blog SEO
+
+---
+
+# PHASE 14 — PUBLIC SITE + SEO + DESIGN POLISH
+
+Complete:
+
+* world-class landing page
+* public Templates
+* pricing
+* features
+* Blog presentation
+* legal pages
+* contact
+* sitemap
+* metadata
+* structured data
+* SEO
+* accessibility
+* performance
+* Core Web Vitals
+
+Run dedicated anti-vibe-coded design review.
+
+---
+
+# PHASE 15 — FULL REGRESSION
+
+# FEATURE FREEZE.
+
+Do not add anything.
+
+Run:
+
+* backend tests
+* frontend tests
+* typecheck
+* lint
+* production builds
+* fresh migrations
+* integration tests
+* E2E
+* security
+* browser QA
+* responsive QA
+* accessibility
+* dependency/security scan
+* Template validator
+* payment replay tests
+* concurrency tests
+* performance review
+
+Fix ROOT CAUSES.
+
+Repeat until stable.
+
+---
+
+# PHASE 16 — TEMPLATE SCALE-UP
+
+ONLY after core regression passes.
+
+Scale in batches:
+
+```text
+Initial validated set
+→ 50
+→ 100
+→ 250
+→ 500
+→ 1000+
+→ continue
+```
+
+Every Template passes automated validation.
+
+Also visually sample generated batches.
+
+Reject batches exhibiting:
+
+* repetition
+* superficial variation
+* poor typography
+* weak category fit
+* AI-looking layouts
+* broken mobile
+* poor hierarchy
+
+Fix generation methodology, not hundreds of outputs individually.
+
+---
+
+# PHASE 17 — FINAL RELEASE CANDIDATE
+
+Feature freeze again.
+
+Run complete regression.
+
+Manual QA as:
+
+* anonymous visitor
+* first-time User
+* existing User
+* User with Drafts
+* User with live Website
+* paid User
+* User needing upgrade
+* transfer sender
+* transfer recipient
+* exporter
+* chatbot/Lead User
+* Super Admin
+* mobile User
+* tablet User
+* unauthorized/malicious actor
+
+Perform final:
+
+* design review
+* security review
+* privacy review
+* operations review
+* backup/restore review
+* monitoring review
+* release review
+
+Any P0/P1 issue blocks production.
+
+---
+
+# 108. PHASE COMPLETION RULE
+
+A phase is NOT complete because code exists.
+
+A phase is complete only after:
+
+```text
+IMPLEMENT
+→ FORMAT
+→ TYPECHECK
+→ LINT
+→ UNIT TEST
+→ INTEGRATION TEST
+→ E2E
+→ SECURITY
+→ BROWSER/VISUAL QA
+→ REGRESSION
+→ PASS
+```
+
+If failure:
+
+```text
+FIX ROOT CAUSE
+→ REPEAT
+```
+
+Do not knowingly continue with P0/P1 defects.
+
+---
+
+# 109. DEFINITION OF DONE
+
+Before PASS:
+
+* implementation complete
+* formatting passes
+* typecheck passes
+* lint passes
+* unit tests pass
+* integration tests pass
+* required E2E pass
+* migrations work
+* production build works
+* security checks pass
+* console clean of critical errors
+* responsive behavior verified
+* accessibility verified
+* visual quality inspected
+* documentation updated
+* no required TODO/FIXME
+* acceptance criteria documented
+* four guardrails still satisfied
+
+---
+
+# 110. PHASE REPORT FORMAT
+
+At the end of every phase output:
+
+```text
+PHASE X — <NAME>
+
+STATUS:
+PASS / BLOCKED
+
+IMPLEMENTED:
+...
+
+ARCHITECTURAL DECISIONS:
+...
+
+SKILLS / SPECIALIZED CAPABILITIES USED:
+...
+
+TESTS:
+Unit:
+Integration:
+E2E:
+
+TYPECHECK:
+PASS / FAIL
+
+LINT:
+PASS / FAIL
+
+BUILD:
+PASS / FAIL
+
+MIGRATIONS:
+PASS / FAIL
+
+SECURITY:
+...
+
+VISUAL / RESPONSIVE QA:
+...
+
+KNOWN ISSUES:
+...
+
+FILES / DOCUMENTATION:
+...
+
+GUARDRAIL CHECK:
+1. Extra roles/orgs introduced? NO
+2. Removed V1 architecture retained? NO
+3. Obsolete payment provider activated? NO
+4. Paid ZIP bypass created? NO
+
+NEXT PHASE:
+...
+```
+
+Never label BLOCKED work as complete.
+
+---
+
+# 111. GIT
+
+Initialize fresh repository:
+
+```text
+C:\Zylora-V2
+```
+
+Commit coherent completed phases.
+
+Example:
+
+```text
+chore: initialize zylora v2 architecture
+feat: complete authentication foundation
+feat: complete template platform
+feat: complete website draft engine
+```
+
+Never commit:
+
+* `.env`
+* secrets
+* generated credentials
+* unnecessary build artifacts
+
+---
+
+# 112. CRITICAL AUTOMATED INVARIANTS
+
+Explicitly test:
+
+### ROLES
+
+Only User + Super Admin.
+
+### MULTI-TENANCY
+
+Isolation without organizations/workspaces/additional roles.
+
+### OWNERSHIP
+
+Exactly one current owner per Website.
+
+### LIVE SITE
+
+Maximum one published Website per User.
+
+### CREATION
+
+Every Website begins from approved Template.
+
+### PORTAL
+
+One User portal.
+
+### PUBLISH
+
+Server-authorized only.
+
+### PLAN
+
+Server-authoritative eligibility.
+
+### PRICING
+
+Configuration/database-driven.
+
+### PAYMENT
+
+No paid capability from frontend trust.
+
+### TRANSFER
+
+Atomic ownership change.
+
+### EXPORT
+
+No Website ZIP before trusted payment verification.
+
+### ACCOUNT DATA EXPORT
+
+Cannot bypass paid Website ZIP.
+
+### LEADS
+
+One successful valid Lead = exactly one credit transaction.
+
+### FAISS
+
+No cross-tenant retrieval.
+
+### TEMPLATES
+
+Only validated/approved Templates visible.
+
+### ADMIN
+
+Sensitive changes audited.
+
+### LEGACY
+
+No removed V1 architecture hidden behind feature flags.
+
+---
+
+# 113. FINAL PRODUCT JOURNEY
+
+The finished product must support:
+
+```text
+ZYLORA LANDING PAGE
+        ↓
+SIGN UP
+Google
+OR
+Email + Password + Verification Code
+        ↓
+USER PORTAL
+        ↓
+No published Website?
+        ↓
+"PUBLISH YOUR FIRST WEBSITE"
+        ↓
+TEMPLATE GALLERY
+        ↓
+PREVIEW
+        ↓
+USE TEMPLATE
+        ↓
+DRAFT
+        ↓
+MANUAL EDITING ↔ AI EDITING
+        ↓
+AUTOSAVE + VERSION HISTORY
+        ↓
+RESPONSIVE PREVIEW
+        ↓
+READY
+        ↓
+┌────────────┬──────────────┬──────────────┐
+│  PUBLISH   │   TRANSFER   │  EXPORT ZIP  │
+└────────────┴──────────────┴──────────────┘
+```
+
+Publish:
+
+```text
+PUBLISH
+↓
+Zylora Subdomain / Custom Domain
+↓
+Website Requirement Analysis
+↓
+Existing Subscription Check
+↓
+Eligibility Engine
+↓
+4 Plans When Required
+↓
+Ineligible = Greyed Out + Explanation
+Eligible = Selectable
+Best Match = Recommended
+↓
+Existing Entitlement / Verified Payment
+↓
+Deployment
+↓
+Health Check
+↓
+LIVE WEBSITE
+↓
+FAISS CHATBOT
+↓
+VISITORS + LEADS + ANALYTICS
+```
+
+Transfer:
+
+```text
+TRANSFER
+↓
+Recipient Zylora Email
+↓
+Validate
+↓
+Atomic Ownership Transfer
+↓
+New Owner Portal
+↓
+Domain Choice
+↓
+Normal Publish Flow
+```
+
+Export:
+
+```text
+EXPORT ZIP
+↓
+Current Admin-Controlled Price
+↓
+Checkout
+↓
+Trusted Server Payment Verification
+↓
+Generate Secure ZIP
+↓
+Temporary Secure Access
+```
+
+Lead:
+
+```text
+VISITOR
+↓
+CHATBOT / FORM
+↓
+VALID LEAD
+↓
+IDEMPOTENT TRANSACTION
+├── Store Lead
+├── Consume Exactly 1 Credit
+├── Notify Owner
+├── Record Analytics
+└── Reflect in Portal
+```
+
+---
+
+# 114. FINAL PRODUCTION REVIEW
+
+Before release verify:
+
+```text
+PRODUCT CORRECTNESS
+ARCHITECTURE
+DATABASE
+SECURITY
+AUTHENTICATION
+AUTHORIZATION
+TENANT ISOLATION
+PAYMENTS
+SUBSCRIPTIONS
+ENTITLEMENTS
+DOMAINS
+DEPLOYMENT
+TRANSFER
+EXPORT
+LEADS
+CREDITS
+FAISS
+ANALYTICS
+NOTIFICATIONS
+ADMIN
+BLOG
+CAMPAIGNS
+SEO
+ACCESSIBILITY
+RESPONSIVE UI
+LANDING PAGE DESIGN
+TEMPLATE QUALITY
+PERFORMANCE
+BACKUPS
+RESTORE
+OBSERVABILITY
+CI/CD
+DATA PRIVACY
+STORAGE
+EMAIL DELIVERABILITY
+RATE LIMITING
+DISASTER RECOVERY
+```
+
+Verify operational configuration:
+
+* production
+* staging
+* secrets
+* DB backups
+* restore procedure
+* storage lifecycle
+* payment webhooks
+* email setup
+* DNS/domain provider
+* TLS
+* monitoring
+* error reporting
+* health checks
+* workers
+* queues
+* scheduled jobs
+* migrations
+* CI/CD
+* rollback
+* dependency/security scanning
+* rate limits
+* WAF
+
+No production launch should depend on knowledge existing only in a developer's memory.
+
+---
+
+# 115. FINAL DIRECTIVE
+
+Do not optimize for producing the largest diff.
+
+Do not rebuild deleted architecture.
+
+Do not add feature creep.
+
+Do not hide failures.
+
+Do not continue from broken phases.
+
+Do not intentionally accumulate technical debt for later.
+
+Do not trust critical frontend state.
+
+Do not sacrifice security for convenience.
+
+Do not sacrifice UX for unnecessary security friction.
+
+Do not sacrifice Template quality for Template count.
+
+Do not sacrifice SEO for visual gimmicks.
+
+Do not sacrifice accessibility for minimalism.
+
+Do not sacrifice maintainability for development speed.
+
+Do not confuse:
+
+```text
+"it compiles"
+```
+
+with:
+
+```text
+"it is finished"
+```
+
+Use installed Skills intelligently.
+
+Design before implementing.
+
+Build stable systems before scaling Templates.
+
+Inspect the real UI rather than trusting JSX.
+
+Test invariants aggressively.
+
+Make external side effects idempotent.
+
+Make commercial actions auditable.
+
+Keep provider boundaries explicit.
+
+Keep ownership deterministic.
+
+Keep User data isolated.
+
+Fix abstractions instead of symptoms.
+
+The final Zylora V2 should feel:
+
+* intentionally architected
+* intentionally designed
+* production-grade
+* cohesive
+* professional
+* secure
+* fast
+* maintainable
+
+and must not return to the patch-on-patch development model of V1.
+
+# START WITH PHASE 0.
+
+Do not begin feature implementation until:
+
+* architecture
+* database
+* state machines
+* API contracts
+* Template schema
+* security model
+* design direction
+* testing strategy
+* operational foundations
+* four guardrails
+
+are documented and internally consistent.
+
+Then proceed sequentially:
+
+# IMPLEMENT → TEST → VISUALLY INSPECT → FIX ROOT CAUSE → REGRESSION → PASS → NEXT PHASE.
