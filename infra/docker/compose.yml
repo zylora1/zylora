@@ -1,0 +1,52 @@
+name: zylora-v2
+
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_DB: zylora
+      POSTGRES_USER: zylora
+      POSTGRES_PASSWORD: zylora_dev_only
+      PGDATA: /var/lib/postgresql/18/docker
+    ports:
+      - '5432:5432'
+    volumes:
+      - zylora_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U zylora -d zylora']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.2.2-alpine
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '6379:6379'
+    volumes:
+      - zylora_redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: zylora_dev_only
+      MINIO_ROOT_PASSWORD: zylora_dev_only_secret
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - zylora_minio:/data
+    restart: unless-stopped
+
+volumes:
+  zylora_postgres:
+  zylora_redis:
+  zylora_minio:

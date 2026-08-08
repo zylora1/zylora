@@ -5,8 +5,9 @@ customize one structured Website model manually or with AI, and then publish, tr
 a secure ZIP export. The same portal manages domains, leads, FAISS chatbot data, analytics, credits,
 and billing.
 
-The repository is currently at the Phase 0 product and architecture freeze. No feature code is
-authorized until the freeze passes its guardrail and consistency review.
+Phase 1 is complete: the executable platform foundation now includes Web, API, worker, PostgreSQL,
+Redis/jobs, object storage boundaries, generated contracts, health/logging/configuration, CI, and
+reproducible quality gates. Product features begin in their owning phases only.
 
 ## Sources of truth
 
@@ -14,6 +15,8 @@ authorized until the freeze passes its guardrail and consistency review.
 - [Frozen product specification](docs/product/ZYLORA_V2_PRODUCT_SPEC.md)
 - [Engineering contract](AGENTS.md)
 - [Phase 0 decisions](docs/architecture/PHASE_0_DECISIONS.md)
+- [Phase 1 report](docs/PHASE_1_REPORT.md)
+- [Local development](docs/operations/LOCAL_DEVELOPMENT.md)
 
 ## Architecture index
 

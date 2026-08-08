@@ -1,0 +1,16 @@
+.next
+node_modules
+dist
+coverage
+htmlcov
+playwright-report
+test-results
+uv.lock
+package-lock.json
+ZYLORA_MASTER_PROMPT.txt
+packages/contracts/openapi.json
+packages/contracts/src/api.generated.ts
+docs/
+AGENTS.md
+README.md
+apps/web/next-env.d.ts

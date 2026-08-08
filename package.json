@@ -1,0 +1,53 @@
+{
+  "name": "zylora-v2",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.6.1",
+  "engines": {
+    "node": ">=24.0.0 <25",
+    "npm": ">=11.0.0 <12"
+  },
+  "workspaces": [
+    "apps/web",
+    "packages/config",
+    "packages/contracts",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev:web",
+    "dev:web": "npm --workspace @zylora/web run dev",
+    "build": "npm run build:web && npm run build:python",
+    "build:web": "npm --workspace @zylora/web run build",
+    "build:python": "uv build --package zylora-api --out-dir dist/api && uv build --package zylora-worker --out-dir dist/worker",
+    "format": "prettier --write . && uv run ruff format apps/api apps/worker scripts",
+    "format:check": "prettier --check . && uv run ruff format --check apps/api apps/worker scripts",
+    "lint": "npm run lint:web && uv run ruff check apps/api apps/worker scripts",
+    "lint:web": "npm --workspace @zylora/web run lint",
+    "typecheck": "npm run typecheck:web && uv run mypy apps/api/src apps/worker/src scripts",
+    "typecheck:web": "npm --workspace @zylora/web run typecheck",
+    "test": "npm run test:web && npm run test:python",
+    "test:web": "npm --workspace @zylora/web run test",
+    "test:python": "uv run pytest apps/api/tests/unit apps/worker/tests --cov=zylora_api --cov=zylora_worker --cov-report=term-missing",
+    "test:integration": "npm run migrate && uv run pytest apps/api/tests/integration --run-integration",
+    "test:e2e": "npm --workspace @zylora/web run test:e2e",
+    "contracts:generate": "uv run python scripts/generate_openapi.py && openapi-typescript packages/contracts/openapi.json --output packages/contracts/src/api.generated.ts",
+    "contracts:check": "npm run contracts:generate && git diff --exit-code -- packages/contracts/openapi.json packages/contracts/src/api.generated.ts",
+    "infra:up": "docker compose -f infra/docker/compose.yml up -d --wait postgres redis minio",
+    "infra:down": "docker compose -f infra/docker/compose.yml down",
+    "migrate": "uv run --package zylora-api alembic -c apps/api/alembic.ini upgrade head",
+    "migrate:check": "uv run python scripts/check_migrations.py",
+    "security": "npm audit --audit-level=high && uv run pip-audit --local --skip-editable && uv run python scripts/check_forbidden_architecture.py",
+    "quality": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run contracts:check",
+    "dev:api": "uv run --package zylora-api uvicorn zylora_api.app:create_app --factory --reload --host 127.0.0.1 --port 8000",
+    "dev:worker": "uv run --package zylora-worker celery -A zylora_worker.celery_app:celery_app worker --loglevel=INFO --pool=solo"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.9.6"
+  },
+  "overrides": {
+    "@redocly/openapi-core": {
+      "js-yaml": "4.3.1"
+    }
+  }
+}

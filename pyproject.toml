@@ -1,0 +1,57 @@
+[project]
+name = "zylora-v2-workspace"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "httpx==0.28.1",
+  "mypy==2.3.0",
+  "pip-audit==2.10.1",
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "pytest-cov==7.1.0",
+  "ruff==0.16.2",
+  "types-boto3[s3]==1.43.67",
+]
+
+[tool.uv]
+package = false
+link-mode = "copy"
+
+[tool.uv.workspace]
+members = ["apps/api", "apps/worker"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["apps/api/migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "ASYNC", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+addopts = "-q -p no:cacheprovider --strict-config --strict-markers --cov-fail-under=90"
+testpaths = ["apps/api/tests", "apps/worker/tests"]
+asyncio_mode = "auto"
+markers = ["integration: requires real PostgreSQL and Redis services"]
+
+[tool.coverage.run]
+branch = true
+source = ["zylora_api", "zylora_worker"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "if __name__ == .__main__.:"]

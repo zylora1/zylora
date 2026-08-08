@@ -67,14 +67,43 @@ an ADR before implementation.
 
 ## Commands
 
-Phase 0 is documentation-only. Its validation commands are:
+Clean install and local infrastructure:
 
 ```powershell
-git diff --check
-rg -n "Pinecone|Chroma|Craft\.js|Freelancer role|Client role" docs AGENTS.md
-rg -n "USER|SUPER_ADMIN" docs/product docs/architecture AGENTS.md
+npm ci
+uv sync --all-packages --frozen --link-mode copy
+Copy-Item .env.example .env
+npm run infra:up
+npm run migrate
 ```
 
-The Phase 1 foundation must replace this section with the actual clean-install, dev, format,
-typecheck, lint, unit, integration, E2E, build, migration, security, and contract-generation
-commands as soon as those commands exist.
+Development (separate terminals):
+
+```powershell
+npm run dev:web
+npm run dev:api
+npm run dev:worker
+```
+
+Quality and delivery gates:
+
+```powershell
+npm run format
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test
+npm run test:integration
+npm run build
+npm run test:e2e
+npm run migrate
+npm run migrate:check
+npm run security
+npm run contracts:generate
+npm run contracts:check
+npm run infra:down
+```
+
+`npm run test:e2e` exercises the previously built production Web server. Integration tests require
+healthy PostgreSQL and Redis services plus an applied migration. See
+`docs/operations/LOCAL_DEVELOPMENT.md` for setup and migration round-trip details.
