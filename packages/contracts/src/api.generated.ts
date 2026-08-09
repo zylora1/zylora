@@ -549,6 +549,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/websites/{website_id}/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Page */
+        post: operations["add_page_api_v1_websites__website_id__pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/pages/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Page */
+        delete: operations["delete_page_api_v1_websites__website_id__pages__page_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Page */
+        patch: operations["update_page_api_v1_websites__website_id__pages__page_id__patch"];
+        trace?: never;
+    };
     "/liveness": {
         parameters: {
             query?: never;
@@ -733,6 +768,20 @@ export interface components {
              */
             reason: string;
         };
+        /** NavigationNodeResponse */
+        NavigationNodeResponse: {
+            /** Children */
+            children?: components["schemas"]["NavigationNodeResponse"][];
+            /** Label */
+            label: string;
+            /**
+             * Page Id
+             * Format: uuid
+             */
+            page_id: string;
+            /** Path */
+            path: string;
+        };
         /** OAuthStartRequest */
         OAuthStartRequest: {
             /** Turnstile Token */
@@ -742,6 +791,79 @@ export interface components {
         OAuthStartResponse: {
             /** Authorization Url */
             authorization_url: string;
+        };
+        /** PageCreateRequest */
+        PageCreateRequest: {
+            /** Name */
+            name: string;
+            /** Parent Page Id */
+            parent_page_id?: string | null;
+            /** Seo */
+            seo?: {
+                [key: string]: string;
+            };
+            /**
+             * Show In Navigation
+             * @default true
+             */
+            show_in_navigation: boolean;
+            /** Slug */
+            slug: string;
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+            /**
+             * Status
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "HIDDEN" | "ARCHIVED";
+        };
+        /** PageDeleteRequest */
+        PageDeleteRequest: {
+            /**
+             * Child Strategy
+             * @constant
+             */
+            child_strategy: "PROMOTE";
+            /**
+             * Confirm
+             * @constant
+             */
+            confirm: true;
+        };
+        /** PagePathChangeResponse */
+        PagePathChangeResponse: {
+            /** New Path */
+            new_path: string;
+            /** Old Path */
+            old_path: string;
+            /**
+             * Page Id
+             * Format: uuid
+             */
+            page_id: string;
+        };
+        /** PageUpdateRequest */
+        PageUpdateRequest: {
+            /** Name */
+            name?: string | null;
+            /** Parent Page Id */
+            parent_page_id?: string | null;
+            /** Seo */
+            seo?: {
+                [key: string]: string;
+            } | null;
+            /** Show In Navigation */
+            show_in_navigation?: boolean | null;
+            /** Slug */
+            slug?: string | null;
+            /** Sort Order */
+            sort_order?: number | null;
+            /** Status */
+            status?: ("DRAFT" | "HIDDEN" | "ARCHIVED") | null;
         };
         /** PasswordResetConfirmRequest */
         PasswordResetConfirmRequest: {
@@ -982,6 +1104,11 @@ export interface components {
         /** WebsitePageResponse */
         WebsitePageResponse: {
             /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
              * Id
              * Format: uuid
              */
@@ -994,6 +1121,10 @@ export interface components {
             parent_page_id: string | null;
             /** Path */
             path: string;
+            /** Seo */
+            seo: {
+                [key: string]: string;
+            };
             /** Show In Navigation */
             show_in_navigation: boolean;
             /** Slug */
@@ -1002,6 +1133,11 @@ export interface components {
             sort_order: number;
             /** Status */
             status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** WebsiteResponse */
         WebsiteResponse: {
@@ -1017,6 +1153,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Navigation */
+            navigation: components["schemas"]["NavigationNodeResponse"][];
             /**
              * Owner User Id
              * Format: uuid
@@ -1024,6 +1162,8 @@ export interface components {
             owner_user_id: string;
             /** Pages */
             pages: components["schemas"]["WebsitePageResponse"][];
+            /** Path Changes */
+            path_changes?: components["schemas"]["PagePathChangeResponse"][];
             /**
              * Source Template Version Id
              * Format: uuid
@@ -2008,6 +2148,113 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_page_api_v1_websites__website_id__pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_page_api_v1_websites__website_id__pages__page_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageDeleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_page_api_v1_websites__website_id__pages__page_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageUpdateRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

@@ -361,6 +361,38 @@
         "title": "LogoutAllRequest",
         "type": "object"
       },
+      "NavigationNodeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/NavigationNodeResponse"
+            },
+            "title": "Children",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "label",
+          "path"
+        ],
+        "title": "NavigationNodeResponse",
+        "type": "object"
+      },
       "OAuthStartRequest": {
         "additionalProperties": false,
         "properties": {
@@ -392,6 +424,213 @@
           "authorization_url"
         ],
         "title": "OAuthStartResponse",
+        "type": "object"
+      },
+      "PageCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Page Id"
+          },
+          "seo": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Seo",
+            "type": "object"
+          },
+          "show_in_navigation": {
+            "default": true,
+            "title": "Show In Navigation",
+            "type": "boolean"
+          },
+          "slug": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          },
+          "sort_order": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Sort Order",
+            "type": "integer"
+          },
+          "status": {
+            "default": "DRAFT",
+            "enum": [
+              "DRAFT",
+              "HIDDEN",
+              "ARCHIVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ],
+        "title": "PageCreateRequest",
+        "type": "object"
+      },
+      "PageDeleteRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "child_strategy": {
+            "const": "PROMOTE",
+            "title": "Child Strategy",
+            "type": "string"
+          },
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "confirm",
+          "child_strategy"
+        ],
+        "title": "PageDeleteRequest",
+        "type": "object"
+      },
+      "PagePathChangeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "new_path": {
+            "title": "New Path",
+            "type": "string"
+          },
+          "old_path": {
+            "title": "Old Path",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "old_path",
+          "new_path"
+        ],
+        "title": "PagePathChangeResponse",
+        "type": "object"
+      },
+      "PageUpdateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "parent_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Page Id"
+          },
+          "seo": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo"
+          },
+          "show_in_navigation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Show In Navigation"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DRAFT",
+                  "HIDDEN",
+                  "ARCHIVED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "PageUpdateRequest",
         "type": "object"
       },
       "PasswordResetConfirmRequest": {
@@ -982,6 +1221,11 @@
       "WebsitePageResponse": {
         "additionalProperties": false,
         "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -1011,6 +1255,13 @@
             "title": "Path",
             "type": "string"
           },
+          "seo": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Seo",
+            "type": "object"
+          },
           "show_in_navigation": {
             "title": "Show In Navigation",
             "type": "boolean"
@@ -1026,6 +1277,11 @@
           "status": {
             "title": "Status",
             "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
           }
         },
         "required": [
@@ -1037,7 +1293,10 @@
           "sort_order",
           "is_home",
           "show_in_navigation",
-          "status"
+          "status",
+          "seo",
+          "created_at",
+          "updated_at"
         ],
         "title": "WebsitePageResponse",
         "type": "object"
@@ -1059,6 +1318,13 @@
             "title": "Id",
             "type": "string"
           },
+          "navigation": {
+            "items": {
+              "$ref": "#/components/schemas/NavigationNodeResponse"
+            },
+            "title": "Navigation",
+            "type": "array"
+          },
           "owner_user_id": {
             "format": "uuid",
             "title": "Owner User Id",
@@ -1069,6 +1335,13 @@
               "$ref": "#/components/schemas/WebsitePageResponse"
             },
             "title": "Pages",
+            "type": "array"
+          },
+          "path_changes": {
+            "items": {
+              "$ref": "#/components/schemas/PagePathChangeResponse"
+            },
+            "title": "Path Changes",
             "type": "array"
           },
           "source_template_version_id": {
@@ -1093,6 +1366,7 @@
           "display_name",
           "status",
           "pages",
+          "navigation",
           "created_at",
           "updated_at"
         ],
@@ -2520,6 +2794,183 @@
           }
         },
         "summary": "Website Detail",
+        "tags": [
+          "websites"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/pages": {
+      "post": {
+        "operationId": "add_page_api_v1_websites__website_id__pages_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebsiteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Page",
+        "tags": [
+          "websites"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/pages/{page_id}": {
+      "delete": {
+        "operationId": "delete_page_api_v1_websites__website_id__pages__page_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Page Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageDeleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebsiteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Page",
+        "tags": [
+          "websites"
+        ]
+      },
+      "patch": {
+        "operationId": "update_page_api_v1_websites__website_id__pages__page_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Page Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebsiteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Page",
         "tags": [
           "websites"
         ]

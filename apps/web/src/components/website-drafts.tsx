@@ -70,10 +70,8 @@ export function WebsiteDrafts() {
                 <span key={page.id}>{page.path}</span>
               ))}
           </div>
-          <p>
-            Editing opens in the Phase 5 editor. This portal remains the single place to manage all
-            Drafts.
-          </p>
+          <p>Organize every page in the compact Website map. Plans apply only when publishing.</p>
+          <Link href={'/app/websites/' + item.id + '/edit'}>Manage pages</Link>
         </article>
       ))}
     </div>

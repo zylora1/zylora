@@ -103,3 +103,25 @@ class WebsitePage(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class WebsitePagePathChange(Base):
+    __tablename__ = "website_page_path_changes"
+    __table_args__ = (
+        CheckConstraint("old_path <> new_path", name="ck_website_page_path_changes_distinct"),
+        Index("ix_website_page_path_changes_lookup", "website_id", "old_path", "created_at"),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    website_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("websites.id", ondelete="CASCADE"), nullable=False
+    )
+    page_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    actor_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    old_path: Mapped[str] = mapped_column(String(1536), nullable=False)
+    new_path: Mapped[str] = mapped_column(String(1536), nullable=False)
+    reason: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

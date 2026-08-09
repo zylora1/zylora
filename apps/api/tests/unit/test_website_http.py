@@ -10,7 +10,13 @@ from starlette.requests import Request
 from zylora_api.core.config import Settings
 from zylora_api.db.website_models import Website, WebsitePage
 from zylora_api.modules.auth.security import AuthCrypto
-from zylora_api.modules.websites.schemas import InstantiateRequest
+from zylora_api.modules.websites.schemas import (
+    InstantiateRequest,
+    PageCreateRequest,
+    PageDeleteRequest,
+    PageUpdateRequest,
+)
+from zylora_api.modules.websites.service import PageMutationResult, PathChange
 
 
 class FakeSession:
@@ -39,6 +45,28 @@ class FakeService:
 
     async def pages(self, website_id: UUID) -> list[WebsitePage]:
         return self.page_values
+
+    async def add_page(
+        self, website_id: UUID, owner_id: UUID, payload: PageCreateRequest
+    ) -> PageMutationResult:
+        return PageMutationResult(self.website, [])
+
+    async def update_page(
+        self,
+        website_id: UUID,
+        page_id: UUID,
+        owner_id: UUID,
+        payload: PageUpdateRequest,
+    ) -> PageMutationResult:
+        return PageMutationResult(
+            self.website,
+            [PathChange(page_id=page_id, old_path="/about", new_path="/company")],
+        )
+
+    async def delete_page(
+        self, website_id: UUID, page_id: UUID, owner_id: UUID
+    ) -> PageMutationResult:
+        return PageMutationResult(self.website, [])
 
 
 class FakeAudit:
@@ -144,3 +172,65 @@ async def test_instantiation_command_is_audited_and_committed(monkeypatch: objec
         and FakeAudit.events == ["website.instantiated_from_template"]
         and session.commits == 1
     )
+
+
+async def test_page_mutations_are_protected_audited_and_return_path_changes(
+    monkeypatch: object,
+) -> None:
+    website, pages, identity = state()
+    FakeService.website = website
+    FakeService.page_values = pages
+    FakeAudit.events = []
+    monkeypatch.setattr(api, "WebsiteService", FakeService)
+    monkeypatch.setattr(api, "AuditService", FakeAudit)
+    monkeypatch.setattr(api, "require_json_origin", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api, "require_csrf", lambda *args, **kwargs: None)
+    request = Request(
+        {
+            "type": "http",
+            "method": "PATCH",
+            "path": f"/api/v1/websites/{website.id}/pages/{pages[1].id}",
+            "headers": [],
+            "client": ("127.0.0.1", 1),
+            "state": {"correlation_id": "phase5"},
+        }
+    )
+    session = FakeSession()
+    settings = Settings(environment="test", storage_provider="memory", _env_file=None)
+    crypto = AuthCrypto("website-http-secret-long-enough-123")
+    await api.add_page(
+        website.id,
+        PageCreateRequest(name="Contact", slug="contact"),
+        request,
+        identity,
+        session,
+        settings,
+        crypto,
+    )
+    updated = await api.update_page(
+        website.id,
+        pages[1].id,
+        PageUpdateRequest(name="Company"),
+        request,
+        identity,
+        session,
+        settings,
+        crypto,
+    )
+    await api.delete_page(
+        website.id,
+        pages[1].id,
+        PageDeleteRequest(confirm=True, child_strategy="PROMOTE"),
+        request,
+        identity,
+        session,
+        settings,
+        crypto,
+    )
+    assert [item.old_path for item in updated.path_changes] == ["/about"]
+    assert FakeAudit.events == [
+        "website.page_added",
+        "website.page_updated",
+        "website.page_deleted",
+    ]
+    assert session.commits == 3

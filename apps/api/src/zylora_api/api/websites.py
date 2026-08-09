@@ -22,16 +22,29 @@ from zylora_api.modules.auth.http import (
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.websites.schemas import (
     InstantiateRequest,
+    PageCreateRequest,
+    PageDeleteRequest,
+    PagePathChangeResponse,
+    PageUpdateRequest,
     WebsiteListResponse,
     WebsitePageResponse,
     WebsiteResponse,
 )
-from zylora_api.modules.websites.service import WebsiteService, resolve_page_path
+from zylora_api.modules.websites.service import (
+    PathChange,
+    WebsiteService,
+    build_navigation,
+    resolve_page_path,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["websites"])
 
 
-async def response(service: WebsiteService, website: Website) -> WebsiteResponse:
+async def response(
+    service: WebsiteService,
+    website: Website,
+    path_changes: list[PathChange] | None = None,
+) -> WebsiteResponse:
     pages = await service.pages(website.id)
     page_map = {page.id: page for page in pages}
     return WebsiteResponse(
@@ -51,8 +64,20 @@ async def response(service: WebsiteService, website: Website) -> WebsiteResponse
                 is_home=page.is_home,
                 show_in_navigation=page.show_in_navigation,
                 status=page.status,
+                seo=page.seo,
+                created_at=page.created_at,
+                updated_at=page.updated_at,
             )
             for page in pages
+        ],
+        navigation=build_navigation(pages),
+        path_changes=[
+            PagePathChangeResponse(
+                page_id=change.page_id,
+                old_path=change.old_path,
+                new_path=change.new_path,
+            )
+            for change in (path_changes or [])
         ],
         created_at=website.created_at,
         updated_at=website.updated_at,
@@ -117,5 +142,111 @@ async def instantiate(
         },
     )
     result = await response(service, website)
+    await session.commit()
+    return result
+
+
+@router.post(
+    "/websites/{website_id}/pages",
+    response_model=WebsiteResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_page(
+    website_id: UUID,
+    payload: PageCreateRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> WebsiteResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    service = WebsiteService(session)
+    mutation = await service.add_page(website_id, identity.user.id, payload)
+    AuditService(session, crypto).record(
+        "website.page_added",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_page",
+        target_id=str(website_id),
+        reason="PAGE_MANAGER_ADD",
+        ip_address=request_ip(request, settings),
+        metadata={"name": payload.name, "parent_page_id": str(payload.parent_page_id or "")},
+    )
+    result = await response(service, mutation.website, mutation.path_changes)
+    await session.commit()
+    return result
+
+
+@router.patch("/websites/{website_id}/pages/{page_id}", response_model=WebsiteResponse)
+async def update_page(
+    website_id: UUID,
+    page_id: UUID,
+    payload: PageUpdateRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> WebsiteResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    service = WebsiteService(session)
+    mutation = await service.update_page(website_id, page_id, identity.user.id, payload)
+    AuditService(session, crypto).record(
+        "website.page_updated",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_page",
+        target_id=str(page_id),
+        reason="PAGE_MANAGER_UPDATE",
+        ip_address=request_ip(request, settings),
+        metadata={
+            "fields": sorted(payload.model_fields_set),
+            "path_changes": [
+                {"old_path": item.old_path, "new_path": item.new_path}
+                for item in mutation.path_changes
+            ],
+        },
+    )
+    result = await response(service, mutation.website, mutation.path_changes)
+    await session.commit()
+    return result
+
+
+@router.delete("/websites/{website_id}/pages/{page_id}", response_model=WebsiteResponse)
+async def delete_page(
+    website_id: UUID,
+    page_id: UUID,
+    payload: PageDeleteRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> WebsiteResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    service = WebsiteService(session)
+    mutation = await service.delete_page(website_id, page_id, identity.user.id)
+    AuditService(session, crypto).record(
+        "website.page_deleted",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_page",
+        target_id=str(page_id),
+        reason="PAGE_MANAGER_DELETE_PROMOTE",
+        ip_address=request_ip(request, settings),
+        metadata={
+            "confirmed": payload.confirm,
+            "child_strategy": payload.child_strategy,
+            "path_changes": [
+                {"old_path": item.old_path, "new_path": item.new_path}
+                for item in mutation.path_changes
+            ],
+        },
+    )
+    result = await response(service, mutation.website, mutation.path_changes)
     await session.commit()
     return result

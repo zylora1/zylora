@@ -51,8 +51,30 @@ parent in another Website even if an application bug bypasses service validation
 index prevents a second home, and a normalized sibling index prevents duplicate segments under the
 same parent.
 
+## Page Manager commands
+
+Phase 5 adds owner-authorized Draft-only commands for adding, renaming, moving, ordering, hiding,
+showing, configuring, and deleting Pages. The server remains authoritative for slug, sibling-path,
+parent, cycle, home, ownership, Website-state, and technical tree-size validation. A 500-Page
+technical ceiling prevents pathological requests; it is not a subscription or publishing limit.
+
+The primary editor surface is a compact, searchable, collapsible hierarchy. Site structure and
+primary navigation are deliberately separate: `show_in_navigation = false` keeps a Page and its
+canonical path while excluding it from generated navigation. Hidden parents do not erase visible
+descendants; the navigation projection promotes those descendants to the nearest visible ancestor.
+
+Moving or renaming a Page recomputes canonical paths for that Page and its descendants. Changed
+paths are recorded in `website_page_path_changes` for the later publishing redirect workflow. The
+history intentionally retains a Page UUID without a destructive foreign key so a deletion cannot
+erase redirect provenance.
+
+Deleting a non-home parent is explicit and deterministic: the caller must confirm the operation and
+choose the `PROMOTE` strategy, which moves direct children up exactly one level. Descendants are
+never silently deleted. The home Page cannot be nested, hidden, archived, assigned a slug, or
+deleted through Page Manager commands.
+
 ## Deferred work
 
-Phase 5 owns editor revisions, Page Manager commands, and the editor route. Phase 7 owns plan
-eligibility, publishing page limits, commerce, and publish transitions. No Phase 4 command charges,
+Phase 6 owns structured content editing. Phase 7 owns plan eligibility, publishing page limits,
+commerce, publish transitions, and activation of redirect records. No Draft-editing command charges,
 publishes, checks a plan, or asks for business profile data.

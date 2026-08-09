@@ -41,7 +41,7 @@ from zylora_api.db.template_models import (
     TemplateValidation,
     TemplateVersion,
 )
-from zylora_api.db.website_models import Website, WebsitePage
+from zylora_api.db.website_models import Website, WebsitePage, WebsitePagePathChange
 
 __all__ = [
     "AuditLog",
@@ -62,6 +62,7 @@ __all__ = [
     "User",
     "Website",
     "WebsitePage",
+    "WebsitePagePathChange",
 ]
 
 

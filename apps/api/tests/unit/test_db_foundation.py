@@ -24,6 +24,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "template_tag_assignments",
         "template_tags",
         "template_validations",
+        "website_page_path_changes",
         "template_versions",
         "templates",
         "website_pages",
