@@ -1,5 +1,5 @@
-import { SessionHome } from '@/components/session-home';
+import { UserHomePage } from '@/components/portal-pages';
 
 export default function UserPortalPage() {
-  return <SessionHome />;
+  return <UserHomePage />;
 }

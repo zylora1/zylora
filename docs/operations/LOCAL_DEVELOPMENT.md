@@ -1,10 +1,14 @@
 # Local development
 
-Status: **Phase 2 complete authentication foundation**
+Status: **Phase 3 complete design system and portal shells**
 
 Cloudflare Turnstile and WAF are the approved abuse boundary. `.env.example` uses Cloudflare's
 documented public test keys for local validation; production rejects those keys. Local email/password,
 Google adapter configuration, sessions, throttling, audit, and User/Admin surfaces are executable.
+
+Phase 3 adds the shared `packages/ui` visual system plus the responsive `/app` and isolated Admin
+shells. `npm run test:e2e` now includes exact-width WCAG, keyboard, reduced-motion, overflow,
+loading/error, and no-fake-analytics browser audits; their screenshots remain uncommitted test artifacts.
 
 ## Prerequisites
 

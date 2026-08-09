@@ -18,7 +18,10 @@ export default defineConfig({
       include: [
         'src/components/auth-form.tsx',
         'src/components/turnstile-widget.tsx',
-        'src/components/session-home.tsx',
+        'src/components/portal-shell.tsx',
+        'src/components/portal-pages.tsx',
+        'src/components/route-states.tsx',
+        '../../packages/ui/src/index.tsx',
         'src/lib/api.ts',
         'src/proxy.ts',
       ],

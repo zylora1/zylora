@@ -10,6 +10,8 @@ describe('Super Admin host isolation', () => {
     );
 
     expect(response.headers.get('x-middleware-rewrite')).toBe('http://admin.localhost/admin');
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
   });
 
   it('does not expose admin routes on the User host', () => {

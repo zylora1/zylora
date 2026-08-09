@@ -11,7 +11,8 @@
     "apps/web",
     "packages/config",
     "packages/contracts",
-    "packages/shared"
+    "packages/shared",
+    "packages/ui"
   ],
   "scripts": {
     "dev": "npm run dev:web",
