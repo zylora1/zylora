@@ -1,0 +1,327 @@
+{
+  "$defs": {
+    "AssetReference": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[0-9a-fA-F-]{36}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "alt": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Alt",
+          "type": "string"
+        }
+      },
+      "required": ["id", "alt"],
+      "title": "AssetReference",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Type",
+          "type": "string"
+        },
+        "props": {
+          "additionalProperties": true,
+          "title": "Props",
+          "type": "object"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 40,
+          "title": "Children",
+          "type": "array"
+        },
+        "responsive": {
+          "additionalProperties": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "propertyNames": {
+            "enum": ["tablet", "desktop"]
+          },
+          "title": "Responsive",
+          "type": "object"
+        },
+        "interactions": {
+          "items": {
+            "$ref": "#/$defs/Interaction"
+          },
+          "maxItems": 4,
+          "title": "Interactions",
+          "type": "array"
+        }
+      },
+      "required": ["id", "type"],
+      "title": "Component",
+      "type": "object"
+    },
+    "Interaction": {
+      "additionalProperties": false,
+      "properties": {
+        "trigger": {
+          "enum": ["CLICK", "SUBMIT"],
+          "title": "Trigger",
+          "type": "string"
+        },
+        "action": {
+          "enum": ["NAVIGATE", "SCROLL", "OPEN_MODAL", "SUBMIT_LEAD"],
+          "title": "Action",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        }
+      },
+      "required": ["trigger", "action"],
+      "title": "Interaction",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "language": {
+          "default": "en",
+          "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "required": ["name", "description"],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Page": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "slug": {
+          "pattern": "^(home|[a-z0-9]+(?:-[a-z0-9]+)*)$",
+          "title": "Slug",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "parent_page_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Page Id"
+        },
+        "sort_order": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Sort Order",
+          "type": "integer"
+        },
+        "is_home": {
+          "default": false,
+          "title": "Is Home",
+          "type": "boolean"
+        },
+        "show_in_navigation": {
+          "default": true,
+          "title": "Show In Navigation",
+          "type": "boolean"
+        },
+        "status": {
+          "default": "ACTIVE",
+          "enum": ["ACTIVE", "HIDDEN"],
+          "title": "Status",
+          "type": "string"
+        },
+        "seo": {
+          "$ref": "#/$defs/Seo"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 80,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        }
+      },
+      "required": ["id", "slug", "label", "seo", "components"],
+      "title": "Page",
+      "type": "object"
+    },
+    "Seo": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": ["title", "description"],
+      "title": "Seo",
+      "type": "object"
+    },
+    "Theme": {
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Primary",
+          "type": "string"
+        },
+        "accent": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Accent",
+          "type": "string"
+        },
+        "surface": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Surface",
+          "type": "string"
+        },
+        "ink": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Ink",
+          "type": "string"
+        },
+        "heading_font": {
+          "default": "MANROPE",
+          "enum": ["INTER", "MANROPE", "PLAYFAIR", "DM_SERIF"],
+          "title": "Heading Font",
+          "type": "string"
+        },
+        "body_font": {
+          "default": "INTER",
+          "enum": ["INTER", "MANROPE", "SOURCE_SANS"],
+          "title": "Body Font",
+          "type": "string"
+        }
+      },
+      "required": ["primary", "accent", "surface", "ink"],
+      "title": "Theme",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "registry_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Registry Version",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+    "theme": {
+      "$ref": "#/$defs/Theme"
+    },
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/AssetReference"
+      },
+      "maxItems": 100,
+      "title": "Assets",
+      "type": "array"
+    },
+    "pages": {
+      "items": {
+        "$ref": "#/$defs/Page"
+      },
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Pages",
+      "type": "array"
+    },
+    "features": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "title": "Features",
+      "type": "array"
+    },
+    "requirements": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "title": "Requirements",
+      "type": "array"
+    },
+    "provenance": {
+      "enum": ["CURATED", "LICENSED", "CUSTOM"],
+      "title": "Provenance",
+      "type": "string"
+    }
+  },
+  "required": ["metadata", "theme", "pages", "provenance"],
+  "title": "TemplateDocument",
+  "type": "object",
+  "$id": "https://schemas.zylora.com/template-document/1.0.0.json",
+  "x-zylora-schema-version": "1.0.0"
+}

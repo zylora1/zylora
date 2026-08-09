@@ -38,6 +38,8 @@ def main() -> None:
             '"/api/v1/admin/auth/login"',
             "/api/v1/chatbot",
             "/api/v1/leads",
+            "/api/v1/templates",
+            "Template Draft instantiation",
         ),
         "main.tf",
     )

@@ -1,0 +1,14 @@
+{
+  "name": "@zylora/template-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./registry": "./component-registry.json",
+    "./schema": "./template-document.schema.json"
+  },
+  "peerDependencies": {
+    "react": "19.2.8"
+  }
+}

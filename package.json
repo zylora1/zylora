@@ -12,6 +12,7 @@
     "packages/config",
     "packages/contracts",
     "packages/shared",
+    "packages/template-schema",
     "packages/ui"
   ],
   "scripts": {
@@ -33,15 +34,18 @@
     "test:e2e": "npm --workspace @zylora/web run test:e2e",
     "contracts:generate": "uv run python scripts/generate_openapi.py && openapi-typescript packages/contracts/openapi.json --output packages/contracts/src/api.generated.ts",
     "contracts:check": "npm run contracts:generate && git diff --exit-code -- packages/contracts/openapi.json packages/contracts/src/api.generated.ts",
+    "templates:generate": "uv run python scripts/generate_template_contracts.py && prettier --write packages/template-schema/template-document.schema.json packages/template-schema/component-registry.json",
+    "templates:check": "npm run templates:generate && git diff --exit-code -- packages/template-schema/template-document.schema.json packages/template-schema/component-registry.json",
     "infra:up": "docker compose -f infra/docker/compose.yml up -d --wait postgres redis minio mailpit",
     "infra:down": "docker compose -f infra/docker/compose.yml down",
     "migrate": "uv run --package zylora-api alembic -c apps/api/alembic.ini upgrade head",
     "migrate:check": "uv run python scripts/check_migrations.py",
     "security": "npm audit --audit-level=high && uv run pip-audit --local --skip-editable && uv run python scripts/check_forbidden_architecture.py && uv run python scripts/check_cloudflare_security.py",
-    "quality": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run contracts:check",
+    "quality": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run contracts:check && npm run templates:check",
     "dev:api": "uv run --package zylora-api uvicorn zylora_api.app:create_app --factory --reload --host 127.0.0.1 --port 8000",
     "dev:worker": "uv run --package zylora-worker celery -A zylora_worker.celery_app:celery_app worker --loglevel=INFO --pool=solo",
-    "bootstrap:super-admin": "uv run python scripts/bootstrap_super_admin.py"
+    "bootstrap:super-admin": "uv run python scripts/bootstrap_super_admin.py",
+    "seed:templates": "uv run python scripts/seed_template_catalog.py"
   },
   "devDependencies": {
     "openapi-typescript": "7.13.0",

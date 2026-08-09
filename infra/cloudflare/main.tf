@@ -124,6 +124,30 @@ resource "cloudflare_ruleset" "rate_limits" {
     },
     {
       action      = "block"
+      expression  = "http.request.method eq "POST" and starts_with(http.request.uri.path, "/api/v1/templates/") and ends_with(http.request.uri.path, "/instantiate")"
+      description = "Template Draft instantiation: 10 requests per minute"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 10
+        mitigation_timeout  = 600
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq "GET" and starts_with(http.request.uri.path, "/api/v1/templates")"
+      description = "Published Template catalogue and previews: 90 requests per minute"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 90
+        mitigation_timeout  = 60
+      }
+    },
+    {
+      action      = "block"
       expression  = "starts_with(http.request.uri.path, \"/api/v1/public/\")"
       description = "General public API ceiling: 120 requests per minute"
       enabled     = true

@@ -32,6 +32,16 @@ from zylora_api.db.auth_models import (
     User,
 )
 from zylora_api.db.base import Base
+from zylora_api.db.template_models import (
+    Template,
+    TemplateAsset,
+    TemplateCategory,
+    TemplateTag,
+    TemplateTagAssignment,
+    TemplateValidation,
+    TemplateVersion,
+)
+from zylora_api.db.website_models import Website, WebsitePage
 
 __all__ = [
     "AuditLog",
@@ -42,7 +52,16 @@ __all__ = [
     "PasswordReset",
     "Session",
     "SuperAdminProfile",
+    "Template",
+    "TemplateAsset",
+    "TemplateCategory",
+    "TemplateTag",
+    "TemplateTagAssignment",
+    "TemplateValidation",
+    "TemplateVersion",
     "User",
+    "Website",
+    "WebsitePage",
 ]
 
 
@@ -52,7 +71,6 @@ class OutboxEvent(Base):
         CheckConstraint("state IN ('PENDING','PUBLISHED','FAILED')", name="ck_outbox_events_state"),
         Index("ix_outbox_events_dispatch", "state", "available_at", "created_at"),
     )
-
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
     )
@@ -83,7 +101,6 @@ class JobRun(Base):
         ),
         Index("ix_job_runs_operations", "state", "queue", "created_at"),
     )
-
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
     )
@@ -109,7 +126,6 @@ class JobRun(Base):
 
 class PlatformMetadata(Base):
     __tablename__ = "platform_metadata"
-
     key: Mapped[str] = mapped_column(String(120), primary_key=True)
     value: Mapped[dict[str, Any]] = mapped_column(JSONB)
     version: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")

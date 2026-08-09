@@ -6,7 +6,7 @@ from zylora_api.db.models import JobRun, OutboxEvent, PlatformMetadata
 from zylora_api.db.session import get_session, normalize_async_database_url
 
 
-def test_foundation_metadata_contains_only_operational_tables_and_constraints() -> None:
+def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
     assert set(Base.metadata.tables) == {
         "audit_logs",
         "auth_attempts",
@@ -19,6 +19,15 @@ def test_foundation_metadata_contains_only_operational_tables_and_constraints() 
         "platform_metadata",
         "sessions",
         "super_admin_profiles",
+        "template_assets",
+        "template_categories",
+        "template_tag_assignments",
+        "template_tags",
+        "template_validations",
+        "template_versions",
+        "templates",
+        "website_pages",
+        "websites",
         "users",
     }
     assert OutboxEvent.__table__.c.id.server_default is not None
