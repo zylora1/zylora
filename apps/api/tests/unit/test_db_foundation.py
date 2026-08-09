@@ -7,7 +7,20 @@ from zylora_api.db.session import get_session, normalize_async_database_url
 
 
 def test_foundation_metadata_contains_only_operational_tables_and_constraints() -> None:
-    assert set(Base.metadata.tables) == {"outbox_events", "job_runs", "platform_metadata"}
+    assert set(Base.metadata.tables) == {
+        "audit_logs",
+        "auth_attempts",
+        "auth_identities",
+        "email_verifications",
+        "job_runs",
+        "oauth_transactions",
+        "outbox_events",
+        "password_resets",
+        "platform_metadata",
+        "sessions",
+        "super_admin_profiles",
+        "users",
+    }
     assert OutboxEvent.__table__.c.id.server_default is not None
     assert JobRun.__table__.c.idempotency_key.unique is True
     assert OutboxEvent.__table__.c.leased_until.nullable is True

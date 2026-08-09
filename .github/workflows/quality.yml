@@ -13,7 +13,7 @@ env:
   DATABASE_URL: postgresql+psycopg://zylora:zylora_test@localhost:5432/zylora_test
   REDIS_URL: redis://localhost:6379/0
   STORAGE_PROVIDER: memory
-  NEXT_PUBLIC_API_URL: http://localhost:8000
+  API_INTERNAL_URL: http://127.0.0.1:8000
   WEB_ORIGINS: http://localhost:3000
   TRUSTED_HOSTS: localhost,127.0.0.1,testserver
 
@@ -32,6 +32,12 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U zylora -d zylora_test" --health-interval 5s --health-timeout
           5s --health-retries 20
+      mailpit:
+        image: axllent/mailpit:v1.30.0
+        ports: ['1025:1025']
+        options: >-
+          --health-cmd "/mailpit readyz" --health-interval 5s --health-timeout 5s --health-retries
+          20
       redis:
         image: redis:8.2.2-alpine
         ports: ['6379:6379']
@@ -55,6 +61,9 @@ jobs:
       - run: npm ci
       - run: uv sync --all-packages --frozen
       - run: npm run migrate
+      - run: terraform -chdir=infra/cloudflare fmt -check
+      - run: terraform -chdir=infra/cloudflare init -backend=false
+      - run: terraform -chdir=infra/cloudflare validate
       - run: npm run quality
       - run: npm run test:integration
       - run: npm run security

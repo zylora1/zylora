@@ -115,6 +115,11 @@ budgets. Sensitive endpoints use progressive delay/temporary lock and adaptive c
 auth, resend, reset, OAuth callback, AI editing, chatbot, Lead submission, uploads, ZIP, Template search,
 domain verification, analytics ingestion, and public APIs receive distinct policies.
 
+Cloudflare Turnstile is the approved adaptive challenge for public authentication commands. Siteverify
+receives only the response token, visitor IP, random idempotency key, and server secret; Zylora validates
+exact hostname/action and fails closed. Cloudflare managed/OWASP WAF and per-route edge limits are
+versioned in Terraform. They complement PostgreSQL budgets and application authorization.
+
 Production must fail safely when authoritative rate-limit state is unavailable: expensive/sensitive
 commands may reject temporarily; public read traffic may use bounded local fallback. Limits return
 actionable cooldown without revealing whether an account exists.

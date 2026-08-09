@@ -1,25 +1,29 @@
-const foundations = [
-  'Next.js application boundary',
-  'FastAPI service contract',
-  'PostgreSQL migration path',
-  'Redis-backed worker transport',
-] as const;
+import { BrandMark } from '@/components/brand-mark';
 
-export default function FoundationPage() {
+export default function HomePage() {
   return (
-    <main className="foundation-shell">
-      <section aria-labelledby="foundation-title" className="foundation-panel">
-        <p className="eyebrow">Zylora V2 · Phase 1</p>
-        <h1 id="foundation-title">Platform foundation</h1>
-        <p className="summary">
-          This environment exposes the verified application boundaries. Product workflows begin in
-          their owning phases after this foundation passes its quality gates.
+    <main className="home-shell">
+      <nav className="home-nav">
+        <BrandMark />
+        <div className="home-actions">
+          <a className="text-link" href="/login">
+            Sign in
+          </a>
+          <a className="primary-link" href="/signup">
+            Create account
+          </a>
+        </div>
+      </nav>
+      <section className="home-hero">
+        <p className="eyebrow">Zylora · Websites with a point of view</p>
+        <h1>A considered home for what you do.</h1>
+        <p>
+          Begin with a thoughtful foundation, shape it in your own voice, and publish when it feels
+          right.
         </p>
-        <ul aria-label="Foundation components">
-          {foundations.map((foundation) => (
-            <li key={foundation}>{foundation}</li>
-          ))}
-        </ul>
+        <a className="primary-link" href="/signup">
+          Start with Zylora
+        </a>
       </section>
     </main>
   );

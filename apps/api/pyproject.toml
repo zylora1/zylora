@@ -9,8 +9,13 @@ description = "Canonical FastAPI service for Zylora V2"
 requires-python = ">=3.13,<3.14"
 dependencies = [
   "alembic==1.19.0",
+  "aiosmtplib==5.1.2",
+  "argon2-cffi==25.1.0",
+  "authlib==1.7.2",
   "boto3==1.43.67",
+  "email-validator==2.3.0",
   "fastapi==0.141.1",
+  "httpx==0.28.1",
   "pydantic==2.13.4",
   "pydantic-settings==2.15.0",
   "psycopg[binary]==3.3.4",

@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -12,6 +13,8 @@ from zylora_api.api.router import api_router
 from zylora_api.core.config import get_settings
 from zylora_api.core.correlation import CorrelationIdMiddleware
 from zylora_api.core.logging import configure_logging
+from zylora_api.core.problems import auth_problem_handler, validation_problem_handler
+from zylora_api.modules.auth.errors import AuthProblem
 
 
 @asynccontextmanager
@@ -29,10 +32,12 @@ def create_app() -> FastAPI:
         redoc_url=None,
         lifespan=lifespan,
     )
+    app.add_exception_handler(AuthProblem, auth_problem_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RequestValidationError, validation_problem_handler)  # type: ignore[arg-type]
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=list(settings.allowed_origins),
+        allow_origins=[*settings.allowed_origins, settings.admin_origin],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "X-CSRF-Token", "X-Correlation-ID", "Idempotency-Key"],

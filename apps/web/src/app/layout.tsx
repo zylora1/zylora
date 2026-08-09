@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Zylora V2 Platform Foundation',
-  description: 'The production platform foundation for Zylora V2.',
+  title: 'Zylora · Your website, thoughtfully made',
+  description: 'Create and manage your Zylora website.',
   robots: { index: false, follow: false },
 };
 

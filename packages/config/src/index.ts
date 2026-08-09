@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const publicWebConfigSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.url(),
+  API_INTERNAL_URL: z.url(),
 });
 
 export type PublicWebConfig = z.infer<typeof publicWebConfigSchema>;

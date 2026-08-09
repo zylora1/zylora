@@ -20,7 +20,30 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
+from zylora_api.db.auth_models import (
+    AuditLog,
+    AuthAttempt,
+    AuthIdentity,
+    EmailVerification,
+    OAuthTransaction,
+    PasswordReset,
+    Session,
+    SuperAdminProfile,
+    User,
+)
 from zylora_api.db.base import Base
+
+__all__ = [
+    "AuditLog",
+    "AuthAttempt",
+    "AuthIdentity",
+    "EmailVerification",
+    "OAuthTransaction",
+    "PasswordReset",
+    "Session",
+    "SuperAdminProfile",
+    "User",
+]
 
 
 class OutboxEvent(Base):

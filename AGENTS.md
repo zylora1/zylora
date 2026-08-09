@@ -83,6 +83,7 @@ Development (separate terminals):
 npm run dev:web
 npm run dev:api
 npm run dev:worker
+npm run bootstrap:super-admin
 ```
 
 Quality and delivery gates:

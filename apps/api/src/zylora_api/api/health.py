@@ -33,6 +33,23 @@ class DatabaseProbe:
             return False
 
 
+class IdentityReadinessProbe:
+    def __init__(self, engine: AsyncEngine) -> None:
+        self._engine = engine
+
+    async def check(self) -> bool:
+        statement = text(
+            "SELECT count(*) = 1 FROM users u "
+            "JOIN super_admin_profiles p ON p.user_id = u.id "
+            "WHERE u.account_type = 'SUPER_ADMIN' AND u.status = 'ACTIVE'"
+        )
+        try:
+            async with self._engine.connect() as connection:
+                return bool(await connection.scalar(statement))
+        except Exception:
+            return False
+
+
 class RedisProbe:
     def __init__(self, url: str) -> None:
         self._url = url
@@ -51,6 +68,7 @@ class RedisProbe:
 class ReadinessService:
     database: Probe
     redis: Probe
+    identity: Probe | None = None
 
     async def evaluate(self) -> tuple[str, dict[str, str]]:
         database_ready = await self.database.check()
@@ -59,6 +77,11 @@ class ReadinessService:
             "database": "ready" if database_ready else "not_ready",
             "redis": "ready" if redis_ready else "degraded",
         }
+        if self.identity is not None:
+            identity_ready = await self.identity.check()
+            checks["identity"] = "ready" if identity_ready else "not_ready"
+            if not identity_ready:
+                return "not_ready", checks
         if not database_ready:
             return "not_ready", checks
         if not redis_ready:
@@ -78,7 +101,10 @@ class HealthResponse(BaseModel):
 def get_readiness_service(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> ReadinessService:
-    return ReadinessService(DatabaseProbe(get_engine()), RedisProbe(settings.redis_url))
+    identity = (
+        IdentityReadinessProbe(get_engine()) if settings.environment == "production" else None
+    )
+    return ReadinessService(DatabaseProbe(get_engine()), RedisProbe(settings.redis_url), identity)
 
 
 @router.get("/liveness", response_model=HealthResponse, operation_id="getLiveness")

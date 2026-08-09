@@ -12,7 +12,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--run-integration",
         action="store_true",
         default=False,
-        help="run tests that require PostgreSQL and Redis",
+        help="run tests that require PostgreSQL, Redis, and SMTP",
     )
 
 

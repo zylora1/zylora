@@ -34,6 +34,11 @@ exports/
 *.db
 *.sqlite*
 *.log
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!.tfvars.example
 
 # Editors and operating systems
 .idea/

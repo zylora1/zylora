@@ -33,6 +33,17 @@ services:
       retries: 20
     restart: unless-stopped
 
+  mailpit:
+    image: axllent/mailpit:v1.30.0
+    environment:
+      MP_MAX_MESSAGES: '500'
+      MP_SMTP_AUTH_ACCEPT_ANY: '1'
+      MP_SMTP_AUTH_ALLOW_INSECURE: '1'
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    restart: unless-stopped
+
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     command: ['server', '/data', '--console-address', ':9001']

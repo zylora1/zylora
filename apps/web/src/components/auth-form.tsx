@@ -1,0 +1,246 @@
+'use client';
+
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import type { FormEvent } from 'react';
+
+import { TurnstileWidget } from '@/components/turnstile-widget';
+import type { TurnstileAction } from '@/components/turnstile-widget';
+import { apiRequest } from '@/lib/api';
+
+type Mode = 'login' | 'signup' | 'verify' | 'forgot' | 'reset' | 'admin-login';
+type AuthResult = { csrf_token: string; user: { email: string } };
+
+const challengeActions: Record<Mode, TurnstileAction> = {
+  login: 'login',
+  signup: 'signup',
+  verify: 'verify_email',
+  forgot: 'password_recovery',
+  reset: 'password_recovery',
+  'admin-login': 'admin_login',
+};
+
+const copy: Record<Mode, { endpoint: string; submit: string; busy: string }> = {
+  login: { endpoint: '/api/v1/auth/login', submit: 'Sign in', busy: 'Signing in...' },
+  signup: { endpoint: '/api/v1/auth/signup', submit: 'Create account', busy: 'Creating...' },
+  verify: { endpoint: '/api/v1/auth/verify-email', submit: 'Verify email', busy: 'Verifying...' },
+  forgot: {
+    endpoint: '/api/v1/auth/password-reset/request',
+    submit: 'Send reset link',
+    busy: 'Sending...',
+  },
+  reset: {
+    endpoint: '/api/v1/auth/password-reset/confirm',
+    submit: 'Set new password',
+    busy: 'Updating...',
+  },
+  'admin-login': {
+    endpoint: '/api/v1/admin/auth/login',
+    submit: 'Enter administration',
+    busy: 'Checking access...',
+  },
+};
+
+export function AuthForm({ mode }: { mode: Mode }) {
+  const router = useRouter();
+  const search = useSearchParams();
+  const [email, setEmail] = useState(search.get('email') ?? '');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(
+    search.get('oauth_error') ? 'Google sign-in could not be completed. Please try again.' : '',
+  );
+  const [notice, setNotice] = useState('');
+  const [pending, setPending] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [challengeRequired, setChallengeRequired] = useState<boolean | null>(null);
+  const [challengeResetKey, setChallengeResetKey] = useState(0);
+  const asksEmail = mode !== 'reset';
+  const asksPassword = ['login', 'signup', 'reset', 'admin-login'].includes(mode);
+  const challengeReady = challengeRequired === false || Boolean(turnstileToken);
+  const acceptToken = useCallback((token: string | null) => setTurnstileToken(token), []);
+  const setRequirement = useCallback((required: boolean) => setChallengeRequired(required), []);
+  const setChallengeError = useCallback((message: string) => setError(message), []);
+  const resetChallenge = useCallback(() => {
+    setTurnstileToken(null);
+    setChallengeResetKey((current) => current + 1);
+  }, []);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setNotice('');
+    setPending(true);
+    try {
+      const challenge = { turnstile_token: turnstileToken ?? undefined };
+      const body =
+        mode === 'verify'
+          ? { email, code, ...challenge }
+          : mode === 'reset'
+            ? { token: search.get('token') ?? '', new_password: password, ...challenge }
+            : { email, ...(asksPassword ? { password } : {}), ...challenge };
+      const result = await apiRequest<AuthResult>(copy[mode].endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      if (mode === 'login') router.push('/app');
+      else if (mode === 'admin-login') router.push('/admin');
+      else if (mode === 'signup') router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      else if (mode === 'verify' || mode === 'reset') router.push('/login');
+      else setNotice('If that account exists, a secure reset link is on its way.');
+      void result;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'We could not complete that request.');
+    } finally {
+      resetChallenge();
+      setPending(false);
+    }
+  }
+
+  async function googleSignIn() {
+    setError('');
+    setPending(true);
+    try {
+      const result = await apiRequest<{ authorization_url: string }>('/api/v1/auth/google/start', {
+        method: 'POST',
+        body: JSON.stringify({ turnstile_token: turnstileToken ?? undefined }),
+      });
+      window.location.assign(result.authorization_url);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Google sign-in is unavailable.');
+      resetChallenge();
+      setPending(false);
+    }
+  }
+
+  async function resend() {
+    setError('');
+    try {
+      await apiRequest('/api/v1/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email, turnstile_token: turnstileToken ?? undefined }),
+      });
+      setNotice('A fresh code is on its way. Earlier codes will no longer work.');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'A new code could not be sent.');
+    } finally {
+      resetChallenge();
+    }
+  }
+
+  return (
+    <>
+      {mode === 'login' ? (
+        <button
+          className="google-button"
+          type="button"
+          onClick={googleSignIn}
+          disabled={pending || !challengeReady}
+        >
+          <span aria-hidden="true" className="google-glyph">
+            G
+          </span>
+          Continue with Google
+        </button>
+      ) : null}
+      {mode === 'login' ? <div className="divider">or use your email</div> : null}
+      <form className="auth-form" onSubmit={submit}>
+        {asksEmail ? (
+          <label>
+            Email address
+            <input
+              autoComplete="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </label>
+        ) : null}
+        {mode === 'verify' ? (
+          <label>
+            Six-digit code
+            <input
+              autoComplete="one-time-code"
+              className="code-input"
+              inputMode="numeric"
+              maxLength={6}
+              name="code"
+              pattern="[0-9]{6}"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))}
+              required
+            />
+          </label>
+        ) : null}
+        {asksPassword ? (
+          <label>
+            {mode === 'reset' ? 'New password' : 'Password'}
+            <input
+              autoComplete={
+                mode === 'signup' || mode === 'reset' ? 'new-password' : 'current-password'
+              }
+              minLength={mode === 'signup' || mode === 'reset' ? 12 : 1}
+              name="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+            {mode === 'signup' || mode === 'reset' ? (
+              <span className="field-hint">
+                12+ characters with upper, lower, number, and symbol.
+              </span>
+            ) : null}
+          </label>
+        ) : null}
+        <TurnstileWidget
+          action={challengeActions[mode]}
+          resetKey={challengeResetKey}
+          onToken={acceptToken}
+          onRequirementChange={setRequirement}
+          onError={setChallengeError}
+        />
+        {error ? (
+          <p className="form-message form-message--error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {notice ? (
+          <p className="form-message form-message--success" role="status">
+            {notice}
+          </p>
+        ) : null}
+        <button className="primary-button" type="submit" disabled={pending || !challengeReady}>
+          {pending ? copy[mode].busy : copy[mode].submit}
+        </button>
+      </form>
+      {mode === 'verify' ? (
+        <button className="text-button" type="button" onClick={resend} disabled={!challengeReady}>
+          Send a new code
+        </button>
+      ) : null}
+      <AuthLinks mode={mode} />
+    </>
+  );
+}
+
+function AuthLinks({ mode }: { mode: Mode }) {
+  if (mode === 'admin-login') return <p className="auth-footnote">Authorized operators only.</p>;
+  if (mode === 'login') {
+    return (
+      <div className="auth-links">
+        <a href="/forgot-password">Forgot password?</a>
+        <span>
+          New here? <a href="/signup">Create an account</a>
+        </span>
+      </div>
+    );
+  }
+  return (
+    <p className="auth-footnote">
+      Already have an account? <a href="/login">Sign in</a>
+    </p>
+  );
+}

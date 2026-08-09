@@ -1,6 +1,10 @@
 # Local development
 
-Status: **Phase 1 executable foundation**
+Status: **Phase 2 complete authentication foundation**
+
+Cloudflare Turnstile and WAF are the approved abuse boundary. `.env.example` uses Cloudflare's
+documented public test keys for local validation; production rejects those keys. Local email/password,
+Google adapter configuration, sessions, throttling, audit, and User/Admin surfaces are executable.
 
 ## Prerequisites
 
@@ -23,7 +27,39 @@ npm run migrate
 ```
 
 The example environment contains development-only credentials. Production startup rejects local
-endpoints, development credentials, disabled object storage, and non-HTTPS origins.
+endpoints, development credentials, disabled object storage, insecure cookies/origins, missing Google
+OIDC credentials, and missing SMTP delivery.
+
+Compose starts PostgreSQL, Redis, MinIO, and Mailpit. Mailpit accepts SMTP on `localhost:1025` and its
+local inbox is available at `http://localhost:8025`.
+
+## Authentication configuration
+
+Email/password delivery uses the configured SMTP server; it never reports a fake delivery success.
+The local `.env.example` points at Mailpit. `API_INTERNAL_URL` is server-only; browsers call the
+same-origin `/api/v1` proxy so User and Admin cookies remain host-only. For Google sign-in,
+register the exact callback
+`http://localhost:3000/api/v1/auth/google/callback`, then set `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` in the uncommitted `.env` file.
+
+`TRUSTED_PROXY_IPS` is empty by default. Add only immediate reverse-proxy IP addresses that sanitize
+`X-Forwarded-For`; client-supplied forwarding headers are otherwise ignored.
+
+Bootstrap the one Super Admin exactly once after migration:
+
+```powershell
+$env:ZYLORA_BOOTSTRAP_ADMIN_EMAIL='admin@example.com'
+$env:ZYLORA_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-unique-password'
+$env:ZYLORA_BOOTSTRAP_ADMIN_NAME='Zylora Super Admin'
+npm run bootstrap:super-admin
+Remove-Item Env:ZYLORA_BOOTSTRAP_ADMIN_EMAIL
+Remove-Item Env:ZYLORA_BOOTSTRAP_ADMIN_PASSWORD
+Remove-Item Env:ZYLORA_BOOTSTRAP_ADMIN_NAME
+```
+
+The command refuses to run when a Super Admin already exists or the email is already owned. Never put
+bootstrap credentials in `.env.example`, source control, shell scripts, or command arguments.
+Production readiness requires exactly one active `SUPER_ADMIN` with a Super Admin profile.
 
 ## Run the application boundaries
 
@@ -35,9 +71,9 @@ npm run dev:api
 npm run dev:worker
 ```
 
-Web runs on `http://localhost:3000`, API on `http://127.0.0.1:8000`, and the local Celery worker uses
-the cross-platform solo pool. The solo pool is a local-development choice, not a production worker
-topology.
+Web runs on `http://localhost:3000`, the isolated Admin host is
+`http://admin.localhost:3000`, and API runs on `http://127.0.0.1:8000`. The local Celery worker uses
+the cross-platform solo pool; that is a development choice, not a production worker topology.
 
 Operational endpoints:
 
@@ -63,9 +99,10 @@ npm run contracts:check
 npm run migrate:check
 ```
 
+`npm run test` includes Web tests and the branch-aware Python unit/integration coverage suite. Healthy
+PostgreSQL, Redis, and Mailpit services plus the applied migration are therefore required.
 `npm run test:e2e` starts the previously built production Web server on port `3100`; run
-`npm run build:web` first. Integration tests require healthy PostgreSQL and Redis services and an
-applied migration. `npm run security` audits npm and third-party Python dependencies and scans
+`npm run build:web` first. `npm run security` audits npm and third-party Python dependencies and scans
 maintained source for deleted architecture and required-functionality placeholders.
 
 ## Database migration round-trip
@@ -86,5 +123,5 @@ Never run a downgrade against shared staging or production data without an appro
 npm run infra:down
 ```
 
-Compose preserves named PostgreSQL, Redis, and MinIO volumes. Remove volumes only as an explicit,
-separately approved destructive action.
+Compose preserves named PostgreSQL, Redis, MinIO, and Mailpit volumes. Remove volumes only as an
+explicit, separately approved destructive action.

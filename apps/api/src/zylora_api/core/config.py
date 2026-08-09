@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Literal, Self
+from urllib.parse import urlparse
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,7 +27,30 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://zylora:zylora_dev_only@localhost:5432/zylora"
     redis_url: str = "redis://localhost:6379/0"
     web_origins: str = "http://localhost:3000"
-    trusted_hosts: str = "localhost,127.0.0.1,testserver"
+    admin_origin: str = "http://admin.localhost:3000"
+    trusted_hosts: str = "localhost,127.0.0.1,testserver,admin.localhost"
+    trusted_proxy_ips: str = ""
+
+    auth_secret: str = "zylora_development_auth_secret_change_me"  # noqa: S105
+    cookie_secure: bool = False
+    user_session_minutes: int = 60 * 24 * 30
+    admin_session_minutes: int = 30
+    verification_minutes: int = 15
+    password_reset_minutes: int = 15
+    turnstile_enabled: bool = False
+    turnstile_site_key: str | None = None
+    turnstile_secret_key: str | None = None
+    turnstile_allowed_hostnames: str = "localhost,admin.localhost,testserver"
+    turnstile_timeout_seconds: float = 5.0
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_start_tls: bool = True
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str = "no-reply@zylora.local"
 
     storage_provider: StorageProvider = "disabled"
     s3_endpoint_url: str | None = None
@@ -47,8 +71,23 @@ class Settings(BaseSettings):
     def allowed_hosts(self) -> tuple[str, ...]:
         return tuple(value.strip() for value in self.trusted_hosts.split(",") if value.strip())
 
+    @property
+    def trusted_proxy_addresses(self) -> tuple[str, ...]:
+        return tuple(value.strip() for value in self.trusted_proxy_ips.split(",") if value.strip())
+
+    @property
+    def turnstile_allowed_hostname_values(self) -> tuple[str, ...]:
+        return tuple(
+            value.strip().casefold()
+            for value in self.turnstile_allowed_hostnames.split(",")
+            if value.strip()
+        )
+
     @model_validator(mode="after")
     def validate_environment_safety(self) -> Self:
+        if not 1 <= self.turnstile_timeout_seconds <= 10:
+            raise ValueError("Turnstile timeout must be between 1 and 10 seconds")
+
         if self.storage_provider == "memory" and self.environment != "test":
             raise ValueError("memory object storage is permitted only in the test environment")
 
@@ -70,7 +109,10 @@ class Settings(BaseSettings):
                 self.database_url,
                 self.redis_url,
                 self.web_origins,
+                self.admin_origin,
                 self.trusted_hosts,
+                self.auth_secret,
+                self.google_redirect_uri,
                 self.s3_access_key or "",
                 self.s3_secret_key or "",
             )
@@ -82,6 +124,54 @@ class Settings(BaseSettings):
                 origin.startswith("https://") for origin in self.allowed_origins
             ):
                 raise ValueError("production web origins must be explicit HTTPS origins")
+            if not self.admin_origin.startswith("https://"):
+                raise ValueError("production admin origin must be an explicit HTTPS origin")
+            if len(self.auth_secret) < 32:
+                raise ValueError("production auth secret must contain at least 32 characters")
+            if not self.cookie_secure:
+                raise ValueError("production authentication cookies must be secure")
+            if not self.google_client_id or not self.google_client_secret:
+                raise ValueError("production Google OAuth credentials must be configured")
+            allowed_callbacks = {
+                f"{origin.rstrip('/')}/api/v1/auth/google/callback"
+                for origin in self.allowed_origins
+            }
+            if self.google_redirect_uri not in allowed_callbacks:
+                raise ValueError("production Google redirect URI must use an exact User Web origin")
+            if not self.smtp_host:
+                raise ValueError("production SMTP delivery must be configured")
+            if (
+                not self.turnstile_enabled
+                or not self.turnstile_site_key
+                or not self.turnstile_secret_key
+            ):
+                raise ValueError("production Turnstile verification must be configured")
+            test_site_keys = {
+                "1x00000000000000000000AA",
+                "2x00000000000000000000AB",
+                "1x00000000000000000000BB",
+                "2x00000000000000000000BB",
+                "3x00000000000000000000FF",
+            }
+            test_secret_keys = {
+                "1x0000000000000000000000000000000AA",
+                "2x0000000000000000000000000000000AA",
+                "3x0000000000000000000000000000000AA",
+            }
+            if (
+                self.turnstile_site_key in test_site_keys
+                or self.turnstile_secret_key in test_secret_keys
+            ):
+                raise ValueError("production Turnstile keys cannot use Cloudflare test values")
+            expected_turnstile_hosts = {
+                hostname
+                for origin in (*self.allowed_origins, self.admin_origin)
+                if (hostname := urlparse(origin).hostname) is not None
+            }
+            if set(self.turnstile_allowed_hostname_values) != expected_turnstile_hosts:
+                raise ValueError(
+                    "production Turnstile hostnames must exactly match User and Admin origins"
+                )
 
         return self
 
