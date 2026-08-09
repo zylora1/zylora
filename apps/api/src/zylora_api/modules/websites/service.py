@@ -9,7 +9,12 @@ from uuid import UUID, uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.template_models import Template, TemplateVersion
-from zylora_api.db.website_models import Website, WebsitePage, WebsitePagePathChange
+from zylora_api.db.website_models import (
+    Website,
+    WebsiteOwnership,
+    WebsitePage,
+    WebsitePagePathChange,
+)
 from zylora_api.modules.templates.service import problem
 from zylora_api.modules.websites.schemas import PageCreateRequest, PageUpdateRequest
 
@@ -187,6 +192,13 @@ class WebsiteService:
         )
         self.session.add(website)
         await self.session.flush()
+        self.session.add(
+            WebsiteOwnership(
+                website_id=website.id,
+                owner_user_id=owner_user_id,
+                acquisition_reason="TEMPLATE_CREATION",
+            )
+        )
         template_pages = list(version.document.get("pages", []))
         id_map = {str(page["id"]): uuid4() for page in template_pages}
         source_pages: dict[str, dict[str, object]] = {

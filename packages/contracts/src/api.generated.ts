@@ -447,6 +447,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billing/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscription */
+        get: operations["subscription_api_v1_billing_subscription_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscription/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Subscription */
+        post: operations["cancel_subscription_api_v1_billing_subscription_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscription/checkouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Checkout */
+        post: operations["checkout_api_v1_billing_subscription_checkouts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plans */
+        get: operations["plans_api_v1_plans_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/templates": {
         parameters: {
             query?: never;
@@ -669,6 +737,74 @@ export interface paths {
         patch: operations["update_page_api_v1_websites__website_id__pages__page_id__patch"];
         trace?: never;
     };
+    "/api/v1/websites/{website_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish */
+        post: operations["publish_api_v1_websites__website_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/publish-evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Publish Evaluation */
+        get: operations["publish_evaluation_api_v1_websites__website_id__publish_evaluation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transfer */
+        post: operations["transfer_api_v1_websites__website_id__transfers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unpublish */
+        post: operations["unpublish_api_v1_websites__website_id__unpublish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/liveness": {
         parameters: {
             query?: never;
@@ -871,6 +1007,22 @@ export interface components {
             csrf_token: string;
             user: components["schemas"]["UserResponse"];
         };
+        /** CancelSubscriptionResponse */
+        CancelSubscriptionResponse: {
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /**
+             * Current Period End
+             * Format: date-time
+             */
+            current_period_end: string;
+            /** Message */
+            message: string;
+            /** Plan Code */
+            plan_code: string;
+            /** State */
+            state: string;
+        };
         /** CatalogResponse */
         CatalogResponse: {
             /** Items */
@@ -884,6 +1036,29 @@ export interface components {
             enabled: boolean;
             /** Site Key */
             site_key: string | null;
+        };
+        /** CheckoutRequest */
+        CheckoutRequest: {
+            /**
+             * Plan Id
+             * Format: uuid
+             */
+            plan_id: string;
+        };
+        /** CheckoutResponse */
+        CheckoutResponse: {
+            /** Detail */
+            detail: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            price: components["schemas"]["MoneyResponse"];
+            /** Provider Available */
+            provider_available: boolean;
+            /** Status */
+            status: string;
         };
         /** CreditResponse */
         CreditResponse: {
@@ -957,6 +1132,17 @@ export interface components {
              * Format: uuid
              */
             website_id: string;
+        };
+        /** EligibilityReasonResponse */
+        EligibilityReasonResponse: {
+            /** Allowed */
+            allowed?: number | string | boolean | null;
+            /** Code */
+            code: string;
+            /** Current */
+            current?: number | string | boolean | null;
+            /** Detail */
+            detail: string;
         };
         /** EmailRequest */
         EmailRequest: {
@@ -1064,6 +1250,16 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /** MoneyResponse */
+        MoneyResponse: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Currency
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+        };
         /** MoveComponent */
         MoveComponent: {
             /** Component Id */
@@ -1124,6 +1320,44 @@ export interface components {
         OAuthStartResponse: {
             /** Authorization Url */
             authorization_url: string;
+        };
+        /** OwnershipTransferRequest */
+        OwnershipTransferRequest: {
+            /**
+             * Recipient Email
+             * Format: email
+             */
+            recipient_email: string;
+        };
+        /** OwnershipTransferResponse */
+        OwnershipTransferResponse: {
+            /**
+             * Completed At
+             * Format: date-time
+             */
+            completed_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Recipient User Id
+             * Format: uuid
+             */
+            recipient_user_id: string;
+            /**
+             * Sender User Id
+             * Format: uuid
+             */
+            sender_user_id: string;
+            /** Status */
+            status: string;
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
         };
         /** PageCreateRequest */
         PageCreateRequest: {
@@ -1207,6 +1441,69 @@ export interface components {
             /** Turnstile Token */
             turnstile_token?: string | null;
         };
+        /** PlanEligibilityResponse */
+        PlanEligibilityResponse: {
+            /** Eligible */
+            eligible: boolean;
+            /** Is Current Plan */
+            is_current_plan: boolean;
+            plan: components["schemas"]["PlanResponse"];
+            /** Reasons */
+            reasons: components["schemas"]["EligibilityReasonResponse"][];
+        };
+        /** PlanListResponse */
+        PlanListResponse: {
+            /** Country Code */
+            country_code: string;
+            /**
+             * Currency
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+            /**
+             * Interval
+             * @constant
+             */
+            interval: "MONTHLY";
+            /** Items */
+            items: components["schemas"]["PlanResponse"][];
+            /**
+             * Region
+             * @enum {string}
+             */
+            region: "INDIA" | "INTERNATIONAL";
+        };
+        /** PlanResponse */
+        PlanResponse: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "FREE" | "BASIC" | "GROWTH" | "BUSINESS";
+            /** Description */
+            description: string;
+            /** Entitlements */
+            entitlements: {
+                [key: string]: boolean | number | string;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Interval
+             * @constant
+             */
+            interval: "MONTHLY";
+            /** Most Popular */
+            most_popular: boolean;
+            /** Name */
+            name: string;
+            price: components["schemas"]["MoneyResponse"];
+            /** Slot */
+            slot: number;
+        };
         /** PreviewResponse */
         PreviewResponse: {
             /** Checksum */
@@ -1221,6 +1518,64 @@ export interface components {
             slug: string;
             /** Version */
             version: number;
+        };
+        /** PublishCommandResponse */
+        PublishCommandResponse: {
+            /** Message */
+            message: string;
+            /** Plan Code */
+            plan_code: string;
+            /** Reused Existing Subscription */
+            reused_existing_subscription: boolean;
+            /**
+             * Status
+             * @constant
+             */
+            status: "PUBLISHING";
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
+        };
+        /** PublishEvaluationResponse */
+        PublishEvaluationResponse: {
+            /** Can Request Publish */
+            can_request_publish: boolean;
+            /** Current Plan Code */
+            current_plan_code: string;
+            /**
+             * Domain Type
+             * @enum {string}
+             */
+            domain_type: "ZYLORA_SUBDOMAIN" | "CUSTOM";
+            /** Page Count */
+            page_count: number;
+            /** Plans */
+            plans: components["schemas"]["PlanEligibilityResponse"][];
+            /** Recommended Plan Code */
+            recommended_plan_code: string | null;
+            /** Reuse Existing Subscription */
+            reuse_existing_subscription: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ELIGIBLE" | "UPGRADE_REQUIRED" | "INELIGIBLE";
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
+        };
+        /** PublishRequest */
+        PublishRequest: {
+            /**
+             * Domain Type
+             * @default ZYLORA_SUBDOMAIN
+             * @enum {string}
+             */
+            domain_type: "ZYLORA_SUBDOMAIN" | "CUSTOM";
         };
         /** ReasonRequest */
         ReasonRequest: {
@@ -1396,6 +1751,37 @@ export interface components {
             /** Turnstile Token */
             turnstile_token?: string | null;
         };
+        /** SubscriptionResponse */
+        SubscriptionResponse: {
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /**
+             * Current Period End
+             * Format: date-time
+             */
+            current_period_end: string;
+            /**
+             * Current Period Start
+             * Format: date-time
+             */
+            current_period_start: string;
+            /** Entitlements */
+            entitlements: {
+                [key: string]: boolean | number | string;
+            };
+            /**
+             * Interval
+             * @constant
+             */
+            interval: "MONTHLY";
+            /** Is Paid */
+            is_paid: boolean;
+            /** Plan Code */
+            plan_code: string;
+            price: components["schemas"]["MoneyResponse"];
+            /** State */
+            state: string;
+        };
         /** TemplateCreateRequest */
         TemplateCreateRequest: {
             /** Category Description */
@@ -1448,6 +1834,18 @@ export interface components {
             tags: string[];
             /** Version */
             version: number;
+        };
+        /** UnpublishCommandResponse */
+        UnpublishCommandResponse: {
+            /** Message */
+            message: string;
+            /** Status */
+            status: string;
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
         };
         /** UserResponse */
         UserResponse: {
@@ -2430,6 +2828,101 @@ export interface operations {
             };
         };
     };
+    subscription_api_v1_billing_subscription_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionResponse"];
+                };
+            };
+        };
+    };
+    cancel_subscription_api_v1_billing_subscription_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancelSubscriptionResponse"];
+                };
+            };
+        };
+    };
+    checkout_api_v1_billing_subscription_checkouts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plans_api_v1_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanListResponse"];
+                };
+            };
+        };
+    };
     catalog_api_v1_templates_get: {
         parameters: {
             query?: {
@@ -2878,6 +3371,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_api_v1_websites__website_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishCommandResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_evaluation_api_v1_websites__website_id__publish_evaluation_get: {
+        parameters: {
+            query?: {
+                domain_type?: string;
+            };
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishEvaluationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transfer_api_v1_websites__website_id__transfers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnershipTransferRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnershipTransferResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unpublish_api_v1_websites__website_id__unpublish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnpublishCommandResponse"];
                 };
             };
             /** @description Validation Error */

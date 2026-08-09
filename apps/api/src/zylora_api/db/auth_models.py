@@ -36,6 +36,7 @@ class User(Base):
         CheckConstraint(
             "status <> 'ACTIVE' OR verified_at IS NOT NULL", name="ck_users_active_verified"
         ),
+        CheckConstraint("billing_country_code ~ '^[A-Z]{2}$'", name="ck_users_billing_country"),
         Index(
             "uq_users_one_super_admin",
             text("(account_type = 'SUPER_ADMIN')"),
@@ -58,6 +59,7 @@ class User(Base):
     auth_epoch: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     locale: Mapped[str] = mapped_column(String(20), default="en", server_default="en")
     timezone: Mapped[str] = mapped_column(String(80), default="UTC", server_default="UTC")
+    billing_country_code: Mapped[str] = mapped_column(String(2), default="ZZ", server_default="ZZ")
     version: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

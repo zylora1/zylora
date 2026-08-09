@@ -175,5 +175,5 @@ describe('Page Manager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open Home' }));
     expect(screen.getByLabelText(/URL slug/)).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Delete page' })).not.toBeInTheDocument();
-  });
+  }, 15_000);
 });

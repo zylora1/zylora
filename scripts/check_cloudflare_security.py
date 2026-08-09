@@ -41,6 +41,10 @@ def main() -> None:
             "/api/v1/templates",
             "/editor/ai-edits",
             "Template Draft instantiation",
+            "/api/v1/billing/subscription/checkouts",
+            "/api/v1/websites/",
+            "/publish",
+            "/transfers",
         ),
         "main.tf",
     )

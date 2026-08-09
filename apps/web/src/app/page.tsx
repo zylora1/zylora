@@ -6,6 +6,9 @@ export default function HomePage() {
       <nav className="home-nav">
         <BrandMark />
         <div className="home-actions">
+          <a className="text-link" href="/pricing">
+            Pricing
+          </a>
           <a className="text-link" href="/login">
             Sign in
           </a>

@@ -387,6 +387,41 @@
         "title": "AuthenticatedResponse",
         "type": "object"
       },
+      "CancelSubscriptionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cancel_at_period_end": {
+            "title": "Cancel At Period End",
+            "type": "boolean"
+          },
+          "current_period_end": {
+            "format": "date-time",
+            "title": "Current Period End",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_code",
+          "state",
+          "cancel_at_period_end",
+          "current_period_end",
+          "message"
+        ],
+        "title": "CancelSubscriptionResponse",
+        "type": "object"
+      },
       "CatalogResponse": {
         "additionalProperties": false,
         "properties": {
@@ -439,6 +474,55 @@
           "site_key"
         ],
         "title": "ChallengeConfigResponse",
+        "type": "object"
+      },
+      "CheckoutRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "plan_id": {
+            "format": "uuid",
+            "title": "Plan Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_id"
+        ],
+        "title": "CheckoutRequest",
+        "type": "object"
+      },
+      "CheckoutResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "payment_id": {
+            "format": "uuid",
+            "title": "Payment Id",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "provider_available": {
+            "title": "Provider Available",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_id",
+          "status",
+          "price",
+          "provider_available",
+          "detail"
+        ],
+        "title": "CheckoutResponse",
         "type": "object"
       },
       "CreditResponse": {
@@ -592,6 +676,59 @@
           "credits"
         ],
         "title": "EditorStateResponse",
+        "type": "object"
+      },
+      "EligibilityReasonResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "detail"
+        ],
+        "title": "EligibilityReasonResponse",
         "type": "object"
       },
       "EmailRequest": {
@@ -889,6 +1026,30 @@
         "title": "ManualEditRequest",
         "type": "object"
       },
+      "MoneyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "minimum": 0.0,
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "currency": {
+            "enum": [
+              "INR",
+              "USD"
+            ],
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "currency"
+        ],
+        "title": "MoneyResponse",
+        "type": "object"
+      },
       "MoveComponent": {
         "additionalProperties": false,
         "properties": {
@@ -1027,6 +1188,65 @@
           "authorization_url"
         ],
         "title": "OAuthStartResponse",
+        "type": "object"
+      },
+      "OwnershipTransferRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "recipient_email": {
+            "format": "email",
+            "title": "Recipient Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipient_email"
+        ],
+        "title": "OwnershipTransferRequest",
+        "type": "object"
+      },
+      "OwnershipTransferResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "recipient_user_id": {
+            "format": "uuid",
+            "title": "Recipient User Id",
+            "type": "string"
+          },
+          "sender_user_id": {
+            "format": "uuid",
+            "title": "Sender User Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "website_id",
+          "sender_user_id",
+          "recipient_user_id",
+          "status",
+          "completed_at"
+        ],
+        "title": "OwnershipTransferResponse",
         "type": "object"
       },
       "PageCreateRequest": {
@@ -1272,6 +1492,161 @@
         "title": "PasswordResetConfirmRequest",
         "type": "object"
       },
+      "PlanEligibilityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "is_current_plan": {
+            "title": "Is Current Plan",
+            "type": "boolean"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanResponse"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/EligibilityReasonResponse"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "plan",
+          "eligible",
+          "reasons",
+          "is_current_plan"
+        ],
+        "title": "PlanEligibilityResponse",
+        "type": "object"
+      },
+      "PlanListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "country_code": {
+            "maxLength": 2,
+            "minLength": 2,
+            "title": "Country Code",
+            "type": "string"
+          },
+          "currency": {
+            "enum": [
+              "INR",
+              "USD"
+            ],
+            "title": "Currency",
+            "type": "string"
+          },
+          "interval": {
+            "const": "MONTHLY",
+            "title": "Interval",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "region": {
+            "enum": [
+              "INDIA",
+              "INTERNATIONAL"
+            ],
+            "title": "Region",
+            "type": "string"
+          }
+        },
+        "required": [
+          "region",
+          "country_code",
+          "currency",
+          "interval",
+          "items"
+        ],
+        "title": "PlanListResponse",
+        "type": "object"
+      },
+      "PlanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "FREE",
+              "BASIC",
+              "GROWTH",
+              "BUSINESS"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "entitlements": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "title": "Entitlements",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "interval": {
+            "const": "MONTHLY",
+            "title": "Interval",
+            "type": "string"
+          },
+          "most_popular": {
+            "title": "Most Popular",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "slot": {
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Slot",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "slot",
+          "most_popular",
+          "price",
+          "interval",
+          "entitlements"
+        ],
+        "title": "PlanResponse",
+        "type": "object"
+      },
       "PreviewResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1305,6 +1680,132 @@
           "checksum"
         ],
         "title": "PreviewResponse",
+        "type": "object"
+      },
+      "PublishCommandResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          },
+          "reused_existing_subscription": {
+            "title": "Reused Existing Subscription",
+            "type": "boolean"
+          },
+          "status": {
+            "const": "PUBLISHING",
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "status",
+          "plan_code",
+          "reused_existing_subscription",
+          "message"
+        ],
+        "title": "PublishCommandResponse",
+        "type": "object"
+      },
+      "PublishEvaluationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "can_request_publish": {
+            "title": "Can Request Publish",
+            "type": "boolean"
+          },
+          "current_plan_code": {
+            "title": "Current Plan Code",
+            "type": "string"
+          },
+          "domain_type": {
+            "enum": [
+              "ZYLORA_SUBDOMAIN",
+              "CUSTOM"
+            ],
+            "title": "Domain Type",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PlanEligibilityResponse"
+            },
+            "title": "Plans",
+            "type": "array"
+          },
+          "recommended_plan_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Plan Code"
+          },
+          "reuse_existing_subscription": {
+            "title": "Reuse Existing Subscription",
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "ELIGIBLE",
+              "UPGRADE_REQUIRED",
+              "INELIGIBLE"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "page_count",
+          "domain_type",
+          "current_plan_code",
+          "reuse_existing_subscription",
+          "can_request_publish",
+          "status",
+          "recommended_plan_code",
+          "plans"
+        ],
+        "title": "PublishEvaluationResponse",
+        "type": "object"
+      },
+      "PublishRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "domain_type": {
+            "default": "ZYLORA_SUBDOMAIN",
+            "enum": [
+              "ZYLORA_SUBDOMAIN",
+              "CUSTOM"
+            ],
+            "title": "Domain Type",
+            "type": "string"
+          }
+        },
+        "title": "PublishRequest",
         "type": "object"
       },
       "ReasonRequest": {
@@ -1682,6 +2183,75 @@
         "title": "SignupRequest",
         "type": "object"
       },
+      "SubscriptionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cancel_at_period_end": {
+            "title": "Cancel At Period End",
+            "type": "boolean"
+          },
+          "current_period_end": {
+            "format": "date-time",
+            "title": "Current Period End",
+            "type": "string"
+          },
+          "current_period_start": {
+            "format": "date-time",
+            "title": "Current Period Start",
+            "type": "string"
+          },
+          "entitlements": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "title": "Entitlements",
+            "type": "object"
+          },
+          "interval": {
+            "const": "MONTHLY",
+            "title": "Interval",
+            "type": "string"
+          },
+          "is_paid": {
+            "title": "Is Paid",
+            "type": "boolean"
+          },
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_code",
+          "state",
+          "is_paid",
+          "price",
+          "interval",
+          "current_period_start",
+          "current_period_end",
+          "cancel_at_period_end",
+          "entitlements"
+        ],
+        "title": "SubscriptionResponse",
+        "type": "object"
+      },
       "TemplateCreateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1818,6 +2388,31 @@
           "featured_order"
         ],
         "title": "TemplateSummary",
+        "type": "object"
+      },
+      "UnpublishCommandResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "status",
+          "message"
+        ],
+        "title": "UnpublishCommandResponse",
         "type": "object"
       },
       "UserResponse": {
@@ -3293,6 +3888,128 @@
         ]
       }
     },
+    "/api/v1/billing/subscription": {
+      "get": {
+        "operationId": "subscription_api_v1_billing_subscription_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Subscription",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/billing/subscription/cancel": {
+      "post": {
+        "operationId": "cancel_subscription_api_v1_billing_subscription_cancel_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelSubscriptionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Cancel Subscription",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/billing/subscription/checkouts": {
+      "post": {
+        "operationId": "checkout_api_v1_billing_subscription_checkouts_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Checkout",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "plans_api_v1_plans_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Plans",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
     "/api/v1/templates": {
       "get": {
         "operationId": "catalog_api_v1_templates_get",
@@ -4072,6 +4789,241 @@
         "summary": "Update Page",
         "tags": [
           "websites"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/publish": {
+      "post": {
+        "operationId": "publish_api_v1_websites__website_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishCommandResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/publish-evaluation": {
+      "get": {
+        "operationId": "publish_evaluation_api_v1_websites__website_id__publish_evaluation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "domain_type",
+            "required": false,
+            "schema": {
+              "default": "ZYLORA_SUBDOMAIN",
+              "pattern": "^(ZYLORA_SUBDOMAIN|CUSTOM)$",
+              "title": "Domain Type",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishEvaluationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish Evaluation",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/transfers": {
+      "post": {
+        "operationId": "transfer_api_v1_websites__website_id__transfers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnershipTransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnershipTransferResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transfer",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/unpublish": {
+      "post": {
+        "operationId": "unpublish_api_v1_websites__website_id__unpublish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnpublishCommandResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unpublish",
+        "tags": [
+          "commerce"
         ]
       }
     },

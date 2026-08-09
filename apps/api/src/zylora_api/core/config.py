@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     admin_origin: str = "http://admin.localhost:3000"
     trusted_hosts: str = "localhost,127.0.0.1,testserver,admin.localhost"
     trusted_proxy_ips: str = ""
+    cloudflare_country_header_trusted: bool = False
 
     auth_secret: str = "zylora_development_auth_secret_change_me"  # noqa: S105
     cookie_secure: bool = False

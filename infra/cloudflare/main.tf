@@ -136,7 +136,7 @@ resource "cloudflare_ruleset" "rate_limits" {
     },
     {
       action      = "block"
-      expression  = "http.request.method eq "POST" and starts_with(http.request.uri.path, "/api/v1/templates/") and ends_with(http.request.uri.path, "/instantiate")"
+      expression  = "http.request.method eq \"POST\" and starts_with(http.request.uri.path, \"/api/v1/templates/\") and ends_with(http.request.uri.path, \"/instantiate\")"
       description = "Template Draft instantiation: 10 requests per minute"
       enabled     = true
       ratelimit = {
@@ -148,13 +148,49 @@ resource "cloudflare_ruleset" "rate_limits" {
     },
     {
       action      = "block"
-      expression  = "http.request.method eq "GET" and starts_with(http.request.uri.path, "/api/v1/templates")"
+      expression  = "http.request.method eq \"GET\" and starts_with(http.request.uri.path, \"/api/v1/templates\")"
       description = "Published Template catalogue and previews: 90 requests per minute"
       enabled     = true
       ratelimit = {
         characteristics     = ["cf.colo.id", "ip.src"]
         period              = 60
         requests_per_period = 90
+        mitigation_timeout  = 60
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"POST\" and http.request.uri.path eq \"/api/v1/billing/subscription/checkouts\""
+      description = "Subscription checkout snapshots: 5 requests per minute"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 5
+        mitigation_timeout  = 600
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"POST\" and starts_with(http.request.uri.path, \"/api/v1/websites/\") and (ends_with(http.request.uri.path, \"/publish\") or ends_with(http.request.uri.path, \"/unpublish\") or ends_with(http.request.uri.path, \"/transfers\"))"
+      description = "Publish, unpublish, and ownership transfer commands: 10 requests per minute"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 10
+        mitigation_timeout  = 600
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"GET\" and http.request.uri.path eq \"/api/v1/plans\""
+      description = "Public plan catalog: 120 requests per minute"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 120
         mitigation_timeout  = 60
       }
     },

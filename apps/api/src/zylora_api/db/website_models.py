@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 from datetime import datetime
@@ -30,16 +31,34 @@ class Website(Base):
     __tablename__ = "websites"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('DRAFT','PUBLISHED','TRANSFER_PENDING','ARCHIVED')",
+            "status IN ('DRAFT','PUBLISHING','PUBLISHED','UNPUBLISHING','UNPUBLISHED','TRANSFER_PENDING','TRANSFERRED','ARCHIVED','FAILED')",
             name="ck_websites_status",
         ),
+        CheckConstraint(
+            "publication_domain_type IS NULL OR publication_domain_type IN ('ZYLORA_SUBDOMAIN','CUSTOM')",
+            name="ck_websites_publication_domain_type",
+        ),
         Index("ix_websites_owner_status", "owner_user_id", "status", "updated_at"),
+        CheckConstraint(
+            "(status IN ('PUBLISHING','PUBLISHED','UNPUBLISHING') AND live_owner_user_id IS NOT NULL) OR "
+            "(status NOT IN ('PUBLISHING','PUBLISHED','UNPUBLISHING') AND live_owner_user_id IS NULL)",
+            name="ck_websites_live_owner_state",
+        ),
+        Index(
+            "uq_websites_one_live_owner",
+            "live_owner_user_id",
+            unique=True,
+            postgresql_where=text("live_owner_user_id IS NOT NULL"),
+        ),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
     )
     owner_user_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    live_owner_user_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT")
     )
     source_template_version_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
@@ -56,9 +75,77 @@ class Website(Base):
         nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    published_version_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("website_versions.id", ondelete="RESTRICT", use_alter=True),
+        nullable=True,
+    )
+    publication_domain_type: Mapped[str | None] = mapped_column(String(24))
+    publish_request_idempotency_key: Mapped[str | None] = mapped_column(String(160))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class WebsiteOwnership(Base):
+    __tablename__ = "website_ownerships"
+    __table_args__ = (
+        CheckConstraint(
+            "acquisition_reason IN ('TEMPLATE_CREATION','TRANSFER')",
+            name="ck_website_ownerships_reason",
+        ),
+        Index(
+            "uq_website_ownerships_current",
+            "website_id",
+            unique=True,
+            postgresql_where=text("ended_at IS NULL"),
+        ),
+        Index("ix_website_ownerships_owner_time", "owner_user_id", "started_at"),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    website_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("websites.id", ondelete="CASCADE"), nullable=False
+    )
+    owner_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    transfer_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("ownership_transfers.id", ondelete="RESTRICT", use_alter=True),
+    )
+    acquisition_reason: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class OwnershipTransfer(Base):
+    __tablename__ = "ownership_transfers"
+    __table_args__ = (
+        CheckConstraint("status IN ('COMPLETED','FAILED')", name="ck_ownership_transfers_status"),
+        UniqueConstraint(
+            "sender_user_id", "idempotency_key", name="uq_ownership_transfers_idempotency"
+        ),
+        Index("ix_ownership_transfers_website_time", "website_id", "created_at"),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    website_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("websites.id", ondelete="RESTRICT"), nullable=False
+    )
+    sender_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    recipient_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    failure_code: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class WebsitePage(Base):
