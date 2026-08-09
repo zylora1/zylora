@@ -183,6 +183,7 @@ class WebsiteService:
             source_template_version_id=version.id,
             display_name=f"{template.name} Draft",
             status="DRAFT",
+            theme=deepcopy(version.document["theme"]),
         )
         self.session.add(website)
         await self.session.flush()
@@ -230,6 +231,16 @@ class WebsiteService:
             )
             self.session.add(model)
         await self.session.flush()
+        from zylora_api.modules.editor.revisions import RevisionService
+
+        pages = await self.pages(website.id)
+        await RevisionService(self.session).capture(
+            website,
+            pages,
+            source="TEMPLATE",
+            actor_user_id=owner_user_id,
+            summary=f"Created from {template.name}",
+        )
         return website
 
     async def list_for_owner(self, owner_user_id: UUID) -> list[Website]:
@@ -421,7 +432,21 @@ class WebsiteService:
             is_home=False,
             show_in_navigation=payload.show_in_navigation,
             status=payload.status,
-            content={"components": []},
+            content={
+                "components": [
+                    {
+                        "id": f"hero-{page_id.hex[:20]}",
+                        "type": "HERO",
+                        "props": {
+                            "heading": validate_page_name(payload.name),
+                            "body": "Add your page content.",
+                        },
+                        "children": [],
+                        "responsive": {},
+                        "interactions": [],
+                    }
+                ]
+            },
             seo=validate_page_seo(payload.seo),
         )
         self._parent(pages, page, page.parent_page_id)
@@ -432,6 +457,16 @@ class WebsiteService:
         website.updated_at = datetime.now(UTC)
         self.session.add(page)
         await self.session.flush()
+        from zylora_api.modules.editor.revisions import RevisionService
+
+        await RevisionService(self.session).capture(
+            website,
+            pages,
+            source="MANUAL",
+            actor_user_id=owner_user_id,
+            summary=f"Added page {page.name}",
+            operation_id=uuid4(),
+        )
         return PageMutationResult(website=website, path_changes=[])
 
     async def update_page(
@@ -487,6 +522,16 @@ class WebsiteService:
         changes = self._record_path_changes(website, owner_user_id, before, after, "PAGE_SETTINGS")
         website.updated_at = datetime.now(UTC)
         await self.session.flush()
+        from zylora_api.modules.editor.revisions import RevisionService
+
+        await RevisionService(self.session).capture(
+            website,
+            pages,
+            source="MANUAL",
+            actor_user_id=owner_user_id,
+            summary=f"Updated page {page.name}",
+            operation_id=uuid4(),
+        )
         return PageMutationResult(website=website, path_changes=changes)
 
     async def delete_page(
@@ -553,4 +598,14 @@ class WebsiteService:
         await self.session.delete(page)
         website.updated_at = datetime.now(UTC)
         await self.session.flush()
+        from zylora_api.modules.editor.revisions import RevisionService
+
+        await RevisionService(self.session).capture(
+            website,
+            remaining,
+            source="MANUAL",
+            actor_user_id=owner_user_id,
+            summary=f"Deleted page {page.name}; promoted its children",
+            operation_id=uuid4(),
+        )
         return PageMutationResult(website=website, path_changes=changes)

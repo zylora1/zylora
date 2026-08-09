@@ -8,6 +8,9 @@ from zylora_api.db.session import get_session, normalize_async_database_url
 
 def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
     assert set(Base.metadata.tables) == {
+        "ai_credit_accounts",
+        "ai_credit_ledger",
+        "ai_operations",
         "audit_logs",
         "auth_attempts",
         "auth_identities",
@@ -29,6 +32,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "templates",
         "website_pages",
         "websites",
+        "website_versions",
         "users",
     }
     assert OutboxEvent.__table__.c.id.server_default is not None

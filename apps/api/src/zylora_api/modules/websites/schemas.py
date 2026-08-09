@@ -80,6 +80,7 @@ class WebsiteResponse(Schema):
     source_template_version_id: UUID
     display_name: str
     status: str
+    revision: int
     pages: list[WebsitePageResponse]
     navigation: list[NavigationNodeResponse]
     path_changes: list[PagePathChangeResponse] = Field(default_factory=list)

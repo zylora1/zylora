@@ -26,6 +26,8 @@ def production_settings(**overrides: object) -> dict[str, object]:
         "turnstile_site_key": "production-site-key",
         "turnstile_secret_key": "production-turnstile-secret",
         "turnstile_allowed_hostnames": "app.example.com,admin.example.com",
+        "ai_provider": "openai",
+        "openai_api_key": "production-openai-secret",
     }
     values.update(overrides)
     return values
@@ -58,3 +60,13 @@ def test_production_accepts_provider_keys_and_exact_hostnames() -> None:
         "app.example.com",
         "admin.example.com",
     )
+
+
+def test_production_requires_server_side_ai_provider_key() -> None:
+    with pytest.raises(ValidationError, match="requires the OpenAI provider and API key"):
+        Settings(**production_settings(ai_provider="disabled", openai_api_key=""))
+
+
+def test_production_rejects_non_official_openai_base_url() -> None:
+    with pytest.raises(ValidationError, match="official HTTPS API"):
+        Settings(**production_settings(openai_base_url="https://proxy.example.com/v1"))

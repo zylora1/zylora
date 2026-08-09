@@ -41,9 +41,20 @@ from zylora_api.db.template_models import (
     TemplateValidation,
     TemplateVersion,
 )
-from zylora_api.db.website_models import Website, WebsitePage, WebsitePagePathChange
+from zylora_api.db.website_models import (
+    AiCreditAccount,
+    AiCreditLedger,
+    AiOperation,
+    Website,
+    WebsitePage,
+    WebsitePagePathChange,
+    WebsiteVersion,
+)
 
 __all__ = [
+    "AiCreditAccount",
+    "AiCreditLedger",
+    "AiOperation",
     "AuditLog",
     "AuthAttempt",
     "AuthIdentity",
@@ -63,6 +74,7 @@ __all__ = [
     "Website",
     "WebsitePage",
     "WebsitePagePathChange",
+    "WebsiteVersion",
 ]
 
 

@@ -1,6 +1,83 @@
 {
   "components": {
     "schemas": {
+      "AddPage": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "heading": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Heading",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Items",
+            "type": "array"
+          },
+          "kind": {
+            "const": "ADD_PAGE",
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Page Id"
+          },
+          "section_type": {
+            "default": "STANDARD",
+            "enum": [
+              "STANDARD",
+              "FAQ"
+            ],
+            "title": "Section Type",
+            "type": "string"
+          },
+          "show_in_navigation": {
+            "default": true,
+            "title": "Show In Navigation",
+            "type": "boolean"
+          },
+          "slug": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "slug",
+          "heading",
+          "body"
+        ],
+        "title": "AddPage",
+        "type": "object"
+      },
       "AdminLoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -107,6 +184,143 @@
           "versions"
         ],
         "title": "AdminTemplateResponse",
+        "type": "object"
+      },
+      "AiEditRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base_revision": {
+            "minimum": 1.0,
+            "title": "Base Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "prompt": {
+            "maxLength": 1200,
+            "minLength": 3,
+            "title": "Prompt",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "PAGE",
+              "WEBSITE"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "selected_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Page Id"
+          }
+        },
+        "required": [
+          "operation_id",
+          "base_revision",
+          "prompt",
+          "scope"
+        ],
+        "title": "AiEditRequest",
+        "type": "object"
+      },
+      "AiUsageListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsageResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "AiUsageListResponse",
+        "type": "object"
+      },
+      "AiUsageResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_credits": {
+            "title": "Cost Credits",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "usage": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "title": "Usage",
+            "type": "object"
+          }
+        },
+        "required": [
+          "operation_id",
+          "status",
+          "provider",
+          "model",
+          "cost_credits",
+          "usage",
+          "latency_ms",
+          "created_at"
+        ],
+        "title": "AiUsageResponse",
         "type": "object"
       },
       "AssetUploadRequest": {
@@ -227,6 +441,159 @@
         "title": "ChallengeConfigResponse",
         "type": "object"
       },
+      "CreditResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "allowance": {
+            "title": "Allowance",
+            "type": "integer"
+          },
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "period_end": {
+            "format": "date-time",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "format": "date-time",
+            "title": "Period Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "allowance",
+          "period_start",
+          "period_end"
+        ],
+        "title": "CreditResponse",
+        "type": "object"
+      },
+      "EditorMutationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "credits": {
+            "$ref": "#/components/schemas/CreditResponse"
+          },
+          "credits_used": {
+            "title": "Credits Used",
+            "type": "integer"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "document": {
+            "additionalProperties": true,
+            "title": "Document",
+            "type": "object"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionResponse"
+            },
+            "title": "Revisions",
+            "type": "array"
+          },
+          "source": {
+            "enum": [
+              "MANUAL",
+              "AI",
+              "RESTORE"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "display_name",
+          "status",
+          "revision",
+          "document",
+          "revisions",
+          "credits",
+          "operation_id",
+          "source",
+          "summary",
+          "credits_used"
+        ],
+        "title": "EditorMutationResponse",
+        "type": "object"
+      },
+      "EditorStateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "credits": {
+            "$ref": "#/components/schemas/CreditResponse"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "document": {
+            "additionalProperties": true,
+            "title": "Document",
+            "type": "object"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionResponse"
+            },
+            "title": "Revisions",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "display_name",
+          "status",
+          "revision",
+          "document",
+          "revisions",
+          "credits"
+        ],
+        "title": "EditorStateResponse",
+        "type": "object"
+      },
       "EmailRequest": {
         "additionalProperties": false,
         "properties": {
@@ -306,6 +673,66 @@
         "title": "HealthResponse",
         "type": "object"
       },
+      "InsertComponent": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Body",
+            "type": "string"
+          },
+          "component_type": {
+            "enum": [
+              "SECTION",
+              "HEADING",
+              "RICH_TEXT",
+              "TESTIMONIALS",
+              "FAQ"
+            ],
+            "title": "Component Type",
+            "type": "string"
+          },
+          "heading": {
+            "default": "",
+            "maxLength": 160,
+            "title": "Heading",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Items",
+            "type": "array"
+          },
+          "kind": {
+            "const": "INSERT_COMPONENT",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "position": {
+            "default": 0,
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "component_type"
+        ],
+        "title": "InsertComponent",
+        "type": "object"
+      },
       "InstantiateRequest": {
         "additionalProperties": false,
         "properties": {},
@@ -359,6 +786,182 @@
           }
         },
         "title": "LogoutAllRequest",
+        "type": "object"
+      },
+      "ManualEditRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base_revision": {
+            "minimum": 1.0,
+            "title": "Base Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "operations": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "ADD_PAGE": "#/components/schemas/AddPage",
+                  "INSERT_COMPONENT": "#/components/schemas/InsertComponent",
+                  "MOVE_COMPONENT": "#/components/schemas/MoveComponent",
+                  "MOVE_PAGE": "#/components/schemas/MovePage",
+                  "REMOVE_COMPONENT": "#/components/schemas/RemoveComponent",
+                  "SET_COMPONENT_PROP": "#/components/schemas/SetComponentProp",
+                  "SET_NAVIGATION_VISIBILITY": "#/components/schemas/SetNavigationVisibility",
+                  "SET_PAGE_SEO": "#/components/schemas/SetPageSeo",
+                  "SET_THEME_TOKEN": "#/components/schemas/SetThemeToken"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/SetComponentProp"
+                },
+                {
+                  "$ref": "#/components/schemas/SetThemeToken"
+                },
+                {
+                  "$ref": "#/components/schemas/InsertComponent"
+                },
+                {
+                  "$ref": "#/components/schemas/RemoveComponent"
+                },
+                {
+                  "$ref": "#/components/schemas/MoveComponent"
+                },
+                {
+                  "$ref": "#/components/schemas/SetPageSeo"
+                },
+                {
+                  "$ref": "#/components/schemas/AddPage"
+                },
+                {
+                  "$ref": "#/components/schemas/MovePage"
+                },
+                {
+                  "$ref": "#/components/schemas/SetNavigationVisibility"
+                }
+              ]
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Operations",
+            "type": "array"
+          },
+          "scope": {
+            "enum": [
+              "PAGE",
+              "WEBSITE"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "selected_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Page Id"
+          },
+          "summary": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "base_revision",
+          "scope",
+          "summary",
+          "operations"
+        ],
+        "title": "ManualEditRequest",
+        "type": "object"
+      },
+      "MoveComponent": {
+        "additionalProperties": false,
+        "properties": {
+          "component_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "MOVE_COMPONENT",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "position": {
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "component_id",
+          "position"
+        ],
+        "title": "MoveComponent",
+        "type": "object"
+      },
+      "MovePage": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "MOVE_PAGE",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "parent_page_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Page Id"
+          },
+          "position": {
+            "default": 0,
+            "maximum": 500.0,
+            "minimum": 0.0,
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id"
+        ],
+        "title": "MovePage",
         "type": "object"
       },
       "NavigationNodeResponse": {
@@ -720,6 +1323,96 @@
         "title": "ReasonRequest",
         "type": "object"
       },
+      "RemoveComponent": {
+        "additionalProperties": false,
+        "properties": {
+          "component_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "REMOVE_COMPONENT",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "component_id"
+        ],
+        "title": "RemoveComponent",
+        "type": "object"
+      },
+      "RestoreRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base_revision": {
+            "minimum": 1.0,
+            "title": "Base Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "base_revision"
+        ],
+        "title": "RestoreRequest",
+        "type": "object"
+      },
+      "RevisionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "checksum": {
+            "title": "Checksum",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "edit_summary": {
+            "title": "Edit Summary",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "source",
+          "edit_summary",
+          "checksum",
+          "created_at"
+        ],
+        "title": "RevisionResponse",
+        "type": "object"
+      },
       "RevokeSessionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -806,6 +1499,152 @@
           "current"
         ],
         "title": "SessionResponse",
+        "type": "object"
+      },
+      "SetComponentProp": {
+        "additionalProperties": false,
+        "properties": {
+          "component_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "SET_COMPONENT_PROP",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "property": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Property",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "component_id",
+          "property",
+          "value"
+        ],
+        "title": "SetComponentProp",
+        "type": "object"
+      },
+      "SetNavigationVisibility": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "SET_NAVIGATION_VISIBILITY",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "show_in_navigation": {
+            "title": "Show In Navigation",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "show_in_navigation"
+        ],
+        "title": "SetNavigationVisibility",
+        "type": "object"
+      },
+      "SetPageSeo": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "kind": {
+            "const": "SET_PAGE_SEO",
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_id": {
+            "format": "uuid",
+            "title": "Page Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "page_id",
+          "title",
+          "description"
+        ],
+        "title": "SetPageSeo",
+        "type": "object"
+      },
+      "SetThemeToken": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "SET_THEME_TOKEN",
+            "title": "Kind",
+            "type": "string"
+          },
+          "property": {
+            "enum": [
+              "primary",
+              "accent",
+              "surface",
+              "ink",
+              "heading_font",
+              "body_font"
+            ],
+            "title": "Property",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "property",
+          "value"
+        ],
+        "title": "SetThemeToken",
         "type": "object"
       },
       "SignupRequest": {
@@ -1344,6 +2183,10 @@
             "title": "Path Changes",
             "type": "array"
           },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
           "source_template_version_id": {
             "format": "uuid",
             "title": "Source Template Version Id",
@@ -1365,6 +2208,7 @@
           "source_template_version_id",
           "display_name",
           "status",
+          "revision",
           "pages",
           "navigation",
           "created_at",
@@ -2796,6 +3640,261 @@
         "summary": "Website Detail",
         "tags": [
           "websites"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/editor": {
+      "get": {
+        "operationId": "editor_state_api_v1_websites__website_id__editor_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editor State",
+        "tags": [
+          "editor"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/editor/ai-edits": {
+      "post": {
+        "operationId": "ai_edit_api_v1_websites__website_id__editor_ai_edits_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Edit",
+        "tags": [
+          "editor"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/editor/ai-usage": {
+      "get": {
+        "operationId": "ai_usage_api_v1_websites__website_id__editor_ai_usage_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Usage",
+        "tags": [
+          "editor"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/editor/edits": {
+      "post": {
+        "operationId": "manual_edit_api_v1_websites__website_id__editor_edits_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Manual Edit",
+        "tags": [
+          "editor"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/editor/versions/{version_id}/restore": {
+      "post": {
+        "operationId": "restore_revision_api_v1_websites__website_id__editor_versions__version_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Revision",
+        "tags": [
+          "editor"
         ]
       }
     },

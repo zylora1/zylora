@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "staging", "production"]
 StorageProvider = Literal["s3", "memory", "disabled"]
+AiProvider = Literal["openai", "disabled"]
 
 
 class Settings(BaseSettings):
@@ -60,6 +61,13 @@ class Settings(BaseSettings):
     s3_secret_key: str | None = None
     s3_force_path_style: bool = True
 
+    ai_provider: AiProvider = "disabled"
+    openai_api_key: str | None = None
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_model: str = "gpt-5.6-terra"
+    ai_timeout_seconds: float = 45.0
+    ai_max_output_tokens: int = 4000
+
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
 
@@ -87,6 +95,11 @@ class Settings(BaseSettings):
     def validate_environment_safety(self) -> Self:
         if not 1 <= self.turnstile_timeout_seconds <= 10:
             raise ValueError("Turnstile timeout must be between 1 and 10 seconds")
+
+        if not 5 <= self.ai_timeout_seconds <= 120:
+            raise ValueError("AI timeout must be between 5 and 120 seconds")
+        if not 500 <= self.ai_max_output_tokens <= 8000:
+            raise ValueError("AI max output tokens must be between 500 and 8000")
 
         if self.storage_provider == "memory" and self.environment != "test":
             raise ValueError("memory object storage is permitted only in the test environment")
@@ -146,6 +159,10 @@ class Settings(BaseSettings):
                 or not self.turnstile_secret_key
             ):
                 raise ValueError("production Turnstile verification must be configured")
+            if self.ai_provider != "openai" or not self.openai_api_key:
+                raise ValueError("production AI editing requires the OpenAI provider and API key")
+            if self.openai_base_url != "https://api.openai.com/v1":
+                raise ValueError("production OpenAI base URL must use the official HTTPS API")
             test_site_keys = {
                 "1x00000000000000000000AA",
                 "2x00000000000000000000AB",

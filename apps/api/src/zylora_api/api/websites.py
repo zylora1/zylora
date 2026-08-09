@@ -53,6 +53,7 @@ async def response(
         source_template_version_id=website.source_template_version_id,
         display_name=website.display_name,
         status=website.status,
+        revision=website.revision or 0,
         pages=[
             WebsitePageResponse(
                 id=page.id,

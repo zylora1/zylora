@@ -1,4 +1,4 @@
-import { PageManager } from '@/components/page-manager';
+import { WebsiteEditor } from '@/components/website-editor';
 
 export default async function WebsiteEditorPage({
   params,
@@ -6,5 +6,5 @@ export default async function WebsiteEditorPage({
   params: Promise<{ websiteId: string }>;
 }) {
   const { websiteId } = await params;
-  return <PageManager websiteId={websiteId} />;
+  return <WebsiteEditor websiteId={websiteId} />;
 }

@@ -86,6 +86,23 @@ Operational endpoints:
 - API version: `http://127.0.0.1:8000/version`
 - Web health: `http://localhost:3000/health`
 
+## Phase 6 AI provider
+
+AI editing is fail-closed and disabled by default. Manual editing, previews, Page Manager, and
+revision restore continue to work without a provider. To exercise the real adapter locally, set
+server runtime values only:
+
+```powershell
+$env:AI_PROVIDER='openai'
+$env:OPENAI_API_KEY='retrieve-from-your-secret-manager'
+$env:OPENAI_MODEL='gpt-5.6-terra'
+npm run dev:api
+Remove-Item Env:OPENAI_API_KEY
+```
+
+Never prefix the key with NEXT_PUBLIC, expose it to the Web process, place it in repository files, or
+log prompts/credentials. Production validates the official OpenAI API base URL and requires the key.
+
 ## Quality and test commands
 
 ```powershell

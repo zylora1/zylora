@@ -39,6 +39,7 @@ def main() -> None:
             "/api/v1/chatbot",
             "/api/v1/leads",
             "/api/v1/templates",
+            "/editor/ai-edits",
             "Template Draft instantiation",
         ),
         "main.tf",

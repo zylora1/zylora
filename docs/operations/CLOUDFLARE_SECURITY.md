@@ -7,6 +7,9 @@ the exact User and isolated Super Admin hostnames, Cloudflare Managed and OWASP 
 method/scanner blocks, and rate limits for authentication, verification, OAuth callback, public APIs,
 contact/Lead forms, and chatbot/Lead endpoints.
 
+Phase 6 also rate-limits authenticated POST editor/ai-edits requests to ten plans per visitor IP per
+minute. It does not add Turnstile to normal authenticated editing interactions.
+
 Use the pinned Terraform CLI/provider versions. Provide `CLOUDFLARE_API_TOKEN`,
 `TF_VAR_account_id`, `TF_VAR_zone_id`, and a two-item `TF_VAR_turnstile_domains` through the deployment
 secret manager. Grant only Account Turnstile Sites write/read and Zone WAF write/read permissions.

@@ -81,7 +81,7 @@ resource "cloudflare_ruleset" "custom_waf" {
 resource "cloudflare_ruleset" "rate_limits" {
   zone_id     = var.zone_id
   name        = "Zylora abuse-sensitive route limits"
-  description = "Independent IP and data-center counters for auth, forms, leads, chatbot, and public APIs"
+  description = "Independent IP and data-center counters for auth, forms, leads, chatbot, AI editing, and public APIs"
   kind        = "zone"
   phase       = "http_ratelimit"
 
@@ -120,6 +120,18 @@ resource "cloudflare_ruleset" "rate_limits" {
         period              = 60
         requests_per_period = 20
         mitigation_timeout  = 600
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"POST\" and ends_with(http.request.uri.path, \"/editor/ai-edits\")"
+      description = "Authenticated AI editing: 10 plans per minute per visitor IP"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 10
+        mitigation_timeout  = 300
       }
     },
     {

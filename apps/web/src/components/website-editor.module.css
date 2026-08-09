@@ -1,0 +1,317 @@
+.root,
+.workspace {
+  display: grid;
+  gap: 1rem;
+}
+.tabs {
+  display: flex;
+  width: fit-content;
+  border: 1px solid var(--z-color-border);
+  background: var(--z-color-surface);
+}
+.tabs button,
+.toolbar button,
+.controls button,
+.history button {
+  display: inline-flex;
+  min-height: 2.55rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 0;
+  background: transparent;
+  color: var(--z-color-ink-muted);
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+.tabs button[aria-pressed='true'],
+.toolbar button[aria-pressed='true'] {
+  background: var(--z-color-brand);
+  color: white;
+}
+.header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 1px solid var(--z-color-border);
+  padding-bottom: 1.15rem;
+}
+.header p,
+.eyebrow {
+  margin: 0 0 0.25rem;
+  color: var(--z-color-ink-muted);
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.header h1 {
+  margin: 0;
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.meta > span:not(:first-child) {
+  border: 1px solid var(--z-color-border);
+  padding: 0.35rem 0.55rem;
+  color: var(--z-color-ink-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+.feedback,
+.error {
+  border-left: 3px solid var(--z-color-success);
+  background: #edf6ee;
+  padding: 0.75rem 1rem;
+  color: #21523a;
+  font-size: 0.76rem;
+}
+.error {
+  border-color: var(--z-color-danger);
+  background: #fbecea;
+  color: #752e27;
+}
+.grid {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.7fr) minmax(28rem, 1.45fr) minmax(18rem, 0.85fr);
+  align-items: start;
+  gap: 1rem;
+}
+.controls,
+.canvas,
+.settings {
+  border: 1px solid var(--z-color-border);
+  background: var(--z-color-surface);
+}
+.controls,
+.settings {
+  display: grid;
+  gap: 0;
+}
+.controls > section,
+.settings > section {
+  display: grid;
+  gap: 0.8rem;
+  border-bottom: 1px solid var(--z-color-border);
+  padding: 1rem;
+}
+.controls label,
+.settings label,
+.controls form {
+  display: grid;
+  gap: 0.38rem;
+  color: #354c43;
+  font-size: 0.69rem;
+  font-weight: 800;
+}
+.controls form {
+  gap: 0.8rem;
+}
+.controls input,
+.controls select,
+.controls textarea,
+.settings input,
+.settings textarea {
+  width: 100%;
+  min-height: 2.55rem;
+  border: 1px solid var(--z-color-border);
+  border-radius: 0;
+  background: var(--z-color-canvas);
+  color: var(--z-color-ink);
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+}
+.controls textarea,
+.settings textarea {
+  resize: vertical;
+}
+.controls input:focus,
+.controls select:focus,
+.controls textarea:focus,
+.settings input:focus,
+.settings textarea:focus {
+  border-color: var(--z-color-brand);
+  box-shadow: inset 3px 0 0 var(--z-color-brand);
+  outline: none;
+}
+.controls form button {
+  border: 1px solid var(--z-color-brand);
+  background: var(--z-color-brand);
+  color: white;
+}
+.controls button:disabled,
+.history button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.controls small,
+.componentCard small {
+  color: var(--z-color-ink-muted);
+  font-size: 0.62rem;
+  line-height: 1.45;
+}
+.credits {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  border-left: 3px solid var(--z-color-accent, #27c499);
+  background: #eef4f0;
+  padding: 0.7rem;
+}
+.credits strong {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.75rem;
+}
+.credits span {
+  color: var(--z-color-ink-muted);
+  font-size: 0.65rem;
+}
+.theme {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.55rem;
+}
+.theme input[type='color'] {
+  padding: 0.2rem;
+}
+.canvas {
+  min-width: 0;
+  overflow: hidden;
+}
+.toolbar {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--z-color-border);
+  padding: 0.55rem 0.75rem;
+}
+.toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.toolbar span {
+  color: var(--z-color-ink-muted);
+  font-family: ui-monospace, monospace;
+  font-size: 0.66rem;
+}
+.toolbar button {
+  min-width: 2.35rem;
+  min-height: 2.35rem;
+  border: 1px solid var(--z-color-border);
+  padding: 0;
+}
+.preview {
+  display: flex;
+  min-height: 42rem;
+  justify-content: center;
+  overflow: auto;
+  background: #dfe4df;
+  padding: 1rem;
+}
+.preview > div {
+  max-width: 100%;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 12px 40px rgb(18 34 27 / 14%);
+  transition: width 180ms ease;
+}
+.settings h2 {
+  margin: 0;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 550;
+}
+.settings section > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--z-color-ink-muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.components,
+.history {
+  display: grid;
+  gap: 0.6rem;
+}
+.componentCard {
+  display: grid;
+  gap: 0.7rem;
+  border: 1px solid var(--z-color-border);
+  background: var(--z-color-canvas);
+  padding: 0.8rem;
+}
+.componentCard > strong {
+  color: var(--z-color-brand);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+.history > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--z-color-border);
+  padding: 0.55rem 0;
+}
+.history span {
+  display: grid;
+  min-width: 0;
+}
+.history strong,
+.history small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history strong {
+  font-size: 0.68rem;
+}
+.history small {
+  color: var(--z-color-ink-muted);
+  font-size: 0.59rem;
+}
+.history button {
+  min-width: 2rem;
+  min-height: 2rem;
+  border: 1px solid var(--z-color-border);
+  padding: 0;
+}
+@media (max-width: 82rem) {
+  .grid {
+    grid-template-columns: minmax(15rem, 0.7fr) minmax(28rem, 1.3fr);
+  }
+  .settings {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 58rem) {
+  .header {
+    align-items: start;
+    flex-direction: column;
+  }
+  .meta {
+    justify-content: start;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .settings {
+    grid-column: auto;
+  }
+  .preview {
+    min-height: 30rem;
+  }
+}

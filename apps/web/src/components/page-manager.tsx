@@ -55,6 +55,7 @@ export type WebsiteRecord = {
   id: string;
   display_name: string;
   status: string;
+  revision?: number;
   pages: PageRecord[];
   navigation: NavigationNode[];
   path_changes: Array<{ page_id: string; old_path: string; new_path: string }>;
