@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { adminSections, userSections } from './portal-navigation';
 import { AdminHomePage, AdminSectionPage, UserHomePage, UserSectionPage } from './portal-pages';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  document.cookie = 'zylora_user_csrf=; Max-Age=0';
+  document.cookie = 'zylora_admin_csrf=; Max-Age=0';
+});
 
 describe('portal pages', () => {
   it('uses the required first-time CTA without fake analytics', () => {
@@ -33,14 +39,12 @@ describe('portal pages', () => {
     expect(await screen.findByText('No analytics yet')).toBeVisible();
 
     render(<AdminSectionPage section={adminSections.find(({ slug }) => slug === 'health')!} />);
-    expect(
-      screen.getByRole('heading', { name: 'Detailed health data is not connected' }),
-    ).toBeVisible();
+    expect(screen.getByText('Checking live operational dependencies…')).toBeVisible();
   });
 
-  it('keeps the Admin overview evidence-led and free of synthetic status', () => {
+  it('keeps the Admin overview evidence-led while real data is loading', () => {
     render(<AdminHomePage />);
     expect(screen.getByRole('heading', { level: 1, name: 'Platform overview' })).toBeVisible();
-    expect(screen.getByText(/No synthetic operational summary/i)).toBeVisible();
+    expect(screen.getByText('Loading measured operational state…')).toBeVisible();
   });
 });

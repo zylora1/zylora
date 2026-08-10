@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.template_models import (
     Template,
@@ -20,7 +20,10 @@ from zylora_api.db.template_models import (
 from zylora_api.modules.auth.errors import AuthProblem
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.templates.document import REGISTRY_VERSION, SCHEMA_VERSION
-from zylora_api.modules.templates.schemas import TemplateCreateRequest
+from zylora_api.modules.templates.schemas import (
+    TemplateCreateRequest,
+    TemplateMetadataUpdateRequest,
+)
 from zylora_api.modules.templates.validation import (
     VALIDATOR_VERSION,
     document_checksum,
@@ -68,6 +71,53 @@ class TemplateService:
                 self.session.add(tag)
                 await self.session.flush()
             self.session.add(TemplateTagAssignment(template_id=template.id, tag_id=tag.id))
+        return template
+
+    async def update_metadata(
+        self, template_id: UUID, payload: TemplateMetadataUpdateRequest
+    ) -> Template:
+        template = await self._template(template_id)
+        if payload.name is not None:
+            template.name = payload.name
+        if payload.summary is not None:
+            template.summary = payload.summary
+        if payload.featured_order is not None:
+            template.featured_order = payload.featured_order
+        if payload.category_slug is not None:
+            category = await self.session.scalar(
+                select(TemplateCategory).where(TemplateCategory.slug == payload.category_slug)
+            )
+            if category is None:
+                if payload.category_name is None or payload.category_description is None:
+                    raise problem(
+                        422,
+                        "category_metadata_required",
+                        "A new Template category needs a name and description.",
+                    )
+                category = TemplateCategory(
+                    slug=payload.category_slug,
+                    name=payload.category_name,
+                    description=payload.category_description,
+                )
+                self.session.add(category)
+                await self.session.flush()
+            template.category_id = category.id
+        if payload.tags is not None:
+            await self.session.execute(
+                delete(TemplateTagAssignment).where(
+                    TemplateTagAssignment.template_id == template.id
+                )
+            )
+            for tag_slug in sorted(set(payload.tags)):
+                tag = await self.session.scalar(
+                    select(TemplateTag).where(TemplateTag.slug == tag_slug)
+                )
+                if tag is None:
+                    tag = TemplateTag(slug=tag_slug, name=tag_slug.replace("-", " ").title())
+                    self.session.add(tag)
+                    await self.session.flush()
+                self.session.add(TemplateTagAssignment(template_id=template.id, tag_id=tag.id))
+        await self.session.flush()
         return template
 
     async def add_version(
@@ -194,6 +244,46 @@ class TemplateService:
         if template.current_published_version_id == version.id:
             template.current_published_version_id = None
             template.status = "DEPRECATED"
+        return version
+
+    async def unpublish(self, template_id: UUID, version_number: int) -> TemplateVersion:
+        template = await self._template(template_id)
+        version = await self._version(template_id, version_number)
+        if version.status != "PUBLISHED" or template.current_published_version_id != version.id:
+            raise problem(
+                409,
+                "invalid_template_transition",
+                "Only the current published version can be unpublished.",
+            )
+        version.status = "DEPRECATED"
+        template.current_published_version_id = None
+        template.status = "DRAFT"
+        return version
+
+    async def restore(self, template_id: UUID, version_number: int) -> TemplateVersion:
+        template = await self._template(template_id)
+        version = await self._version(template_id, version_number)
+        if version.status != "DEPRECATED" or not self._validation_current(version):
+            raise problem(
+                409,
+                "version_not_restorable",
+                "A deprecated version with current successful validation is required to restore.",
+            )
+        previous = (
+            await self.session.scalar(
+                select(TemplateVersion).where(
+                    TemplateVersion.id == template.current_published_version_id
+                )
+            )
+            if template.current_published_version_id
+            else None
+        )
+        if previous:
+            previous.status = "DEPRECATED"
+        version.status = "PUBLISHED"
+        version.published_at = datetime.now(UTC)
+        template.current_published_version_id = version.id
+        template.status = "ACTIVE"
         return version
 
     def _validation_current(self, version: TemplateVersion) -> bool:

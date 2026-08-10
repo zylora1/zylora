@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button, Notice, StatusBadge } from '@zylora/ui';
 
@@ -68,6 +69,50 @@ export function TemplateManagement() {
       await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Template creation failed.');
+    }
+  };
+  const updateMetadata = async (template: AdminTemplate) => {
+    const name = window.prompt('Template name', template.name);
+    if (name === null) return;
+    const summary = window.prompt('Template summary', template.summary);
+    if (summary === null) return;
+    const categorySlug = window.prompt(
+      'Category slug (leave blank to keep the current category)',
+      '',
+    );
+    const categoryName = categorySlug ? window.prompt('New category name') : null;
+    const categoryDescription = categorySlug ? window.prompt('New category description') : null;
+    const tags = window.prompt('Tags, comma separated', template.tags.join(', '));
+    const featuredOrder = window.prompt('Featured order (leave blank to keep current)', '');
+    try {
+      await apiRequest(`/api/v1/admin/templates/${template.id}`, {
+        method: 'PATCH',
+        headers: headers(),
+        body: JSON.stringify({
+          name,
+          summary,
+          ...(categorySlug && categoryName && categoryDescription
+            ? {
+                category_slug: categorySlug,
+                category_name: categoryName,
+                category_description: categoryDescription,
+              }
+            : {}),
+          ...(tags === null
+            ? {}
+            : {
+                tags: tags
+                  .split(',')
+                  .map((value) => value.trim())
+                  .filter(Boolean),
+              }),
+          ...(featuredOrder ? { featured_order: Number(featuredOrder) } : {}),
+        }),
+      });
+      setNotice('Template metadata was updated through the audited catalog service.');
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Template metadata update failed.');
     }
   };
   const addVersion = async (templateId: string) => {
@@ -174,9 +219,14 @@ export function TemplateManagement() {
                 rows={7}
               />
             </label>
-            <Button variant="secondary" onClick={() => void addVersion(template.id)}>
-              Add immutable version
-            </Button>
+            <div className={styles.versionActions}>
+              <Button variant="secondary" onClick={() => void addVersion(template.id)}>
+                Add immutable version
+              </Button>
+              <button type="button" onClick={() => void updateMetadata(template)}>
+                Edit metadata
+              </button>
+            </div>
             {template.versions.map((version) => (
               <div className={styles.versionRow} key={version.id}>
                 <strong>v{version.version}</strong>
@@ -192,15 +242,22 @@ export function TemplateManagement() {
                   {version.status}
                 </StatusBadge>
                 <div className={styles.versionActions}>
-                  {['validate', 'approve', 'publish', 'deprecate'].map((action) => (
-                    <button
-                      type="button"
-                      key={action}
-                      onClick={() => void transition(template.id, version.version, action)}
-                    >
-                      {action}
-                    </button>
-                  ))}
+                  {version.status === 'PUBLISHED' ? (
+                    <Link href={`/templates/${template.slug}/preview?version=${version.version}`}>
+                      Preview
+                    </Link>
+                  ) : null}
+                  {['validate', 'approve', 'publish', 'unpublish', 'deprecate', 'restore'].map(
+                    (action) => (
+                      <button
+                        type="button"
+                        key={action}
+                        onClick={() => void transition(template.id, version.version, action)}
+                      >
+                        {action}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
             ))}

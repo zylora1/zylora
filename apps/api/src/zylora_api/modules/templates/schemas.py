@@ -22,6 +22,18 @@ class TemplateCreateRequest(Schema):
     featured_order: Annotated[int, Field(ge=0, le=10000)] = 1000
 
 
+class TemplateMetadataUpdateRequest(Schema):
+    name: Annotated[str | None, Field(min_length=1, max_length=120)] = None
+    summary: Annotated[str | None, Field(min_length=1, max_length=500)] = None
+    category_slug: Annotated[
+        str | None, Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=80)
+    ] = None
+    category_name: Annotated[str | None, Field(min_length=1, max_length=100)] = None
+    category_description: Annotated[str | None, Field(min_length=1, max_length=300)] = None
+    tags: Annotated[list[str] | None, Field(max_length=12)] = None
+    featured_order: Annotated[int | None, Field(ge=0, le=10000)] = None
+
+
 class VersionCreateRequest(Schema):
     document: dict[str, Any]
 

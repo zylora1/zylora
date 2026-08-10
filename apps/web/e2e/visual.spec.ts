@@ -119,7 +119,7 @@ test('Super Admin passes the five-viewport visual and interaction audit', async 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('http://admin.localhost:3100/');
     await expect(page.getByRole('heading', { level: 1, name: 'Platform overview' })).toBeVisible();
-    await expect(page.getByText(/No synthetic operational summary/i)).toBeVisible();
+    await expect(page.getByText('Loading measured operational state…')).toBeVisible();
     await assertViewportHealth(page);
     await page.screenshot({ path: testInfo.outputPath(`admin-${width}.png`), fullPage: true });
 
@@ -142,7 +142,7 @@ test('Super Admin passes the five-viewport visual and interaction audit', async 
 
   await page.goto('http://admin.localhost:3100/admin/audit');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'No audit query has run' })).toBeVisible();
+  await expect(page.getByText('No recorded operational state is available yet.')).toBeVisible();
   expect(health.consoleProblems).toEqual([]);
   expect(health.failedRequests).toEqual([]);
 });

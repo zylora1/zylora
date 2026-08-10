@@ -55,7 +55,7 @@ test('Super Admin console remains isolated and evidence-led', async ({ page }) =
   const response = await page.goto('http://admin.localhost:3100/');
   expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');
   await expect(page.getByRole('heading', { level: 1, name: 'Platform overview' })).toBeVisible();
-  await expect(page.getByText(/No synthetic operational summary/i)).toBeVisible();
+  await expect(page.getByText('Loading measured operational state…')).toBeVisible();
 
   if ((page.viewportSize()?.width ?? 1280) < 768) {
     await page.getByRole('button', { name: 'Open navigation' }).click();
@@ -63,7 +63,7 @@ test('Super Admin console remains isolated and evidence-led', async ({ page }) =
   const navigation = page.getByRole('navigation', { name: 'Super Admin navigation' });
   await navigation.getByRole('link', { name: 'Audit' }).click();
   await expect(page).toHaveURL(/\/admin\/audit$/);
-  await expect(page.getByRole('heading', { name: 'No audit query has run' })).toBeVisible();
+  await expect(page.getByText('No recorded operational state is available yet.')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

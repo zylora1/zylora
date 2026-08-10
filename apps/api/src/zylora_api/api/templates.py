@@ -43,6 +43,7 @@ from zylora_api.modules.templates.schemas import (
     PreviewResponse,
     ReasonRequest,
     TemplateCreateRequest,
+    TemplateMetadataUpdateRequest,
     TemplateSummary,
     VersionCreateRequest,
     VersionResponse,
@@ -287,6 +288,50 @@ async def admin_create(
     )
 
 
+@router.patch("/admin/templates/{template_id}", response_model=AdminTemplateResponse)
+async def admin_update_metadata(
+    template_id: UUID,
+    payload: TemplateMetadataUpdateRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_admin_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> AdminTemplateResponse:
+    _admin_command(request, identity, settings, crypto)
+    template = await TemplateService(session, crypto).update_metadata(template_id, payload)
+    category = await session.get(TemplateCategory, template.category_id)
+    versions = list(
+        (
+            await session.scalars(
+                select(TemplateVersion)
+                .where(TemplateVersion.template_id == template.id)
+                .order_by(TemplateVersion.version.desc())
+            )
+        ).all()
+    )
+    AuditService(session, crypto).record(
+        "template.metadata_updated",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="template",
+        target_id=str(template.id),
+        reason="SUPER_ADMIN_TEMPLATE_METADATA",
+        ip_address=request_ip(request, settings),
+    )
+    await session.commit()
+    return AdminTemplateResponse(
+        id=template.id,
+        slug=template.slug,
+        name=template.name,
+        summary=template.summary,
+        status=template.status,
+        category=category.name if category else "Unknown",
+        tags=await _tags(session, template.id),
+        versions=[_version_response(item) for item in versions],
+    )
+
+
 @router.post(
     "/admin/templates/{template_id}/versions",
     response_model=VersionResponse,
@@ -419,6 +464,42 @@ async def admin_deprecate(
 ) -> VersionResponse:
     return await _transition(
         "deprecate", template_id, version, payload, request, identity, session, settings, crypto
+    )
+
+
+@router.post(
+    "/admin/templates/{template_id}/versions/{version}/unpublish", response_model=VersionResponse
+)
+async def admin_unpublish_template(
+    template_id: UUID,
+    version: int,
+    payload: ReasonRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_admin_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> VersionResponse:
+    return await _transition(
+        "unpublish", template_id, version, payload, request, identity, session, settings, crypto
+    )
+
+
+@router.post(
+    "/admin/templates/{template_id}/versions/{version}/restore", response_model=VersionResponse
+)
+async def admin_restore_template(
+    template_id: UUID,
+    version: int,
+    payload: ReasonRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_admin_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> VersionResponse:
+    return await _transition(
+        "restore", template_id, version, payload, request, identity, session, settings, crypto
     )
 
 

@@ -267,43 +267,35 @@ PATCH /settings/marketing-consent
 
 ## Super Admin contracts
 
-Every endpoint below requires the isolated admin audience, `SUPER_ADMIN`, CSRF/origin validation for
-commands, a reason for high-impact mutations, and audit logging:
+Every endpoint below requires the isolated admin audience and `SUPER_ADMIN`. Commands also require
+JSON origin/CSRF validation and write audited evidence. Operational reads are bounded and server-derived;
+they never expose provider secrets, encrypted email content, payment webhook bodies, or raw analytics
+identifiers.
 
 ```text
-GET/PATCH /admin/users...
-GET       /admin/websites...
-GET/PATCH /admin/templates...
-POST      /admin/templates/{id}/versions/{id}/validate
-POST      /admin/templates/{id}/versions/{id}/approve
-POST      /admin/templates/{id}/versions/{id}/publish
-POST      /admin/templates/{id}/versions/{id}/deprecate
-GET/POST  /admin/plan-catalogs...
-POST      /admin/plan-catalogs/{id}/publish
+GET       /admin/overview
+GET       /admin/users?query=&limit=
+GET       /admin/users/{user_id}                    audited private-account read
+GET       /admin/operations/{section}?limit=        websites|commerce|leads-credits|domains|
+                                                     communications|analytics|audit|configuration
+GET       /admin/health                             authenticated real readiness probes
+GET/POST  /admin/templates
+PATCH     /admin/templates/{id}                     metadata/category/tags/featured order
+POST      /admin/templates/{id}/versions
+POST      /admin/templates/{id}/versions/{n}/validate
+POST      /admin/templates/{id}/versions/{n}/approve
+POST      /admin/templates/{id}/versions/{n}/publish
+POST      /admin/templates/{id}/versions/{n}/unpublish
+POST      /admin/templates/{id}/versions/{n}/deprecate
+POST      /admin/templates/{id}/versions/{n}/restore
+POST      /admin/template-assets
 GET/POST  /admin/export-prices
-GET       /admin/subscriptions
-GET       /admin/invoices
-GET       /admin/payments
-POST      /admin/payments/{id}/reconcile
-GET       /admin/credits/accounts
-POST      /admin/credits/adjustments
-GET       /admin/leads
-GET       /admin/domains
-GET       /admin/analytics
-POST      /admin/emails
-GET/POST  /admin/campaigns...
-POST      /admin/campaigns/{id}/send
-GET/POST  /admin/blog/posts...
-POST      /admin/blog/posts/{id}/publish
-GET       /admin/system-health
-GET       /admin/audit-logs
-GET/POST  /admin/platform-settings...
+GET/POST  /admin/lead-credit-policy
+POST      /admin/users/{user_id}/lead-credits        Idempotency-Key required
 ```
 
-Large collections use cursor pagination and server-side filter/sort allowlists. Bulk commands have
-preview/dry validation plus explicit confirmation and per-item results; they do not silently partially
-succeed.
-
+The administrator cannot impersonate a User or bypass payment, ownership, Template validation, credit,
+or publishing transitions. The portal sends commands to their existing canonical services.
 ## Health and internal contracts
 
 ```text

@@ -78,6 +78,39 @@
         "title": "AddPage",
         "type": "object"
       },
+      "AdminHealthResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "checks": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Checks",
+            "type": "object"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "title": "Observed At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "degraded",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "checks",
+          "observed_at"
+        ],
+        "title": "AdminHealthResponse",
+        "type": "object"
+      },
       "AdminLoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -111,6 +144,186 @@
           "password"
         ],
         "title": "AdminLoginRequest",
+        "type": "object"
+      },
+      "AdminMetric": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value"
+        ],
+        "title": "AdminMetric",
+        "type": "object"
+      },
+      "AdminOperationListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "section": {
+            "enum": [
+              "websites",
+              "commerce",
+              "leads-credits",
+              "domains",
+              "communications",
+              "analytics",
+              "audit",
+              "configuration"
+            ],
+            "title": "Section",
+            "type": "string"
+          }
+        },
+        "required": [
+          "section",
+          "items"
+        ],
+        "title": "AdminOperationListResponse",
+        "type": "object"
+      },
+      "AdminOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "analytics_window_start": {
+            "format": "date",
+            "title": "Analytics Window Start",
+            "type": "string"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "leads_last_30_days": {
+            "title": "Leads Last 30 Days",
+            "type": "integer"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/AdminMetric"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "page_views_last_30_days": {
+            "title": "Page Views Last 30 Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "metrics",
+          "analytics_window_start",
+          "page_views_last_30_days",
+          "leads_last_30_days"
+        ],
+        "title": "AdminOverviewResponse",
+        "type": "object"
+      },
+      "AdminRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Attributes",
+            "type": "object"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Id"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "AdminRecord",
         "type": "object"
       },
       "AdminTemplateListResponse": {
@@ -184,6 +397,301 @@
           "versions"
         ],
         "title": "AdminTemplateResponse",
+        "type": "object"
+      },
+      "AdminUserDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "audit_activity": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Audit Activity",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit_ledger": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Credit Ledger",
+            "type": "array"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "draft_count": {
+            "title": "Draft Count",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "leads": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Leads",
+            "type": "array"
+          },
+          "live_website_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Website Id"
+          },
+          "live_website_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Website Name"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Payments",
+            "type": "array"
+          },
+          "plan_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Code"
+          },
+          "signup_methods": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signup Methods",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subscription_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription State"
+          },
+          "subscriptions": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Subscriptions",
+            "type": "array"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "website_count": {
+            "title": "Website Count",
+            "type": "integer"
+          },
+          "websites": {
+            "items": {
+              "$ref": "#/components/schemas/AdminRecord"
+            },
+            "title": "Websites",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "signup_methods",
+          "verified_at",
+          "created_at",
+          "website_count",
+          "draft_count",
+          "live_website_id",
+          "live_website_name",
+          "plan_code",
+          "subscription_state",
+          "websites",
+          "subscriptions",
+          "payments",
+          "credit_ledger",
+          "leads",
+          "domains",
+          "audit_activity"
+        ],
+        "title": "AdminUserDetail",
+        "type": "object"
+      },
+      "AdminUserListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminUserSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "AdminUserListResponse",
+        "type": "object"
+      },
+      "AdminUserSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "draft_count": {
+            "title": "Draft Count",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "live_website_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Website Id"
+          },
+          "live_website_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Website Name"
+          },
+          "plan_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Code"
+          },
+          "signup_methods": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signup Methods",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subscription_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription State"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "website_count": {
+            "title": "Website Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "signup_methods",
+          "verified_at",
+          "created_at",
+          "website_count",
+          "draft_count",
+          "live_website_id",
+          "live_website_name",
+          "plan_code",
+          "subscription_state"
+        ],
+        "title": "AdminUserSummary",
         "type": "object"
       },
       "AiEditRequest": {
@@ -3622,6 +4130,106 @@
         "title": "TemplateCreateRequest",
         "type": "object"
       },
+      "TemplateMetadataUpdateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category_description": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Description"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name"
+          },
+          "category_slug": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Slug"
+          },
+          "featured_order": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Order"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          }
+        },
+        "title": "TemplateMetadataUpdateRequest",
+        "type": "object"
+      },
       "TemplateSummary": {
         "additionalProperties": false,
         "properties": {
@@ -4242,6 +4850,27 @@
         ]
       }
     },
+    "/api/v1/admin/health": {
+      "get": {
+        "operationId": "admin_health_api_v1_admin_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminHealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Admin Health",
+        "tags": [
+          "super-admin-operations"
+        ]
+      }
+    },
     "/api/v1/admin/lead-credit-policy": {
       "get": {
         "operationId": "lead_credit_policy_api_v1_admin_lead_credit_policy_get",
@@ -4320,6 +4949,91 @@
         "summary": "Me",
         "tags": [
           "super-admin-authentication"
+        ]
+      }
+    },
+    "/api/v1/admin/operations/{section}": {
+      "get": {
+        "operationId": "operation_list_api_v1_admin_operations__section__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "section",
+            "required": true,
+            "schema": {
+              "enum": [
+                "websites",
+                "commerce",
+                "leads-credits",
+                "domains",
+                "communications",
+                "analytics",
+                "audit",
+                "configuration"
+              ],
+              "title": "Section",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperationListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Operation List",
+        "tags": [
+          "super-admin-operations"
+        ]
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "operationId": "overview_api_v1_admin_overview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "super-admin-operations"
         ]
       }
     },
@@ -4488,6 +5202,59 @@
           }
         },
         "summary": "Admin Create",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}": {
+      "patch": {
+        "operationId": "admin_update_metadata_api_v1_admin_templates__template_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateMetadataUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Admin Update Metadata",
         "tags": [
           "templates"
         ]
@@ -4732,6 +5499,130 @@
         ]
       }
     },
+    "/api/v1/admin/templates/{template_id}/versions/{version}/restore": {
+      "post": {
+        "operationId": "admin_restore_template_api_v1_admin_templates__template_id__versions__version__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Admin Restore Template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/{version}/unpublish": {
+      "post": {
+        "operationId": "admin_unpublish_template_api_v1_admin_templates__template_id__versions__version__unpublish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Admin Unpublish Template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
     "/api/v1/admin/templates/{template_id}/versions/{version}/validate": {
       "post": {
         "operationId": "admin_validate_api_v1_admin_templates__template_id__versions__version__validate_post",
@@ -4791,6 +5682,111 @@
         "summary": "Admin Validate",
         "tags": [
           "templates"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "users_api_v1_admin_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 160,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Query"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Users",
+        "tags": [
+          "super-admin-operations"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}": {
+      "get": {
+        "operationId": "user_detail_api_v1_admin_users__user_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "User Detail",
+        "tags": [
+          "super-admin-operations"
         ]
       }
     },

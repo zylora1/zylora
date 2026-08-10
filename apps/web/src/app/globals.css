@@ -558,3 +558,180 @@ button:disabled {
     flex-direction: column;
   }
 }
+
+.admin-operations {
+  display: grid;
+  gap: 1rem;
+  max-width: 80rem;
+}
+.admin-operations__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface-raised);
+}
+.admin-operations__summary h2,
+.admin-operations__summary p {
+  margin: 0;
+}
+.admin-operations__summary h2 {
+  margin: 0.2rem 0;
+}
+.admin-operations__summary p:not(.workspace-kicker),
+.admin-operations__footnote,
+.admin-operations__empty {
+  color: var(--ink-muted);
+}
+.admin-operations__metrics,
+.admin-operations__checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+.admin-operations__metrics div,
+.admin-operations__checks div {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--surface-raised);
+}
+.admin-operations__metrics dt,
+.admin-operations__checks dt {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+.admin-operations__metrics dd,
+.admin-operations__checks dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 720;
+}
+.admin-operations__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--surface-raised);
+}
+.admin-operations table {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: collapse;
+  text-align: left;
+}
+.admin-operations th,
+.admin-operations td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.admin-operations tr:last-child td {
+  border-bottom: 0;
+}
+.admin-operations td > strong,
+.admin-operations td > span {
+  display: block;
+}
+.admin-operations td > span {
+  margin-top: 0.2rem;
+  color: var(--ink-muted);
+}
+.admin-operations__search,
+.admin-operations__credit {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--surface-raised);
+}
+.admin-operations__search label,
+.admin-operations__credit label {
+  display: grid;
+  min-width: 12rem;
+  gap: 0.35rem;
+  font-weight: 650;
+}
+.admin-operations__search input,
+.admin-operations__search select,
+.admin-operations__credit input {
+  min-height: 2.55rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+.admin-operations__search button,
+.admin-operations__credit button,
+.admin-operations__user {
+  min-height: 2.55rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.admin-operations__search button,
+.admin-operations__credit button {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+  font-weight: 700;
+}
+.admin-operations__user-grid {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 1rem;
+}
+.admin-operations__user-grid > section:first-child {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+}
+.admin-operations__user {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.admin-operations__user:hover,
+.admin-operations__user:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+.admin-operations__user span,
+.admin-operations__user small {
+  color: var(--ink-muted);
+}
+.admin-operations__detail {
+  display: grid;
+  gap: 1rem;
+}
+.admin-operations__detail h2,
+.admin-operations__detail h3,
+.admin-operations__detail p {
+  margin: 0;
+}
+.admin-operations__detail section {
+  display: grid;
+  gap: 0.55rem;
+}
+@media (max-width: 760px) {
+  .admin-operations__summary,
+  .admin-operations__user-grid {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+  .admin-operations__summary {
+    flex-direction: column;
+  }
+}

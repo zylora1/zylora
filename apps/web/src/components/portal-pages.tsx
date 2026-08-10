@@ -1,6 +1,7 @@
 import { ActionLink, EmptyState, Notice, PageHeader, StatusBadge } from '@zylora/ui';
 import { ArrowRight, Check } from 'lucide-react';
 
+import { AdminOverviewPanel, AdminSectionPanel } from './admin-operations-panel';
 import { AnalyticsPanel } from './analytics-panel';
 import { BillingPanel } from './billing-panel';
 import { LeadsPanel } from './leads-panel';
@@ -144,27 +145,7 @@ export function AdminHomePage() {
         title="Platform overview"
         description="An isolated operational workspace for measured state, explicit decisions, and immutable evidence."
       />
-      <Notice tone="warning" title="No synthetic operational summary">
-        Service, commercial, Website, and security summaries will appear only when their
-        authoritative APIs provide measured data.
-      </Notice>
-      <div className="admin-principles">
-        <section>
-          <span>01</span>
-          <h2>Evidence before action</h2>
-          <p>Every sensitive decision shows actor, target, state, reason, and recovery.</p>
-        </section>
-        <section>
-          <span>02</span>
-          <h2>One canonical transition</h2>
-          <p>The console sends commands; it never invents alternate backend state changes.</p>
-        </section>
-        <section>
-          <span>03</span>
-          <h2>Audit is part of the work</h2>
-          <p>Privileged operations remain attributable and reviewable.</p>
-        </section>
-      </div>
+      <AdminOverviewPanel />
     </div>
   );
 }
@@ -173,12 +154,7 @@ export function AdminSectionPage({ section }: { section: PortalSection }) {
   return (
     <div className="workspace-page">
       <PageHeader eyebrow="Super Admin" title={section.label} description={section.description} />
-      <EmptyState
-        eyebrow="Operational state"
-        title={section.emptyTitle}
-        description={section.emptyDescription}
-        compact
-      />
+      <AdminSectionPanel section={section} />
     </div>
   );
 }
