@@ -21,36 +21,68 @@ export type TemplateSummary = {
   featured_order: number;
 };
 type Catalog = { items: TemplateSummary[]; next_cursor: string | null };
+type Category = { slug: string; name: string };
 
 const swatches = ['#164E46', '#2C342F', '#6B2E24', '#203D63', '#67412C'];
 
 export function TemplateGallery({ createDraft = false }: { createDraft?: boolean }) {
   const router = useRouter();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
+  const [feature, setFeature] = useState('');
   const [sort, setSort] = useState('featured');
   const [creating, setCreating] = useState<string | null>(null);
-  const load = async (parameters = '') => {
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [activeParameters, setActiveParameters] = useState('');
+
+  const load = async (parameters = '', append = false) => {
     setError('');
     try {
-      setCatalog(await apiRequest<Catalog>(`/api/v1/templates${parameters}`));
+      const next = await apiRequest<Catalog>(`/api/v1/templates${parameters}`);
+      setCatalog((current) =>
+        append && current
+          ? { items: [...current.items, ...next.items], next_cursor: next.next_cursor }
+          : next,
+      );
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The catalogue is unavailable.');
     }
   };
+
   useEffect(() => {
     void Promise.resolve().then(() => load());
+    void apiRequest<Category[]>('/api/v1/templates/categories')
+      .then(setCategories)
+      .catch(() => setCategories([]));
   }, []);
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const search = new URLSearchParams();
     if (query) search.set('query', query);
     if (category) search.set('category', category);
+    if (feature) search.set('feature', feature);
     search.set('sort', sort);
-    void load(`?${search}`);
+    const parameters = `?${search}`;
+    setActiveParameters(parameters);
+    void load(parameters);
   };
+
+  const loadMore = async () => {
+    if (!catalog?.next_cursor) return;
+    setLoadingMore(true);
+    const search = new URLSearchParams(activeParameters.replace(/^\?/, ''));
+    search.set('cursor', catalog.next_cursor);
+    try {
+      await load(`?${search}`, true);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const createWebsite = async (slug: string) => {
     setCreating(slug);
     setError('');
@@ -66,9 +98,7 @@ export function TemplateGallery({ createDraft = false }: { createDraft?: boolean
       setCreating(null);
     }
   };
-  const categories = Array.from(
-    new Map((catalog?.items ?? []).map((item) => [item.category_slug, item.category])).entries(),
-  );
+
   return (
     <>
       <form className={styles.filters} onSubmit={submit} aria-label="Filter Templates">
@@ -84,18 +114,24 @@ export function TemplateGallery({ createDraft = false }: { createDraft?: boolean
           aria-label="Category"
         >
           <option value="">All categories</option>
-          {categories.map(([slug, name]) => (
-            <option key={slug} value={slug}>
-              {name}
+          {categories.map((item) => (
+            <option key={item.slug} value={item.slug}>
+              {item.name}
             </option>
           ))}
         </select>
         <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort">
           <option value="featured">Featured first</option>
-          <option value="name">Name A–Z</option>
+          <option value="name">Name A-Z</option>
         </select>
-        <select aria-label="Feature" disabled>
-          <option>All capabilities</option>
+        <select
+          value={feature}
+          onChange={(event) => setFeature(event.target.value)}
+          aria-label="Feature"
+        >
+          <option value="">All capabilities</option>
+          <option value="LEAD_CAPTURE">Lead capture</option>
+          <option value="RESPONSIVE_PREVIEW">Responsive preview</option>
         </select>
         <button type="submit">Apply</button>
       </form>
@@ -103,14 +139,14 @@ export function TemplateGallery({ createDraft = false }: { createDraft?: boolean
         <div className={styles.empty} role="alert">
           <h2>Catalogue unavailable</h2>
           <p>{error}</p>
-          <button type="button" onClick={() => void load()}>
+          <button type="button" onClick={() => void load(activeParameters)}>
             Try again
           </button>
         </div>
       ) : null}
       {!catalog && !error ? (
         <div className={styles.empty} role="status">
-          Loading approved Templates…
+          Loading approved Templates...
         </div>
       ) : null}
       {catalog && catalog.items.length === 0 ? (
@@ -120,45 +156,54 @@ export function TemplateGallery({ createDraft = false }: { createDraft?: boolean
         </div>
       ) : null}
       {catalog?.items.length ? (
-        <div className={styles.grid}>
-          {catalog.items.map((item, index) => (
-            <article className={styles.card} key={item.id}>
-              <div
-                className={styles.cardPreview}
-                style={
-                  { '--card-primary': swatches[index % swatches.length] } as React.CSSProperties
-                }
-              >
-                <span>{item.category}</span>
-                <strong>{item.name}</strong>
-              </div>
-              <div className={styles.cardBody}>
-                <h2>{item.name}</h2>
-                <p>{item.summary}</p>
-                <div className={styles.tags}>
-                  {item.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
+        <>
+          <div className={styles.grid} aria-live="polite">
+            {catalog.items.map((item, index) => (
+              <article className={styles.card} key={item.id}>
+                <div
+                  className={styles.cardPreview}
+                  style={
+                    { '--card-primary': swatches[index % swatches.length] } as React.CSSProperties
+                  }
+                >
+                  <span>{item.category}</span>
+                  <strong>{item.name}</strong>
                 </div>
-                <div className={styles.cardLinks}>
-                  <Link href={`/templates/${item.slug}`}>View details</Link>
-                  <Link href={`/templates/${item.slug}/preview?version=${item.version}`}>
-                    Preview
-                  </Link>{' '}
-                  {createDraft ? (
-                    <button
-                      type="button"
-                      disabled={creating === item.slug}
-                      onClick={() => void createWebsite(item.slug)}
-                    >
-                      {creating === item.slug ? 'Creating Draft…' : 'Use this Template'}
-                    </button>
-                  ) : null}
+                <div className={styles.cardBody}>
+                  <h2>{item.name}</h2>
+                  <p>{item.summary}</p>
+                  <div className={styles.tags}>
+                    {item.tags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                  <div className={styles.cardLinks}>
+                    <Link href={`/templates/${item.slug}`}>View details</Link>
+                    <Link href={`/templates/${item.slug}/preview?version=${item.version}`}>
+                      Preview
+                    </Link>{' '}
+                    {createDraft ? (
+                      <button
+                        type="button"
+                        disabled={creating === item.slug}
+                        onClick={() => void createWebsite(item.slug)}
+                      >
+                        {creating === item.slug ? 'Creating Draft...' : 'Use this Template'}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+          {catalog.next_cursor ? (
+            <div className={styles.loadMore}>
+              <button type="button" disabled={loadingMore} onClick={() => void loadMore()}>
+                {loadingMore ? 'Loading more Templates...' : 'Load more Templates'}
+              </button>
+            </div>
+          ) : null}
+        </>
       ) : null}
     </>
   );

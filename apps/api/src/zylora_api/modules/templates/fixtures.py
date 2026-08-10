@@ -1,4 +1,4 @@
-# ruff: noqa: E501,RUF001
+# ruff: noqa: E501
 from __future__ import annotations
 
 from typing import Any
@@ -7,6 +7,7 @@ from typing import Any
 def curated_document(
     *, name: str, description: str, primary: str, accent: str, industry: str, voice: str
 ) -> dict[str, Any]:
+    """Return the compact, text-first foundation shared by vetted legacy templates."""
     return {
         "schema_version": "1.0.0",
         "registry_version": "1.0.0",
@@ -30,7 +31,7 @@ def curated_document(
                 "is_home": True,
                 "show_in_navigation": True,
                 "status": "ACTIVE",
-                "seo": {"title": f"{name} — {industry.title()}", "description": description[:160]},
+                "seo": {"title": f"{name} - {industry.title()}", "description": description[:160]},
                 "components": [
                     {
                         "id": "main-navigation",
@@ -79,32 +80,16 @@ def curated_document(
                             "items": [
                                 {
                                     "heading": "Clear expertise",
-                                    "body": "Explain the value in language customers understand.",
+                                    "body": "Explain value in language visitors understand.",
                                 },
                                 {
                                     "heading": "Considered details",
-                                    "body": "A polished system that adapts naturally across screens.",
+                                    "body": "A structured system that adapts across screens.",
                                 },
                                 {
                                     "heading": "Direct next step",
-                                    "body": "Every page guides visitors toward a useful conversation.",
+                                    "body": "Guide visitors toward a useful conversation.",
                                 },
-                            ],
-                        },
-                        "children": [],
-                        "responsive": {},
-                        "interactions": [],
-                    },
-                    {
-                        "id": "proof",
-                        "type": "TESTIMONIALS",
-                        "props": {
-                            "heading": "Trusted for thoughtful work",
-                            "items": [
-                                {
-                                    "quote": "The experience felt calm, clear, and unmistakably professional.",
-                                    "name": "A happy customer",
-                                }
                             ],
                         },
                         "children": [],
@@ -119,11 +104,11 @@ def curated_document(
                             "items": [
                                 {
                                     "question": "How do we begin?",
-                                    "answer": "Send a short note and we will suggest the clearest next step.",
+                                    "answer": "Send a short note and choose the clearest next step.",
                                 },
                                 {
                                     "question": "Can this grow with us?",
-                                    "answer": "Yes. The structured design supports new content without losing coherence.",
+                                    "answer": "Add structured content without losing coherence.",
                                 },
                             ],
                         },
@@ -135,7 +120,7 @@ def curated_document(
                         "id": "contact",
                         "type": "LEAD_FORM",
                         "props": {
-                            "heading": "Let’s make something useful",
+                            "heading": "Make something useful",
                             "body": "Tell us what you are working toward.",
                             "fields": [
                                 {"name": "name", "label": "Name", "type": "text"},
@@ -170,7 +155,7 @@ def curated_document(
     }
 
 
-CURATED_CATALOG = [
+INITIAL_CATALOG: list[dict[str, Any]] = [
     {
         "slug": "haven-health",
         "name": "Haven Health",
@@ -213,7 +198,7 @@ CURATED_CATALOG = [
         "summary": "A warm restaurant story balancing atmosphere, seasonal cooking, and direct reservations enquiries.",
         "category_slug": "food-hospitality",
         "category_name": "Food & Hospitality",
-        "category_description": "Inviting digital homes for restaurants, cafés, and hospitality businesses.",
+        "category_description": "Inviting digital homes for restaurants, cafes, and hospitality businesses.",
         "tags": ["restaurant", "warm", "seasonal"],
         "featured_order": 30,
         "document": curated_document(
@@ -226,3 +211,8 @@ CURATED_CATALOG = [
         ),
     },
 ]
+
+# Import after the shared document factory and initial set to avoid a circular module dependency.
+from zylora_api.modules.templates.scaling import build_scaled_catalogue  # noqa: E402
+
+CURATED_CATALOG: list[dict[str, Any]] = [*INITIAL_CATALOG, *build_scaled_catalogue()]

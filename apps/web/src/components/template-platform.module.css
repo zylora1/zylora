@@ -448,3 +448,13 @@
     justify-content: start;
   }
 }
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0;
+}
+
+.loadMore button {
+  min-height: 44px;
+}

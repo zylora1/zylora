@@ -62,34 +62,36 @@ const item = {
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/v1/templates**', async (route) => {
     const path = new URL(route.request().url()).pathname;
-    const body = path.endsWith('/instantiate')
-      ? {
-          id: '00000000-0000-0000-0000-000000000010',
-          owner_user_id: '00000000-0000-0000-0000-000000000020',
-          source_template_version_id: '00000000-0000-0000-0000-000000000002',
-          display_name: 'Haven Health Draft',
-          status: 'DRAFT',
-          pages: [
-            {
-              id: '00000000-0000-0000-0000-000000000030',
-              parent_page_id: null,
-              name: 'Home',
-              slug: '',
-              path: '/',
-              sort_order: 0,
-              is_home: true,
-              show_in_navigation: true,
-              status: 'DRAFT',
-            },
-          ],
-          created_at: '2026-08-10T00:00:00Z',
-          updated_at: '2026-08-10T00:00:00Z',
-        }
-      : path.endsWith('/preview')
-        ? { slug: item.slug, name: item.name, version: 1, document, checksum: 'a'.repeat(64) }
-        : path.endsWith('/haven-health')
-          ? item
-          : { items: [item], next_cursor: null };
+    const body = path.endsWith('/categories')
+      ? [{ slug: item.category_slug, name: item.category }]
+      : path.endsWith('/instantiate')
+        ? {
+            id: '00000000-0000-0000-0000-000000000010',
+            owner_user_id: '00000000-0000-0000-0000-000000000020',
+            source_template_version_id: '00000000-0000-0000-0000-000000000002',
+            display_name: 'Haven Health Draft',
+            status: 'DRAFT',
+            pages: [
+              {
+                id: '00000000-0000-0000-0000-000000000030',
+                parent_page_id: null,
+                name: 'Home',
+                slug: '',
+                path: '/',
+                sort_order: 0,
+                is_home: true,
+                show_in_navigation: true,
+                status: 'DRAFT',
+              },
+            ],
+            created_at: '2026-08-10T00:00:00Z',
+            updated_at: '2026-08-10T00:00:00Z',
+          }
+        : path.endsWith('/preview')
+          ? { slug: item.slug, name: item.name, version: 1, document, checksum: 'a'.repeat(64) }
+          : path.endsWith('/haven-health')
+            ? item
+            : { items: [item], next_cursor: null };
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -218,4 +220,57 @@ test('User gallery and isolated Super Admin lifecycle are accessible', async ({ 
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
   ).toEqual([]);
+});
+test('a 1,000-Template catalogue remains paginated and keyboard-accessible', async ({
+  page,
+}, testInfo) => {
+  const largeCatalogue = Array.from({ length: 1000 }, (_, index) => ({
+    ...item,
+    id: `00000000-0000-0000-0000-${String(index + 100).padStart(12, '0')}`,
+    slug: `scale-template-${index + 1}`,
+    name: `Scale Template ${index + 1}`,
+    summary: `A purposeful approved starting point number ${index + 1}.`,
+  }));
+  await page.unroute('**/api/v1/templates**');
+  await page.route('**/api/v1/templates**', async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith('/categories')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ slug: item.category_slug, name: item.category }]),
+      });
+      return;
+    }
+    const start = Number(url.searchParams.get('cursor') ?? '0');
+    const pageSize = 24;
+    const items = largeCatalogue.slice(start, start + pageSize);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items,
+        next_cursor: start + pageSize < largeCatalogue.length ? String(start + pageSize) : null,
+      }),
+    });
+  });
+
+  await page.goto('/templates');
+  await expect(page.getByRole('heading', { name: 'Scale Template 1', exact: true })).toBeVisible();
+  const loadMore = page.getByRole('button', { name: 'Load more Templates' });
+  await loadMore.focus();
+  await expect(loadMore).toBeFocused();
+  await loadMore.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Scale Template 25', exact: true })).toBeVisible();
+  expect(await page.locator('article').count()).toBe(48);
+  expect(
+    await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true);
+  expect(await page.locator('article a').count()).toBe(96);
+  if (testInfo.project.name === 'desktop-chromium') {
+    await page.screenshot({
+      path: testInfo.outputPath('template-catalogue-scale.png'),
+      fullPage: false,
+    });
+  }
 });

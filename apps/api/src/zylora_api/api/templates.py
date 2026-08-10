@@ -42,6 +42,7 @@ from zylora_api.modules.templates.schemas import (
     CatalogResponse,
     PreviewResponse,
     ReasonRequest,
+    TemplateCategorySummary,
     TemplateCreateRequest,
     TemplateMetadataUpdateRequest,
     TemplateSummary,
@@ -149,6 +150,30 @@ async def catalog(
         if len(rows) > limit
         else None,
     )
+
+
+@router.get("/templates/categories", response_model=list[TemplateCategorySummary])
+async def categories(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> list[TemplateCategorySummary]:
+    statement = (
+        select(TemplateCategory)
+        .where(
+            TemplateCategory.active.is_(True),
+            exists(
+                select(Template.id)
+                .join(TemplateVersion, Template.current_published_version_id == TemplateVersion.id)
+                .where(
+                    Template.category_id == TemplateCategory.id,
+                    Template.status == "ACTIVE",
+                    TemplateVersion.status == "PUBLISHED",
+                )
+            ),
+        )
+        .order_by(TemplateCategory.sort_order, TemplateCategory.name, TemplateCategory.slug)
+    )
+    rows = (await session.scalars(statement)).all()
+    return [TemplateCategorySummary(slug=row.slug, name=row.name) for row in rows]
 
 
 @router.get("/templates/{slug}", response_model=TemplateSummary)

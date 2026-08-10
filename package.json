@@ -34,6 +34,7 @@
     "test:e2e": "npm --workspace @zylora/web run test:e2e",
     "contracts:generate": "uv run python scripts/generate_openapi.py && openapi-typescript packages/contracts/openapi.json --output packages/contracts/src/api.generated.ts",
     "contracts:check": "npm run contracts:generate && git diff --exit-code -- packages/contracts/openapi.json packages/contracts/src/api.generated.ts",
+    "templates:validate-scale": "uv run python scripts/validate_template_scale.py",
     "templates:generate": "uv run python scripts/generate_template_contracts.py && prettier --write packages/template-schema/template-document.schema.json packages/template-schema/component-registry.json",
     "templates:check": "npm run templates:generate && git diff --exit-code -- packages/template-schema/template-document.schema.json packages/template-schema/component-registry.json",
     "infra:up": "docker compose -f infra/docker/compose.yml up -d --wait postgres redis minio mailpit",

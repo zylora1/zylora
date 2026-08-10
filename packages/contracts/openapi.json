@@ -4750,6 +4750,25 @@
         "title": "SubscriptionResponse",
         "type": "object"
       },
+      "TemplateCategorySummary": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name"
+        ],
+        "title": "TemplateCategorySummary",
+        "type": "object"
+      },
       "TemplateCreateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8672,6 +8691,31 @@
           }
         },
         "summary": "Catalog",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/categories": {
+      "get": {
+        "operationId": "categories_api_v1_templates_categories_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateCategorySummary"
+                  },
+                  "title": "Response Categories Api V1 Templates Categories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Categories",
         "tags": [
           "templates"
         ]

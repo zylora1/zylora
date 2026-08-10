@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from zylora_api.api.templates import admin_list, catalog, detail, preview
+from zylora_api.api.templates import admin_list, catalog, categories, detail, preview
 from zylora_api.db.template_models import Template, TemplateCategory, TemplateVersion
 from zylora_api.modules.auth.errors import AuthProblem
 from zylora_api.modules.auth.security import AuthCrypto
@@ -129,3 +129,10 @@ async def test_admin_list_includes_versions_and_commits_read_session() -> None:
     assert result.items[0].versions[0].status == "PUBLISHED"
     assert result.items[0].tags == ["clinic"]
     assert session.commits == 1
+
+
+async def test_public_categories_include_only_catalogue_filter_values() -> None:
+    _, _, category = models()
+    result = await categories(FakeSession([], scalar_batches=[[category]]))
+
+    assert [(item.slug, item.name) for item in result] == [("health", "Health")]

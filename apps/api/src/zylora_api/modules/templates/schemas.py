@@ -61,6 +61,11 @@ class CatalogResponse(Schema):
     next_cursor: str | None
 
 
+class TemplateCategorySummary(Schema):
+    slug: str
+    name: str
+
+
 class PreviewResponse(Schema):
     slug: str
     name: str
