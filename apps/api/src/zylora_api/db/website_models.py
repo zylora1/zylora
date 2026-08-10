@@ -128,11 +128,20 @@ class WebsiteOwnership(Base):
 class OwnershipTransfer(Base):
     __tablename__ = "ownership_transfers"
     __table_args__ = (
-        CheckConstraint("status IN ('COMPLETED','FAILED')", name="ck_ownership_transfers_status"),
+        CheckConstraint(
+            "status IN ('REQUESTED','VALIDATED','DEACTIVATING','COMPLETED','FAILED','CANCELLED')",
+            name="ck_ownership_transfers_status",
+        ),
         UniqueConstraint(
             "sender_user_id", "idempotency_key", name="uq_ownership_transfers_idempotency"
         ),
         Index("ix_ownership_transfers_website_time", "website_id", "created_at"),
+        Index(
+            "uq_ownership_transfers_active_website",
+            "website_id",
+            unique=True,
+            postgresql_where=text("status IN ('REQUESTED','VALIDATED','DEACTIVATING')"),
+        ),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
@@ -149,6 +158,8 @@ class OwnershipTransfer(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     failure_code: Mapped[str | None] = mapped_column(String(100))
+    confirmation_version: Mapped[str | None] = mapped_column(String(40))
+    validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

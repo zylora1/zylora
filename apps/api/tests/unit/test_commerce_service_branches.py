@@ -41,7 +41,13 @@ def verified(**changes: object) -> VerifiedSubscriptionPayment:
 
 def payment() -> SimpleNamespace:
     return SimpleNamespace(
-        id=uuid4(), expected_amount_minor=900, expected_currency="USD", state="CREATED"
+        id=uuid4(),
+        expected_amount_minor=900,
+        expected_currency="USD",
+        state="CREATED",
+        purpose="SUBSCRIPTION",
+        plan_id=uuid4(),
+        price_id=uuid4(),
     )
 
 
@@ -53,7 +59,7 @@ async def test_payment_verification_fails_closed_for_invalid_evidence() -> None:
     captured = payment()
     with pytest.raises(AuthProblem) as duplicate:
         await PaymentService(
-            SequenceSession([captured, object(), None])
+            SequenceSession([captured, SimpleNamespace(payment_id=captured.id), None])
         ).process_subscription_payment(  # type: ignore[arg-type]
             verified(payment_id=captured.id)
         )

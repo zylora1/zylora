@@ -315,3 +315,17 @@ PENDING ──authorized cancellation──> CANCELLED
 
 Handlers checkpoint only safe resumable state. Job completion is recorded after the external effect
 and authoritative transition are verifiably complete.
+
+## Phase 9 implemented transfer and paid-export behavior
+
+The Phase 9 transfer row persists `VALIDATED`, `DEACTIVATING`, `COMPLETED`, `FAILED`, or
+`CANCELLED`. Recipient validation is read-only. An offline Website completes within one transaction;
+a live Website is first placed in `UNPUBLISHING` with a durable unpublish intent. The worker changes
+ownership only after the active route is confirmed inactive. A failed deactivation preserves the
+current owner and live Website.
+
+Paid Website export is a parallel `ExportPurchase` workflow. It snapshots an active versioned
+Super-Admin price and the exact immutable Website version before checkout. A trusted payment event
+moves the purchase to generation and emits a durable outbox intent. Only `READY` with an unexpired
+private artifact may be downloaded by the current purchaser/current Website owner. The recipient of a
+transfer receives a Draft and follows the ordinary future domain/publish flow.

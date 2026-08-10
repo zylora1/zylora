@@ -179,13 +179,15 @@ async def test_commerce_http_routes_use_server_evaluated_responses(
     class Ownership:
         def __init__(self, _: object) -> None: ...
 
-        async def transfer(self, *_: object) -> object:
+        async def start_transfer(self, *_: object) -> object:
             return SimpleNamespace(
                 id=transfer_id,
                 website_id=website_id,
                 sender_user_id=user.id,
                 recipient_user_id=recipient_id,
                 status="COMPLETED",
+                failure_code=None,
+                validated_at=datetime(2026, 8, 1, tzinfo=UTC),
                 completed_at=datetime(2026, 8, 1, tzinfo=UTC),
             )
 
@@ -222,7 +224,10 @@ async def test_commerce_http_routes_use_server_evaluated_responses(
         )
         transfer = await client.post(
             f"/api/v1/websites/{website_id}/transfers",
-            json={"recipient_email": "recipient@example.com"},
+            json={
+                "recipient_email": "recipient@example.com",
+                "confirmation_version": "OWNER_TRANSFER_V1",
+            },
             headers={**headers, "Idempotency-Key": "commerce-transfer-0001"},
         )
 
@@ -245,3 +250,136 @@ async def test_commerce_http_routes_use_server_evaluated_responses(
     assert transfer.json()["recipient_user_id"] == str(recipient_id)
     assert database.commits == 8
     assert len(database.added) == 4
+
+
+async def test_phase9_transfer_and_export_routes_only_return_server_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app, database, user = setup(monkeypatch)
+    website_id = uuid4()
+    transfer_id = uuid4()
+    recipient_id = uuid4()
+    purchase_id = uuid4()
+    payment_id = uuid4()
+    version_id = uuid4()
+    now = datetime(2026, 8, 1, tzinfo=UTC)
+    transfer = SimpleNamespace(
+        id=transfer_id,
+        website_id=website_id,
+        sender_user_id=user.id,
+        recipient_user_id=recipient_id,
+        status="DEACTIVATING",
+        failure_code=None,
+        validated_at=now,
+        completed_at=None,
+    )
+    purchase = SimpleNamespace(
+        id=purchase_id,
+        website_id=website_id,
+        website_version_id=version_id,
+        state="CREATED",
+        amount_minor=1900,
+        currency="USD",
+        price_version=1,
+        created_at=now,
+        paid_at=None,
+        ready_at=None,
+        expires_at=None,
+        failure_code=None,
+    )
+
+    class Ownership:
+        def __init__(self, _: object) -> None: ...
+
+        async def validate_recipient(self, *_: object) -> tuple[object, object]:
+            return SimpleNamespace(id=website_id, status="PUBLISHED"), SimpleNamespace(
+                id=recipient_id, display_email="recipient@example.com"
+            )
+
+        async def start_transfer(self, *_: object) -> object:
+            return transfer
+
+        async def get_for_owner(self, *_: object) -> object:
+            return transfer
+
+    class Exports:
+        def __init__(self, *_: object) -> None: ...
+
+        async def create_purchase(self, *_: object) -> object:
+            return purchase
+
+        async def get_for_owner(self, *_: object) -> object:
+            return purchase
+
+        async def checkout(self, *_: object) -> tuple[object, object]:
+            purchase.state = "PAYMENT_PENDING"
+            return purchase, SimpleNamespace(id=payment_id)
+
+        async def queue_generation(self, *_: object) -> tuple[object, bool]:
+            purchase.state = "GENERATING"
+            return purchase, True
+
+        async def artifact_for_download(self, *_: object) -> object:
+            return SimpleNamespace(object_key="website-exports/purchase.zip")
+
+    class Storage:
+        def get_bytes(self, _: str) -> bytes:
+            return b"phase9-private-zip"
+
+    monkeypatch.setattr(commerce_api, "OwnershipService", Ownership)
+    monkeypatch.setattr(commerce_api, "ExportService", Exports)
+    monkeypatch.setattr(commerce_api, "publication_storage_for", lambda _: Storage())
+    app.dependency_overrides[commerce_api.get_settings] = lambda: commerce_api.Settings(
+        _env_file=None, environment="test", storage_provider="memory"
+    )
+    headers = {"Origin": "http://localhost:3000", "X-CSRF-Token": "commerce-csrf"}
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        client.cookies.set("zylora_user_csrf", "commerce-csrf")
+        validation = await client.post(
+            f"/api/v1/websites/{website_id}/transfers/validate",
+            json={"recipient_email": "recipient@example.com"},
+            headers=headers,
+        )
+        transfer_response = await client.post(
+            f"/api/v1/websites/{website_id}/transfers",
+            json={
+                "recipient_email": "recipient@example.com",
+                "confirmation_version": "OWNER_TRANSFER_V1",
+            },
+            headers={**headers, "Idempotency-Key": "phase9-transfer-route-0001"},
+        )
+        transfer_status = await client.get(f"/api/v1/websites/{website_id}/transfers/{transfer_id}")
+        created = await client.post(
+            f"/api/v1/websites/{website_id}/exports",
+            json={},
+            headers={**headers, "Idempotency-Key": "phase9-export-route-0001"},
+        )
+        status_response = await client.get(f"/api/v1/website-exports/{purchase_id}")
+        checkout = await client.post(
+            f"/api/v1/website-exports/{purchase_id}/checkout", json={}, headers=headers
+        )
+        generation = await client.post(
+            f"/api/v1/website-exports/{purchase_id}/generate", json={}, headers=headers
+        )
+        download = await client.get(f"/api/v1/website-exports/{purchase_id}/download")
+
+    assert validation.json() == {
+        "website_id": str(website_id),
+        "recipient_email": "recipient@example.com",
+        "eligible": True,
+        "requires_route_deactivation": True,
+    }
+    assert transfer_response.status_code == 202
+    assert transfer_status.json()["status"] == "DEACTIVATING"
+    assert created.status_code == 201 and created.json()["price"] == {
+        "amount_minor": 1900,
+        "currency": "USD",
+    }
+    assert status_response.json()["id"] == str(purchase_id)
+    assert checkout.json()["provider_available"] is False
+    assert generation.status_code == 202 and generation.json()["queued"] is True
+    assert download.headers["content-type"] == "application/zip"
+    assert download.content == b"phase9-private-zip"
+    assert database.commits == 8

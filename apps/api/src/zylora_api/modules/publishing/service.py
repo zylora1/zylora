@@ -643,6 +643,13 @@ class DeploymentService:
                 )
             elif event.event_type == "website.unpublish_requested":
                 await self.process_unpublish(event.aggregate_id, provider, event.correlation_id)
+                transfer_id = event.payload.get("transfer_id")
+                if transfer_id:
+                    from zylora_api.modules.commerce.ownership import OwnershipService
+
+                    await OwnershipService(self.session).complete_after_unpublish(
+                        UUID(str(transfer_id))
+                    )
             else:
                 raise problem(
                     409, "unsupported_publication_event", "Publication event is unsupported."
@@ -653,9 +660,23 @@ class DeploymentService:
         except DomainProviderError as error:
             event.state = "FAILED"
             event.last_error_code = error.code
+            transfer_id = event.payload.get("transfer_id")
+            if transfer_id:
+                from zylora_api.modules.commerce.ownership import OwnershipService
+
+                await OwnershipService(self.session).fail_after_unpublish(
+                    UUID(str(transfer_id)), error.code
+                )
         except Exception:
             event.state = "FAILED"
             event.last_error_code = "publication_processing_failed"
+            transfer_id = event.payload.get("transfer_id")
+            if transfer_id:
+                from zylora_api.modules.commerce.ownership import OwnershipService
+
+                await OwnershipService(self.session).fail_after_unpublish(
+                    UUID(str(transfer_id)), "publication_processing_failed"
+                )
         finally:
             event.lease_owner = None
             event.leased_until = None

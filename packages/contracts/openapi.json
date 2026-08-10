@@ -980,6 +980,235 @@
         "title": "EmailRequest",
         "type": "object"
       },
+      "ExportCheckoutResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "payment_id": {
+            "format": "uuid",
+            "title": "Payment Id",
+            "type": "string"
+          },
+          "provider_available": {
+            "title": "Provider Available",
+            "type": "boolean"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/ExportPurchaseResponse"
+          }
+        },
+        "required": [
+          "purchase",
+          "payment_id",
+          "provider_available",
+          "detail"
+        ],
+        "title": "ExportCheckoutResponse",
+        "type": "object"
+      },
+      "ExportGenerationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "purchase": {
+            "$ref": "#/components/schemas/ExportPurchaseResponse"
+          },
+          "queued": {
+            "title": "Queued",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "purchase",
+          "queued"
+        ],
+        "title": "ExportGenerationResponse",
+        "type": "object"
+      },
+      "ExportPriceConfigureRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "amount_minor": {
+            "exclusiveMinimum": 0.0,
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "currency": {
+            "enum": [
+              "INR",
+              "USD"
+            ],
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "amount_minor"
+        ],
+        "title": "ExportPriceConfigureRequest",
+        "type": "object"
+      },
+      "ExportPriceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "enum": [
+              "INR",
+              "USD"
+            ],
+            "title": "Currency",
+            "type": "string"
+          },
+          "effective_at": {
+            "format": "date-time",
+            "title": "Effective At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "currency",
+          "amount_minor",
+          "active",
+          "version",
+          "effective_at",
+          "created_at"
+        ],
+        "title": "ExportPriceResponse",
+        "type": "object"
+      },
+      "ExportPurchaseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "ready_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ready At"
+          },
+          "status": {
+            "enum": [
+              "CREATED",
+              "PAYMENT_PENDING",
+              "PAID",
+              "GENERATING",
+              "READY",
+              "FAILED",
+              "EXPIRED",
+              "REFUNDED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          },
+          "website_version_id": {
+            "format": "uuid",
+            "title": "Website Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "website_id",
+          "website_version_id",
+          "status",
+          "price",
+          "created_at",
+          "paid_at",
+          "ready_at",
+          "expires_at"
+        ],
+        "title": "ExportPurchaseResponse",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1414,6 +1643,11 @@
       "OwnershipTransferRequest": {
         "additionalProperties": false,
         "properties": {
+          "confirmation_version": {
+            "const": "OWNER_TRANSFER_V1",
+            "title": "Confirmation Version",
+            "type": "string"
+          },
           "recipient_email": {
             "format": "email",
             "title": "Recipient Email",
@@ -1421,7 +1655,8 @@
           }
         },
         "required": [
-          "recipient_email"
+          "recipient_email",
+          "confirmation_version"
         ],
         "title": "OwnershipTransferRequest",
         "type": "object"
@@ -1430,9 +1665,27 @@
         "additionalProperties": false,
         "properties": {
           "completed_at": {
-            "format": "date-time",
-            "title": "Completed At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
           },
           "id": {
             "format": "uuid",
@@ -1450,8 +1703,26 @@
             "type": "string"
           },
           "status": {
+            "enum": [
+              "VALIDATED",
+              "DEACTIVATING",
+              "COMPLETED",
+              "FAILED"
+            ],
             "title": "Status",
             "type": "string"
+          },
+          "validated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validated At"
           },
           "website_id": {
             "format": "uuid",
@@ -1465,9 +1736,56 @@
           "sender_user_id",
           "recipient_user_id",
           "status",
+          "validated_at",
           "completed_at"
         ],
         "title": "OwnershipTransferResponse",
+        "type": "object"
+      },
+      "OwnershipTransferValidationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "recipient_email": {
+            "format": "email",
+            "title": "Recipient Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipient_email"
+        ],
+        "title": "OwnershipTransferValidationRequest",
+        "type": "object"
+      },
+      "OwnershipTransferValidationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "recipient_email": {
+            "format": "email",
+            "title": "Recipient Email",
+            "type": "string"
+          },
+          "requires_route_deactivation": {
+            "title": "Requires Route Deactivation",
+            "type": "boolean"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "recipient_email",
+          "eligible",
+          "requires_route_deactivation"
+        ],
+        "title": "OwnershipTransferValidationResponse",
         "type": "object"
       },
       "PageCreateRequest": {
@@ -3197,6 +3515,70 @@
         ]
       }
     },
+    "/api/v1/admin/export-prices": {
+      "get": {
+        "operationId": "export_prices_api_v1_admin_export_prices_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExportPriceResponse"
+                  },
+                  "title": "Response Export Prices Api V1 Admin Export Prices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Export Prices",
+        "tags": [
+          "admin-exports"
+        ]
+      },
+      "post": {
+        "operationId": "configure_export_price_api_v1_admin_export_prices_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportPriceConfigureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportPriceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Configure Export Price",
+        "tags": [
+          "admin-exports"
+        ]
+      }
+    },
     "/api/v1/admin/me": {
       "get": {
         "operationId": "me_api_v1_admin_me_get",
@@ -4618,6 +5000,176 @@
         ]
       }
     },
+    "/api/v1/website-exports/{purchase_id}": {
+      "get": {
+        "operationId": "export_status_api_v1_website_exports__purchase_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "purchase_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Purchase Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportPurchaseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Status",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/website-exports/{purchase_id}/checkout": {
+      "post": {
+        "operationId": "export_checkout_api_v1_website_exports__purchase_id__checkout_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "purchase_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Purchase Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportCheckoutResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Checkout",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/website-exports/{purchase_id}/download": {
+      "get": {
+        "operationId": "download_export_api_v1_website_exports__purchase_id__download_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "purchase_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Purchase Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Export",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/website-exports/{purchase_id}/generate": {
+      "post": {
+        "operationId": "generate_export_api_v1_website_exports__purchase_id__generate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "purchase_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Purchase Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportGenerationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Export",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
     "/api/v1/websites": {
       "get": {
         "operationId": "list_websites_api_v1_websites_get",
@@ -5106,6 +5658,65 @@
         ]
       }
     },
+    "/api/v1/websites/{website_id}/exports": {
+      "post": {
+        "operationId": "create_export_purchase_api_v1_websites__website_id__exports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportPurchaseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Export Purchase",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
     "/api/v1/websites/{website_id}/pages": {
       "post": {
         "operationId": "add_page_api_v1_websites__website_id__pages_post",
@@ -5560,7 +6171,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5582,6 +6193,112 @@
           }
         },
         "summary": "Transfer",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/transfers/validate": {
+      "post": {
+        "operationId": "validate_transfer_api_v1_websites__website_id__transfers_validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnershipTransferValidationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnershipTransferValidationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Transfer",
+        "tags": [
+          "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/transfers/{transfer_id}": {
+      "get": {
+        "operationId": "transfer_status_api_v1_websites__website_id__transfers__transfer_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "transfer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Transfer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnershipTransferResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transfer Status",
         "tags": [
           "commerce"
         ]

@@ -6,6 +6,7 @@ import { Notice, StatusBadge } from '@zylora/ui';
 
 import { apiRequest } from '@/lib/api';
 import { PublishControls } from './publish-controls';
+import { WebsiteExitControls } from './website-exit-controls';
 import styles from './template-platform.module.css';
 
 type Website = {
@@ -74,6 +75,7 @@ export function WebsiteDrafts() {
           <p>Organize every page in the compact Website map. Plans apply only when publishing.</p>
           <Link href={'/app/websites/' + item.id + '/edit'}>Manage pages</Link>
           <PublishControls websiteId={item.id} status={item.status} />
+          <WebsiteExitControls websiteId={item.id} />
         </article>
       ))}
     </div>

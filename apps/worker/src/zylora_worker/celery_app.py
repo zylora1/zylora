@@ -32,7 +32,11 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
             "zylora-publishing-outbox": {
                 "task": "zylora.publishing.dispatch_outbox",
                 "schedule": 10.0,
-            }
+            },
+            "zylora-export-outbox": {
+                "task": "zylora.exports.dispatch_outbox",
+                "schedule": 10.0,
+            },
         },
     )
     application.conf.zylora_version = __version__

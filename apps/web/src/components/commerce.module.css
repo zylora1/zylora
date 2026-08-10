@@ -279,3 +279,49 @@
 .domainStatus code {
   overflow-wrap: anywhere;
 }
+
+.exitControls {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid #ddd8cc;
+  padding-top: 1rem;
+}
+.exitControls h3,
+.exitControls p {
+  margin: 0;
+}
+.exitControls h3 {
+  font-size: 0.9rem;
+}
+.exitControls p,
+.exitControls label {
+  color: var(--z-color-ink-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+.exitControls > label:not(.confirmation) {
+  display: grid;
+  gap: 0.35rem;
+  width: min(100%, 28rem);
+}
+.exitControls input[type='email'] {
+  min-height: 2.65rem;
+  border: 1px solid #9aa19c;
+  background: white;
+  padding: 0.55rem;
+}
+.confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: min(100%, 38rem);
+}
+.confirmation input {
+  margin-top: 0.15rem;
+}
+.exitDivider {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: #ddd8cc;
+}

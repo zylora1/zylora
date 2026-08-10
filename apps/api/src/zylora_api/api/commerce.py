@@ -4,8 +4,10 @@ import re
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, Query, Request
+from fastapi import APIRouter, Depends, Header, Query, Request, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.auth_models import User
@@ -21,10 +23,18 @@ from zylora_api.modules.auth.http import (
     require_json_origin,
 )
 from zylora_api.modules.auth.security import AuthCrypto
+from zylora_api.modules.commerce.export_schemas import (
+    ExportCheckoutResponse,
+    ExportGenerationResponse,
+    ExportPurchaseResponse,
+)
+from zylora_api.modules.commerce.exports import ExportService, purchase_response
 from zylora_api.modules.commerce.ownership import OwnershipService
 from zylora_api.modules.commerce.ownership_schemas import (
     OwnershipTransferRequest,
     OwnershipTransferResponse,
+    OwnershipTransferValidationRequest,
+    OwnershipTransferValidationResponse,
 )
 from zylora_api.modules.commerce.publishing import PublishEligibilityService, PublishService
 from zylora_api.modules.commerce.schemas import (
@@ -40,6 +50,7 @@ from zylora_api.modules.commerce.schemas import (
     UnpublishCommandResponse,
 )
 from zylora_api.modules.commerce.service import CatalogService, SubscriptionService
+from zylora_api.modules.publishing.runtime import publication_storage_for
 from zylora_api.modules.templates.service import problem
 
 router = APIRouter(prefix="/api/v1", tags=["commerce"])
@@ -255,7 +266,60 @@ async def unpublish(
     return result
 
 
-@router.post("/websites/{website_id}/transfers", response_model=OwnershipTransferResponse)
+def transfer_response(result: object) -> OwnershipTransferResponse:
+    return OwnershipTransferResponse(
+        id=result.id,  # type: ignore[attr-defined]
+        website_id=result.website_id,  # type: ignore[attr-defined]
+        sender_user_id=result.sender_user_id,  # type: ignore[attr-defined]
+        recipient_user_id=result.recipient_user_id,  # type: ignore[attr-defined]
+        status=result.status,  # type: ignore[attr-defined]
+        failure_code=result.failure_code,  # type: ignore[attr-defined]
+        validated_at=result.validated_at,  # type: ignore[attr-defined]
+        completed_at=result.completed_at,  # type: ignore[attr-defined]
+    )
+
+
+@router.post(
+    "/websites/{website_id}/transfers/validate",
+    response_model=OwnershipTransferValidationResponse,
+)
+async def validate_transfer(
+    website_id: UUID,
+    payload: OwnershipTransferValidationRequest,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> OwnershipTransferValidationResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    recipient_email, _ = crypto.normalize_email(str(payload.recipient_email))
+    website, recipient = await OwnershipService(session).validate_recipient(
+        website_id, identity.user.id, recipient_email
+    )
+    AuditService(session, crypto).record(
+        "website.ownership_transfer_validated",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website",
+        target_id=str(website.id),
+        reason="OWNER_TRANSFER_RECIPIENT_VALIDATED",
+        ip_address=request_ip(request, settings),
+        metadata={"recipient_user_id": str(recipient.id)},
+    )
+    await session.commit()
+    return OwnershipTransferValidationResponse(
+        website_id=website.id,
+        recipient_email=recipient.display_email,
+        eligible=True,
+        requires_route_deactivation=website.status == "PUBLISHED",
+    )
+
+
+@router.post(
+    "/websites/{website_id}/transfers", response_model=OwnershipTransferResponse, status_code=202
+)
 async def transfer(
     website_id: UUID,
     payload: OwnershipTransferRequest,
@@ -269,28 +333,202 @@ async def transfer(
     require_json_origin(request, settings)
     require_csrf(request, identity, crypto)
     recipient, _ = crypto.normalize_email(str(payload.recipient_email))
-    result = await OwnershipService(session).transfer(
+    result = await OwnershipService(session).start_transfer(
         website_id,
         identity.user.id,
         recipient,
+        payload.confirmation_version,
         require_idempotency_key(idempotency_key),
+        correlation_id(request),
     )
     AuditService(session, crypto).record(
-        "website.ownership_transferred",
+        "website.ownership_transfer_requested",
         correlation_id=correlation_id(request),
         actor_user_id=identity.user.id,
         target_type="website",
         target_id=str(website_id),
         reason="OWNER_TRANSFER",
         ip_address=request_ip(request, settings),
-        metadata={"recipient_user_id": str(result.recipient_user_id)},
+        metadata={
+            "recipient_user_id": str(result.recipient_user_id),
+            "transfer_id": str(result.id),
+            "status": result.status,
+        },
     )
     await session.commit()
-    return OwnershipTransferResponse(
-        id=result.id,
-        website_id=result.website_id,
-        sender_user_id=result.sender_user_id,
-        recipient_user_id=result.recipient_user_id,
-        status=result.status,
-        completed_at=result.completed_at,
+    return transfer_response(result)
+
+
+@router.get(
+    "/websites/{website_id}/transfers/{transfer_id}", response_model=OwnershipTransferResponse
+)
+async def transfer_status(
+    website_id: UUID,
+    transfer_id: UUID,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> OwnershipTransferResponse:
+    result = await OwnershipService(session).get_for_owner(transfer_id, identity.user.id)
+    if result.website_id != website_id:
+        raise problem(404, "ownership_transfer_not_found", "Ownership transfer not found.")
+    await session.commit()
+    return transfer_response(result)
+
+
+@router.post(
+    "/websites/{website_id}/exports", response_model=ExportPurchaseResponse, status_code=201
+)
+async def create_export_purchase(
+    website_id: UUID,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> ExportPurchaseResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    purchase = await ExportService(session).create_purchase(
+        website_id,
+        identity.user.id,
+        request_country(request, settings, identity.user),
+        require_idempotency_key(idempotency_key),
     )
+    AuditService(session, crypto).record(
+        "website.export_purchase_created",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_export",
+        target_id=str(purchase.id),
+        reason="EXPORT_PRICE_SNAPSHOTTED",
+        ip_address=request_ip(request, settings),
+        metadata={
+            "website_id": str(website_id),
+            "amount_minor": purchase.amount_minor,
+            "currency": purchase.currency,
+            "price_version": purchase.price_version,
+        },
+    )
+    await session.commit()
+    return purchase_response(purchase)
+
+
+@router.get("/website-exports/{purchase_id}", response_model=ExportPurchaseResponse)
+async def export_status(
+    purchase_id: UUID,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ExportPurchaseResponse:
+    purchase = await ExportService(session).get_for_owner(purchase_id, identity.user.id)
+    await session.commit()
+    return purchase_response(purchase)
+
+
+@router.post("/website-exports/{purchase_id}/checkout", response_model=ExportCheckoutResponse)
+async def export_checkout(
+    purchase_id: UUID,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> ExportCheckoutResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    purchase, payment = await ExportService(session).checkout(purchase_id, identity.user.id)
+    AuditService(session, crypto).record(
+        "website.export_checkout_requested",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="payment",
+        target_id=str(payment.id),
+        reason="EXPORT_CHECKOUT",
+        ip_address=request_ip(request, settings),
+        metadata={"purchase_id": str(purchase.id), "amount_minor": purchase.amount_minor},
+    )
+    await session.commit()
+    return ExportCheckoutResponse(
+        purchase=purchase_response(purchase),
+        payment_id=payment.id,
+        provider_available=False,
+        detail=(
+            "Your server-authoritative export price is saved. Paid checkout remains unavailable "
+            "until an approved production payment provider is configured."
+        ),
+    )
+
+
+@router.post(
+    "/website-exports/{purchase_id}/generate",
+    response_model=ExportGenerationResponse,
+    status_code=202,
+)
+async def generate_export(
+    purchase_id: UUID,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> ExportGenerationResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    purchase, queued = await ExportService(session).queue_generation(
+        purchase_id, identity.user.id, correlation_id(request)
+    )
+    AuditService(session, crypto).record(
+        "website.export_generation_requested",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_export",
+        target_id=str(purchase.id),
+        reason="VERIFIED_EXPORT_PAYMENT",
+        ip_address=request_ip(request, settings),
+        metadata={"queued": queued},
+    )
+    await session.commit()
+    return ExportGenerationResponse(purchase=purchase_response(purchase), queued=queued)
+
+
+@router.get("/website-exports/{purchase_id}/download")
+async def download_export(
+    purchase_id: UUID,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> Response:
+    service = ExportService(session)
+    artifact = await service.artifact_for_download(purchase_id, identity.user.id)
+    AuditService(session, crypto).record(
+        "website.export_download_authorized",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website_export",
+        target_id=str(purchase_id),
+        reason="READY_PRIVATE_ARTIFACT",
+        ip_address=request_ip(request, settings),
+    )
+    storage = publication_storage_for(settings)
+    await session.commit()
+    if settings.environment == "test":
+        data = await run_in_threadpool(storage.get_bytes, artifact.object_key)
+        return Response(
+            content=data,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f'attachment; filename="zylora-website-{purchase_id}.zip"',
+                "Cache-Control": "private, no-store",
+            },
+        )
+    try:
+        signed_url = await run_in_threadpool(storage.presign_get, artifact.object_key, 300)
+    except RuntimeError as error:
+        raise problem(
+            503,
+            "website_export_storage_unavailable",
+            "Website export delivery is temporarily unavailable.",
+        ) from error
+    return RedirectResponse(signed_url, status_code=307, headers={"Cache-Control": "no-store"})

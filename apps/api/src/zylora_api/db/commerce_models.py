@@ -14,6 +14,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
     text,
@@ -191,14 +192,25 @@ class Subscription(Base):
 class Payment(Base):
     __tablename__ = "payments"
     __table_args__ = (
-        CheckConstraint("purpose = 'SUBSCRIPTION'", name="ck_payments_purpose"),
+        CheckConstraint("purpose IN ('SUBSCRIPTION','EXPORT')", name="ck_payments_purpose"),
         CheckConstraint(
             "state IN ('CREATED','PENDING','PROCESSING','CAPTURED','SETTLED','FAILED','CANCELLED','REFUND_PENDING','REFUNDED','PARTIALLY_REFUNDED')",
             name="ck_payments_state",
         ),
         CheckConstraint("expected_amount_minor >= 0", name="ck_payments_amount"),
         CheckConstraint("expected_currency IN ('INR','USD')", name="ck_payments_currency"),
+        CheckConstraint(
+            "(purpose = 'SUBSCRIPTION' AND plan_id IS NOT NULL AND price_id IS NOT NULL AND export_purchase_id IS NULL) OR "
+            "(purpose = 'EXPORT' AND plan_id IS NULL AND price_id IS NULL AND export_purchase_id IS NOT NULL)",
+            name="ck_payments_purpose_reference",
+        ),
         UniqueConstraint("user_id", "idempotency_key", name="uq_payments_user_idempotency"),
+        Index(
+            "uq_payments_export_purchase",
+            "export_purchase_id",
+            unique=True,
+            postgresql_where=text("export_purchase_id IS NOT NULL"),
+        ),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
@@ -206,11 +218,14 @@ class Payment(Base):
     user_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
-    plan_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("plans.id", ondelete="RESTRICT"), nullable=False
+    plan_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("plans.id", ondelete="RESTRICT")
     )
-    price_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("plan_prices.id", ondelete="RESTRICT"), nullable=False
+    price_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("plan_prices.id", ondelete="RESTRICT")
+    )
+    export_purchase_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("export_purchases.id", ondelete="RESTRICT")
     )
     purpose: Mapped[str] = mapped_column(String(24), nullable=False)
     state: Mapped[str] = mapped_column(String(24), nullable=False)
@@ -245,6 +260,107 @@ class PaymentEvent(Base):
     signature_verified: Mapped[bool] = mapped_column(Boolean, nullable=False)
     processing_outcome: Mapped[str] = mapped_column(String(80), nullable=False)
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ExportPrice(Base):
+    __tablename__ = "export_prices"
+    __table_args__ = (
+        CheckConstraint("amount_minor > 0", name="ck_export_prices_amount"),
+        CheckConstraint("currency IN ('INR','USD')", name="ck_export_prices_currency"),
+        CheckConstraint("version > 0", name="ck_export_prices_version"),
+        UniqueConstraint("currency", "version", name="uq_export_prices_currency_version"),
+        Index(
+            "uq_export_prices_active_currency",
+            "currency",
+            unique=True,
+            postgresql_where=text("active"),
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    effective_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    configured_by_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ExportPurchase(Base):
+    __tablename__ = "export_purchases"
+    __table_args__ = (
+        CheckConstraint(
+            "state IN ('CREATED','PAYMENT_PENDING','PAID','GENERATING','READY','FAILED','EXPIRED','REFUNDED')",
+            name="ck_export_purchases_state",
+        ),
+        CheckConstraint("amount_minor > 0", name="ck_export_purchases_amount"),
+        CheckConstraint("currency IN ('INR','USD')", name="ck_export_purchases_currency"),
+        CheckConstraint("price_version > 0", name="ck_export_purchases_price_version"),
+        UniqueConstraint(
+            "owner_user_id", "idempotency_key", name="uq_export_purchases_idempotency"
+        ),
+        Index("ix_export_purchases_owner_time", "owner_user_id", "created_at"),
+        Index("ix_export_purchases_website_state", "website_id", "state", "created_at"),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    website_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("websites.id", ondelete="RESTRICT"), nullable=False
+    )
+    owner_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    website_version_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("website_versions.id", ondelete="RESTRICT"), nullable=False
+    )
+    website_version_checksum: Mapped[str] = mapped_column(String(80), nullable=False)
+    export_price_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("export_prices.id", ondelete="RESTRICT"), nullable=False
+    )
+    price_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    state: Mapped[str] = mapped_column(String(24), nullable=False, server_default="CREATED")
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    generation_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ready_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    failure_code: Mapped[str | None] = mapped_column(String(100))
+    safe_error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class WebsiteExportArtifact(Base):
+    __tablename__ = "website_export_artifacts"
+    __table_args__ = (
+        CheckConstraint("byte_size > 0", name="ck_website_export_artifacts_size"),
+        CheckConstraint("download_count >= 0", name="ck_website_export_artifacts_download_count"),
+        UniqueConstraint("purchase_id", name="uq_website_export_artifacts_purchase"),
+        UniqueConstraint("object_key", name="uq_website_export_artifacts_object_key"),
+    )
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    purchase_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("export_purchases.id", ondelete="RESTRICT"), nullable=False
+    )
+    object_key: Mapped[str] = mapped_column(String(1024), nullable=False)
+    checksum_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    byte_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    manifest: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    download_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    last_downloaded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

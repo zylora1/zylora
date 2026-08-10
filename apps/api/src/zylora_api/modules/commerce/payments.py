@@ -5,11 +5,13 @@ import hmac
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.commerce_models import (
+    ExportPurchase,
     Invoice,
     Payment,
     PaymentEvent,
@@ -19,6 +21,7 @@ from zylora_api.db.commerce_models import (
     PlanPrice,
     Subscription,
 )
+from zylora_api.db.models import OutboxEvent
 from zylora_api.modules.commerce.service import entitlement_value, snapshot_entitlements
 from zylora_api.modules.templates.service import problem
 
@@ -33,6 +36,18 @@ class VerifiedSubscriptionPayment:
     currency: str
     period_start: datetime
     period_end: datetime
+    raw_body_hash: str
+    evidence: dict[str, str | int]
+
+
+@dataclass(frozen=True)
+class VerifiedExportPayment:
+    provider: str
+    provider_event_id: str
+    provider_payment_reference: str
+    payment_id: UUID
+    amount_minor: int
+    currency: str
     raw_body_hash: str
     evidence: dict[str, str | int]
 
@@ -76,6 +91,8 @@ class PaymentService:
         )
         if not payment:
             raise problem(404, "payment_not_found", "Payment not found.")
+        if payment.purpose != "SUBSCRIPTION" or not payment.plan_id or not payment.price_id:
+            raise problem(409, "payment_purpose_invalid", "Payment purpose verification failed.")
         duplicate = await self.session.scalar(
             select(PaymentEvent).where(
                 PaymentEvent.provider == verified.provider,
@@ -83,6 +100,8 @@ class PaymentService:
             )
         )
         if duplicate:
+            if duplicate.payment_id != payment.id:
+                raise problem(409, "payment_event_replay_mismatch", "Payment verification failed.")
             invoice = await self.session.scalar(
                 select(Invoice).where(Invoice.payment_id == payment.id)
             )
@@ -200,3 +219,83 @@ class PaymentService:
             )
         )
         return subscription
+
+    async def process_export_payment(self, verified: VerifiedExportPayment) -> ExportPurchase:
+        payment = await self.session.scalar(
+            select(Payment).where(Payment.id == verified.payment_id).with_for_update()
+        )
+        if not payment:
+            raise problem(404, "payment_not_found", "Payment not found.")
+        if payment.purpose != "EXPORT" or not payment.export_purchase_id:
+            raise problem(409, "payment_purpose_invalid", "Payment purpose verification failed.")
+        duplicate = await self.session.scalar(
+            select(PaymentEvent).where(
+                PaymentEvent.provider == verified.provider,
+                PaymentEvent.provider_event_id == verified.provider_event_id,
+            )
+        )
+        if duplicate:
+            if duplicate.payment_id != payment.id:
+                raise problem(409, "payment_event_replay_mismatch", "Payment verification failed.")
+            purchase = cast(
+                ExportPurchase | None,
+                await self.session.get(ExportPurchase, payment.export_purchase_id),
+            )
+            if not purchase:
+                raise problem(
+                    409, "payment_reconciliation_required", "Payment needs reconciliation."
+                )
+            return purchase
+        if verified.amount_minor != payment.expected_amount_minor:
+            raise problem(409, "payment_amount_mismatch", "Payment amount verification failed.")
+        if verified.currency != payment.expected_currency:
+            raise problem(409, "payment_currency_mismatch", "Payment currency verification failed.")
+        purchase = cast(
+            ExportPurchase | None,
+            await self.session.scalar(
+                select(ExportPurchase)
+                .where(ExportPurchase.id == payment.export_purchase_id)
+                .with_for_update()
+            ),
+        )
+        if not purchase or purchase.owner_user_id != payment.user_id:
+            raise problem(409, "payment_reference_invalid", "Payment verification failed.")
+        if (
+            purchase.amount_minor != payment.expected_amount_minor
+            or purchase.currency != payment.expected_currency
+            or purchase.state not in {"PAYMENT_PENDING", "PAID", "GENERATING", "READY"}
+        ):
+            raise problem(409, "export_purchase_state_invalid", "Payment verification failed.")
+        if payment.state in {"CAPTURED", "SETTLED"}:
+            return purchase
+        now = datetime.now(UTC)
+        payment.provider = verified.provider
+        payment.provider_payment_reference = verified.provider_payment_reference
+        payment.state = "CAPTURED"
+        payment.trusted_at = now
+        self.session.add(
+            PaymentEvent(
+                payment_id=payment.id,
+                provider=verified.provider,
+                provider_event_id=verified.provider_event_id,
+                event_type="EXPORT_CAPTURED",
+                raw_body_hash=verified.raw_body_hash,
+                signature_verified=True,
+                processing_outcome="APPLIED",
+                evidence=verified.evidence,
+            )
+        )
+        purchase.paid_at = now
+        if purchase.state in {"PAYMENT_PENDING", "PAID"}:
+            purchase.state = "GENERATING"
+            purchase.generation_requested_at = now
+            self.session.add(
+                OutboxEvent(
+                    aggregate_type="EXPORT_PURCHASE",
+                    aggregate_id=purchase.id,
+                    event_type="export.generate_requested",
+                    payload={"purchase_id": str(purchase.id)},
+                    correlation_id=f"payment:{payment.id}",
+                )
+            )
+        return purchase

@@ -38,6 +38,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/export-prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Prices */
+        get: operations["export_prices_api_v1_admin_export_prices_get"];
+        put?: never;
+        /** Configure Export Price */
+        post: operations["configure_export_price_api_v1_admin_export_prices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/me": {
         parameters: {
             query?: never;
@@ -583,6 +601,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/website-exports/{purchase_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Status */
+        get: operations["export_status_api_v1_website_exports__purchase_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/website-exports/{purchase_id}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Checkout */
+        post: operations["export_checkout_api_v1_website_exports__purchase_id__checkout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/website-exports/{purchase_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Export */
+        get: operations["download_export_api_v1_website_exports__purchase_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/website-exports/{purchase_id}/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Export */
+        post: operations["generate_export_api_v1_website_exports__purchase_id__generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/websites": {
         parameters: {
             query?: never;
@@ -753,6 +839,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/websites/{website_id}/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Export Purchase */
+        post: operations["create_export_purchase_api_v1_websites__website_id__exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/websites/{website_id}/pages": {
         parameters: {
             query?: never;
@@ -867,6 +970,40 @@ export interface paths {
         put?: never;
         /** Transfer */
         post: operations["transfer_api_v1_websites__website_id__transfers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/transfers/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate Transfer */
+        post: operations["validate_transfer_api_v1_websites__website_id__transfers_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/transfers/{transfer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transfer Status */
+        get: operations["transfer_status_api_v1_websites__website_id__transfers__transfer_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1323,6 +1460,106 @@ export interface components {
             /** Turnstile Token */
             turnstile_token?: string | null;
         };
+        /** ExportCheckoutResponse */
+        ExportCheckoutResponse: {
+            /** Detail */
+            detail: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Provider Available */
+            provider_available: boolean;
+            purchase: components["schemas"]["ExportPurchaseResponse"];
+        };
+        /** ExportGenerationResponse */
+        ExportGenerationResponse: {
+            purchase: components["schemas"]["ExportPurchaseResponse"];
+            /** Queued */
+            queued: boolean;
+        };
+        /** ExportPriceConfigureRequest */
+        ExportPriceConfigureRequest: {
+            /**
+             * Active
+             * @default true
+             */
+            active: boolean;
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Currency
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+        };
+        /** ExportPriceResponse */
+        ExportPriceResponse: {
+            /** Active */
+            active: boolean;
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Currency
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version: number;
+        };
+        /** ExportPurchaseResponse */
+        ExportPurchaseResponse: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Expires At */
+            expires_at: string | null;
+            /** Failure Code */
+            failure_code?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Paid At */
+            paid_at: string | null;
+            price: components["schemas"]["MoneyResponse"];
+            /** Ready At */
+            ready_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "CREATED" | "PAYMENT_PENDING" | "PAID" | "GENERATING" | "READY" | "FAILED" | "EXPIRED" | "REFUNDED";
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
+            /**
+             * Website Version Id
+             * Format: uuid
+             */
+            website_version_id: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1493,6 +1730,11 @@ export interface components {
         /** OwnershipTransferRequest */
         OwnershipTransferRequest: {
             /**
+             * Confirmation Version
+             * @constant
+             */
+            confirmation_version: "OWNER_TRANSFER_V1";
+            /**
              * Recipient Email
              * Format: email
              */
@@ -1500,11 +1742,10 @@ export interface components {
         };
         /** OwnershipTransferResponse */
         OwnershipTransferResponse: {
-            /**
-             * Completed At
-             * Format: date-time
-             */
-            completed_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Failure Code */
+            failure_code?: string | null;
             /**
              * Id
              * Format: uuid
@@ -1520,8 +1761,38 @@ export interface components {
              * Format: uuid
              */
             sender_user_id: string;
-            /** Status */
-            status: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "VALIDATED" | "DEACTIVATING" | "COMPLETED" | "FAILED";
+            /** Validated At */
+            validated_at: string | null;
+            /**
+             * Website Id
+             * Format: uuid
+             */
+            website_id: string;
+        };
+        /** OwnershipTransferValidationRequest */
+        OwnershipTransferValidationRequest: {
+            /**
+             * Recipient Email
+             * Format: email
+             */
+            recipient_email: string;
+        };
+        /** OwnershipTransferValidationResponse */
+        OwnershipTransferValidationResponse: {
+            /** Eligible */
+            eligible: boolean;
+            /**
+             * Recipient Email
+             * Format: email
+             */
+            recipient_email: string;
+            /** Requires Route Deactivation */
+            requires_route_deactivation: boolean;
             /**
              * Website Id
              * Format: uuid
@@ -2278,6 +2549,59 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    export_prices_api_v1_admin_export_prices_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportPriceResponse"][];
+                };
+            };
+        };
+    };
+    configure_export_price_api_v1_admin_export_prices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportPriceConfigureRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportPriceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -3257,6 +3581,130 @@ export interface operations {
             };
         };
     };
+    export_status_api_v1_website_exports__purchase_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportPurchaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_checkout_api_v1_website_exports__purchase_id__checkout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportCheckoutResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_export_api_v1_website_exports__purchase_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_export_api_v1_website_exports__purchase_id__generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportGenerationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_websites_api_v1_websites_get: {
         parameters: {
             query?: never;
@@ -3576,6 +4024,39 @@ export interface operations {
             };
         };
     };
+    create_export_purchase_api_v1_websites__website_id__exports_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportPurchaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_page_api_v1_websites__website_id__pages_post: {
         parameters: {
             query?: never;
@@ -3837,6 +4318,73 @@ export interface operations {
                 "application/json": components["schemas"]["OwnershipTransferRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnershipTransferResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_transfer_api_v1_websites__website_id__transfers_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnershipTransferValidationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnershipTransferValidationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transfer_status_api_v1_websites__website_id__transfers__transfer_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+                transfer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

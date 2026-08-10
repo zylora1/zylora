@@ -33,6 +33,8 @@ from zylora_api.db.auth_models import (
 )
 from zylora_api.db.base import Base
 from zylora_api.db.commerce_models import (
+    ExportPrice,
+    ExportPurchase,
     Invoice,
     NotificationQuotaAccount,
     NotificationQuotaLedger,
@@ -43,6 +45,7 @@ from zylora_api.db.commerce_models import (
     PlanEntitlement,
     PlanPrice,
     Subscription,
+    WebsiteExportArtifact,
 )
 from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
 from zylora_api.db.lead_models import Lead
@@ -78,6 +81,8 @@ __all__ = [
     "DeploymentEvent",
     "Domain",
     "EmailVerification",
+    "ExportPrice",
+    "ExportPurchase",
     "Invoice",
     "Lead",
     "NotificationQuotaAccount",
@@ -103,6 +108,7 @@ __all__ = [
     "TemplateVersion",
     "User",
     "Website",
+    "WebsiteExportArtifact",
     "WebsiteOwnership",
     "WebsitePage",
     "WebsitePagePathChange",

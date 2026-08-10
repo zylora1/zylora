@@ -14,6 +14,11 @@ from zylora_api.modules.auth.oauth import GoogleOAuthService, GoogleProfile
 from zylora_api.modules.auth.security import AuthCrypto
 
 
+def _isolated_test_ip() -> str:
+    value = uuid4().int
+    return f"127.{(value >> 16) % 254 + 1}.{(value >> 8) % 254 + 1}.{value % 254 + 1}"
+
+
 class FakeGoogleAdapter:
     def __init__(self, profile: GoogleProfile) -> None:
         self.profile = profile
@@ -53,19 +58,20 @@ async def test_google_oauth_transaction_creates_and_reuses_one_verified_identity
     email = f"google-{uuid4()}@example.com"
     adapter = FakeGoogleAdapter(GoogleProfile(subject=f"subject-{uuid4()}", email=email))
     factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    first_ip = _isolated_test_ip()
+    second_ip = _isolated_test_ip()
+    invalid_ip = _isolated_test_ip()
 
     async with factory() as session:
         service = GoogleOAuthService(session, settings, crypto, adapter)
-        start_url = await service.start(
-            ip_address="127.0.0.21", correlation_id="google-start-first"
-        )
+        start_url = await service.start(ip_address=first_ip, correlation_id="google-start-first")
         query = parse_qs(urlparse(start_url).query)
         state = query["state"][0]
         nonce = query["nonce"][0]
         user, first_session = await service.finish(
             state=state,
             code="authorization-code",
-            ip_address="127.0.0.21",
+            ip_address=first_ip,
             user_agent="Google OAuth test",
             correlation_id="google-first",
         )
@@ -81,14 +87,12 @@ async def test_google_oauth_transaction_creates_and_reuses_one_verified_identity
         )
         assert identity is not None
 
-        second_url = await service.start(
-            ip_address="127.0.0.22", correlation_id="google-start-second"
-        )
+        second_url = await service.start(ip_address=second_ip, correlation_id="google-start-second")
         second_state = parse_qs(urlparse(second_url).query)["state"][0]
         same_user, second_session = await service.finish(
             state=second_state,
             code="authorization-code",
-            ip_address="127.0.0.22",
+            ip_address=second_ip,
             user_agent="Google OAuth test",
             correlation_id="google-second",
         )
@@ -101,7 +105,7 @@ async def test_google_oauth_transaction_creates_and_reuses_one_verified_identity
             await service.finish(
                 state="invalid-state-value-with-enough-characters",
                 code="authorization-code",
-                ip_address="127.0.0.23",
+                ip_address=invalid_ip,
                 user_agent=None,
                 correlation_id="google-invalid",
             )
@@ -127,6 +131,8 @@ async def test_google_verified_email_activates_pending_user_and_provider_outage_
     email = f"pending-google-{uuid4()}@example.com"
     adapter = FakeGoogleAdapter(GoogleProfile(subject=f"subject-{uuid4()}", email=email))
     factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    link_ip = _isolated_test_ip()
+    outage_ip = _isolated_test_ip()
 
     async with factory() as session:
         pending = User(
@@ -140,28 +146,26 @@ async def test_google_verified_email_activates_pending_user_and_provider_outage_
         await session.commit()
         pending_id = pending.id
         service = GoogleOAuthService(session, settings, crypto, adapter)
-        start_url = await service.start(ip_address="127.0.0.24", correlation_id="google-start-link")
+        start_url = await service.start(ip_address=link_ip, correlation_id="google-start-link")
         state = parse_qs(urlparse(start_url).query)["state"][0]
         linked, _ = await service.finish(
             state=state,
             code="authorization-code",
-            ip_address="127.0.0.24",
+            ip_address=link_ip,
             user_agent=None,
             correlation_id="google-link",
         )
         assert linked.id == pending_id
         assert linked.status == "ACTIVE"
 
-        outage_url = await service.start(
-            ip_address="127.0.0.25", correlation_id="google-start-outage"
-        )
+        outage_url = await service.start(ip_address=outage_ip, correlation_id="google-start-outage")
         outage_state = parse_qs(urlparse(outage_url).query)["state"][0]
         adapter.unavailable = True
         with pytest.raises(AuthProblem, match="Google sign-in unavailable"):
             await service.finish(
                 state=outage_state,
                 code="authorization-code",
-                ip_address="127.0.0.25",
+                ip_address=outage_ip,
                 user_agent=None,
                 correlation_id="google-outage",
             )

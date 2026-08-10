@@ -280,7 +280,7 @@ POST      /admin/templates/{id}/versions/{id}/publish
 POST      /admin/templates/{id}/versions/{id}/deprecate
 GET/POST  /admin/plan-catalogs...
 POST      /admin/plan-catalogs/{id}/publish
-GET/POST  /admin/export-pricing...
+GET/POST  /admin/export-prices
 GET       /admin/subscriptions
 GET       /admin/invoices
 GET       /admin/payments
