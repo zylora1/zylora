@@ -32,6 +32,13 @@ from zylora_api.db.auth_models import (
     User,
 )
 from zylora_api.db.base import Base
+from zylora_api.db.chatbot_models import (
+    Chatbot,
+    ChatbotKnowledgeChunk,
+    ChatbotKnowledgeIndex,
+    ChatConversation,
+    ChatMessage,
+)
 from zylora_api.db.commerce_models import (
     ExportPrice,
     ExportPurchase,
@@ -48,7 +55,13 @@ from zylora_api.db.commerce_models import (
     WebsiteExportArtifact,
 )
 from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
-from zylora_api.db.lead_models import Lead
+from zylora_api.db.lead_models import (
+    AnalyticsEvent,
+    Lead,
+    LeadCreditAccount,
+    LeadCreditLedger,
+    Notification,
+)
 from zylora_api.db.template_models import (
     Template,
     TemplateAsset,
@@ -74,9 +87,15 @@ __all__ = [
     "AiCreditAccount",
     "AiCreditLedger",
     "AiOperation",
+    "AnalyticsEvent",
     "AuditLog",
     "AuthAttempt",
     "AuthIdentity",
+    "ChatConversation",
+    "ChatMessage",
+    "Chatbot",
+    "ChatbotKnowledgeChunk",
+    "ChatbotKnowledgeIndex",
     "Deployment",
     "DeploymentEvent",
     "Domain",
@@ -85,6 +104,9 @@ __all__ = [
     "ExportPurchase",
     "Invoice",
     "Lead",
+    "LeadCreditAccount",
+    "LeadCreditLedger",
+    "Notification",
     "NotificationQuotaAccount",
     "NotificationQuotaLedger",
     "OAuthTransaction",

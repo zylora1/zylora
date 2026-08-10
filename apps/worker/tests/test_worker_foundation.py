@@ -215,3 +215,86 @@ def test_export_task_and_dispatcher_validate_and_enqueue_independently(
     assert enqueued == event_ids
     with pytest.raises(ValueError, match="between 1 and 100"):
         tasks.dispatch_export_events(101)
+
+
+@pytest.mark.asyncio
+async def test_chatbot_worker_uses_the_isolated_index_service_and_commits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sqlalchemy.ext.asyncio as sqlalchemy_asyncio
+    from zylora_api.core import config
+    from zylora_api.db import session as db_session
+    from zylora_api.modules.chatbot import indexing
+    from zylora_api.modules.publishing import runtime
+
+    event_id = uuid4()
+    captured: dict[str, object] = {}
+
+    class FakeSession:
+        async def __aenter__(self) -> "FakeSession":
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            captured["committed"] = True
+
+    class FakeIndexes:
+        def __init__(self, session: FakeSession, storage: object, settings: Settings) -> None:
+            captured.update({"session": session, "storage": storage, "settings": settings})
+
+        async def process_outbox_event(self, received_id: UUID) -> SimpleNamespace:
+            captured["event_id"] = received_id
+            return SimpleNamespace(state="PUBLISHED")
+
+    worker_session = FakeSession()
+    worker_settings = Settings(_env_file=None, environment="test", storage_provider="memory")
+    storage = object()
+    monkeypatch.setattr(config, "get_settings", lambda: worker_settings)
+    monkeypatch.setattr(db_session, "get_engine", lambda: object())
+    monkeypatch.setattr(
+        sqlalchemy_asyncio,
+        "async_sessionmaker",
+        lambda *_args, **_kwargs: lambda: worker_session,
+    )
+    monkeypatch.setattr(runtime, "publication_storage_for", lambda _: storage)
+    monkeypatch.setattr(indexing, "KnowledgeIndexService", FakeIndexes)
+
+    assert await tasks._process_chatbot_event(event_id) == "PUBLISHED"
+    assert captured == {
+        "session": worker_session,
+        "storage": storage,
+        "settings": worker_settings,
+        "event_id": event_id,
+        "committed": True,
+    }
+
+
+def test_chatbot_task_and_dispatcher_validate_and_enqueue_independently(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called: list[UUID] = []
+    event_ids = [str(uuid4()), str(uuid4())]
+    enqueued: list[str] = []
+
+    async def successful(event_id: UUID) -> str:
+        called.append(event_id)
+        return "PUBLISHED"
+
+    async def claim(limit: int) -> list[str]:
+        assert limit == 2
+        return event_ids
+
+    monkeypatch.setattr(tasks, "_process_chatbot_event", successful)
+    first = uuid4()
+    assert tasks.process_chatbot_event(str(first)) == "PUBLISHED"
+    assert called == [first]
+    with pytest.raises(ValueError):
+        tasks.process_chatbot_event("not-a-uuid")
+    monkeypatch.setattr(tasks, "_claim_chatbot_events", claim)
+    monkeypatch.setattr(tasks.process_chatbot_event, "delay", enqueued.append)
+    assert tasks.dispatch_chatbot_events(2) == 2
+    assert enqueued == event_ids
+    with pytest.raises(ValueError, match="between 1 and 50"):
+        tasks.dispatch_chatbot_events(51)

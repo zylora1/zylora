@@ -103,6 +103,7 @@ class ChallengeService:
         expected_action: str,
         remote_ip: str,
         correlation_id: str,
+        expected_hostname: str | None = None,
     ) -> ChallengeDecision | None:
         if not self._settings.turnstile_enabled:
             return None
@@ -141,7 +142,12 @@ class ChallengeService:
                 problem=CHALLENGE_FAILED,
             )
         hostname = result.hostname or ""
-        if hostname not in self._settings.turnstile_allowed_hostname_values:
+        hostname_allowed = (
+            hostname == expected_hostname.casefold()
+            if expected_hostname is not None
+            else hostname in self._settings.turnstile_allowed_hostname_values
+        )
+        if not hostname_allowed:
             await self._reject(
                 expected_action,
                 remote_ip,

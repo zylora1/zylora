@@ -329,3 +329,10 @@ Super-Admin price and the exact immutable Website version before checkout. A tru
 moves the purchase to generation and emits a durable outbox intent. Only `READY` with an unexpired
 private artifact may be downloaded by the current purchaser/current Website owner. The recipient of a
 transfer receives a Draft and follows the ordinary future domain/publish flow.
+## Phase 10 implementation note
+
+The Phase 10 implementation follows the Lead and knowledge-index state machines above. `ALLOW_DEBT`
+is the seeded zero-credit policy so the approved unlimited-lead behavior remains intact while each
+valid Lead still gets exactly one append-only `-1` credit ledger entry. `REJECT_NEW` is evaluated
+before Lead insertion under the same locked credit account. Published FAISS index artifacts are
+invalidated and deleted after ownership transfer; they are never reassigned to a recipient.

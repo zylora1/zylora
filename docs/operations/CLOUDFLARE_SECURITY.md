@@ -3,7 +3,7 @@
 ## Provisioning
 
 `infra/cloudflare` is the production source of truth. It provisions one managed Turnstile widget for
-the exact User and isolated Super Admin hostnames, Cloudflare Managed and OWASP WAF rules, invalid
+the User/Admin hostnames plus approved public Website hostnames, Cloudflare Managed and OWASP WAF rules, invalid
 method/scanner blocks, and rate limits for authentication, verification, OAuth callback, public APIs,
 contact/Lead forms, and chatbot/Lead endpoints.
 
@@ -24,7 +24,7 @@ The production change procedure is:
 4. Put the output site key in server runtime `TURNSTILE_SITE_KEY`. Retrieve the widget secret directly
    from Cloudflare into `TURNSTILE_SECRET_KEY`; never place it in Terraform output or a frontend
    environment variable.
-5. Set `TURNSTILE_ENABLED=true` and `TURNSTILE_ALLOWED_HOSTNAMES` to the exact User/Admin hostnames.
+5. Set `TURNSTILE_ENABLED=true` and `TURNSTILE_ALLOWED_HOSTNAMES` to the exact User/Admin hostnames. For public lead/chatbot commands, the API additionally verifies the Siteverify hostname against the active Website host resolved server-side; configure that host in the Turnstile dashboard before enabling its public widget.
 6. Smoke-test every protected route, inspect WAF events, then tune false positives through reviewed
    ruleset changes. Do not bypass Turnstile or application authorization to resolve a false positive.
 

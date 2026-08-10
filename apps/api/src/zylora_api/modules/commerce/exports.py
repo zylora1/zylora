@@ -454,7 +454,9 @@ class ExportService:
             for page in sorted(pages, key=lambda item: str(item.get("path") or "/")):
                 path = str(page.get("path") or "/")
                 filename = "index.html" if path == "/" else f"{path.strip('/')}/index.html"
-                ExportService._write_archive_file(archive, filename, render_page(page, navigation))
+                ExportService._write_archive_file(
+                    archive, filename, render_page(page, navigation, include_chatbot=False)
+                )
                 files.append({"path": path, "file": filename})
             manifest = {
                 "schema": "ZYLORA_WEBSITE_EXPORT_V1",

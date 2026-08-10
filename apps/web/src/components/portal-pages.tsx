@@ -2,6 +2,7 @@ import { ActionLink, EmptyState, Notice, PageHeader, StatusBadge } from '@zylora
 import { ArrowRight, Check } from 'lucide-react';
 
 import { BillingPanel } from './billing-panel';
+import { LeadsPanel } from './leads-panel';
 import type { PortalSection } from './portal-navigation';
 
 export function UserHomePage() {
@@ -88,6 +89,14 @@ export function UserSectionPage({ section }: { section: PortalSection }) {
         Choose a Template <ArrowRight size={17} />
       </ActionLink>
     ) : undefined;
+  if (section.slug === 'leads') {
+    return (
+      <div className="workspace-page">
+        <PageHeader eyebrow="Your Zylora" title={section.label} description={section.description} />
+        <LeadsPanel />
+      </div>
+    );
+  }
   if (section.slug === 'billing') {
     return (
       <div className="workspace-page">

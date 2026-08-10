@@ -23,6 +23,8 @@ dependencies = [
   "redis==8.1.0",
   "sqlalchemy[asyncio]==2.0.51",
   "uvicorn[standard]==0.52.1",
+  "faiss-cpu>=1.12,<2",
+  "numpy>=2.3,<3",
 ]
 
 [tool.hatch.build.targets.wheel]

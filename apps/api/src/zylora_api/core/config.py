@@ -75,6 +75,8 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5.6-terra"
     ai_timeout_seconds: float = 45.0
     ai_max_output_tokens: int = 4000
+    chatbot_embedding_model: str = "text-embedding-3-small"
+    chatbot_embedding_dimension: int = 1536
 
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
@@ -111,6 +113,10 @@ class Settings(BaseSettings):
             raise ValueError("AI timeout must be between 5 and 120 seconds")
         if not 500 <= self.ai_max_output_tokens <= 8000:
             raise ValueError("AI max output tokens must be between 500 and 8000")
+        if not self.chatbot_embedding_model.strip():
+            raise ValueError("chatbot embedding model must be configured")
+        if not 8 <= self.chatbot_embedding_dimension <= 4096:
+            raise ValueError("chatbot embedding dimension must be between 8 and 4096")
 
         if self.storage_provider == "memory" and self.environment != "test":
             raise ValueError("memory object storage is permitted only in the test environment")

@@ -56,6 +56,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/lead-credit-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lead Credit Policy */
+        get: operations["lead_credit_policy_api_v1_admin_lead_credit_policy_get"];
+        put?: never;
+        /** Configure Lead Credit Policy */
+        post: operations["configure_lead_credit_policy_api_v1_admin_lead_credit_policy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/me": {
         parameters: {
             query?: never;
@@ -221,6 +239,23 @@ export interface paths {
         put?: never;
         /** Admin Validate */
         post: operations["admin_validate_api_v1_admin_templates__template_id__versions__version__validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/lead-credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust Lead Credits */
+        post: operations["adjust_lead_credits_api_v1_admin_users__user_id__lead_credits_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -516,6 +551,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lead-credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lead Credits */
+        get: operations["lead_credits_api_v1_lead_credits_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plans": {
         parameters: {
             query?: never;
@@ -527,6 +579,74 @@ export interface paths {
         get: operations["plans_api_v1_plans_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/chatbot/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Conversation */
+        post: operations["start_conversation_api_v1_public_chatbot_conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/chatbot/conversations/{conversation_id}/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Chatbot Lead */
+        post: operations["capture_chatbot_lead_api_v1_public_chatbot_conversations__conversation_id__leads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/chatbot/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat Message */
+        post: operations["chat_message_api_v1_public_chatbot_conversations__conversation_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Form Lead */
+        post: operations["capture_form_lead_api_v1_public_leads_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -850,6 +970,23 @@ export interface paths {
         put?: never;
         /** Create Export Purchase */
         post: operations["create_export_purchase_api_v1_websites__website_id__exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Website Leads */
+        get: operations["website_leads_api_v1_websites__website_id__leads_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1259,6 +1396,25 @@ export interface components {
             /** Site Key */
             site_key: string | null;
         };
+        /** ChatMessageRequest */
+        ChatMessageRequest: {
+            /** Access Token */
+            access_token: string;
+            /** Message */
+            message: string;
+        };
+        /** ChatReplyResponse */
+        ChatReplyResponse: {
+            /** Answer */
+            answer: string;
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Source Paths */
+            source_paths: string[];
+        };
         /** CheckoutRequest */
         CheckoutRequest: {
             /**
@@ -1281,6 +1437,23 @@ export interface components {
             provider_available: boolean;
             /** Status */
             status: string;
+        };
+        /** ConversationResponse */
+        ConversationResponse: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+        };
+        /** ConversationStartRequest */
+        ConversationStartRequest: {
+            /** Consent */
+            consent?: {
+                [key: string]: unknown;
+            };
         };
         /** CreditResponse */
         CreditResponse: {
@@ -1615,6 +1788,63 @@ export interface components {
         };
         /** InstantiateRequest */
         InstantiateRequest: Record<string, never>;
+        /** LeadCreditAdjustmentRequest */
+        LeadCreditAdjustmentRequest: {
+            /** Delta */
+            delta: number;
+            /** Reason */
+            reason: string;
+        };
+        /** LeadCreditAdjustmentResponse */
+        LeadCreditAdjustmentResponse: {
+            /** Delta */
+            delta: number;
+            /** Entry Type */
+            entry_type: string;
+            /** Resulting Balance */
+            resulting_balance: number;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /** LeadCreditPolicyRequest */
+        LeadCreditPolicyRequest: {
+            /** Policy */
+            policy: string;
+        };
+        /** LeadCreditResponse */
+        LeadCreditResponse: {
+            /** Balance */
+            balance: number;
+            /** Policy */
+            policy: string;
+        };
+        /** LeadOwnerResponse */
+        LeadOwnerResponse: {
+            /** Captured At */
+            captured_at: string;
+            /** Email */
+            email: string | null;
+            /** Enquiry */
+            enquiry: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Page Path */
+            page_path: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /**
@@ -1958,6 +2188,39 @@ export interface components {
             slug: string;
             /** Version */
             version: number;
+        };
+        /** PublicLeadRequest */
+        PublicLeadRequest: {
+            /** Consent */
+            consent?: {
+                [key: string]: unknown;
+            };
+            /** Email */
+            email?: string | null;
+            /** Enquiry */
+            enquiry: string;
+            /** Name */
+            name: string;
+            /** Page Path */
+            page_path?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+        };
+        /** PublicLeadResponse */
+        PublicLeadResponse: {
+            /** Duplicate */
+            duplicate: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Source */
+            source: string;
+            /** Whatsapp Notification Queued */
+            whatsapp_notification_queued: boolean;
         };
         /** PublicationStatusResponse */
         PublicationStatusResponse: {
@@ -2605,6 +2868,59 @@ export interface operations {
             };
         };
     };
+    lead_credit_policy_api_v1_admin_lead_credit_policy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCreditResponse"];
+                };
+            };
+        };
+    };
+    configure_lead_credit_policy_api_v1_admin_lead_credit_policy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadCreditPolicyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCreditResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     me_api_v1_admin_me_get: {
         parameters: {
             query?: never;
@@ -2932,6 +3248,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adjust_lead_credits_api_v1_admin_users__user_id__lead_credits_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadCreditAdjustmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCreditAdjustmentResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3426,6 +3779,26 @@ export interface operations {
             };
         };
     };
+    lead_credits_api_v1_lead_credits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCreditResponse"];
+                };
+            };
+        };
+    };
     plans_api_v1_plans_get: {
         parameters: {
             query?: never;
@@ -3442,6 +3815,146 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanListResponse"];
+                };
+            };
+        };
+    };
+    start_conversation_api_v1_public_chatbot_conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    capture_chatbot_lead_api_v1_public_chatbot_conversations__conversation_id__leads_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicLeadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicLeadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_message_api_v1_public_chatbot_conversations__conversation_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatReplyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    capture_form_lead_api_v1_public_leads_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicLeadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicLeadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4044,6 +4557,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExportPurchaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    website_leads_api_v1_websites__website_id__leads_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOwnerResponse"][];
                 };
             };
             /** @description Validation Error */

@@ -8,7 +8,7 @@ import httpx
 import pytest
 from zylora_api.core.config import Settings
 from zylora_api.modules.auth.errors import AuthProblem
-from zylora_api.modules.publishing.artifacts import ArtifactBuilder
+from zylora_api.modules.publishing.artifacts import ArtifactBuilder, render_page
 from zylora_api.modules.publishing.providers import (
     CloudflareDomainProvider,
     DisabledDomainProvider,
@@ -328,3 +328,18 @@ def test_snapshot_rejects_invalid_immutable_page_graphs(
     version = type("Version", (), {"page_state": pages})()
     with pytest.raises(AuthProblem, match=expected):
         DeploymentService._snapshot_pages(version)  # type: ignore[arg-type]
+
+
+def test_deployed_renderer_includes_a_real_chatbot_widget_but_export_mode_does_not() -> None:
+    page: dict[str, Any] = {
+        "name": "Home",
+        "seo": {},
+        "components": [],
+    }
+    deployed = render_page(page, [("Home", "/")]).decode()
+    exported = render_page(page, [("Home", "/")], include_chatbot=False).decode()
+    assert "/api/v1/public/chatbot/conversations" in deployed
+    assert "Ask this Website" in deployed
+    assert "textContent" in deployed
+    assert "/api/v1/public/chatbot/conversations" not in exported
+    assert "Ask this Website" not in exported

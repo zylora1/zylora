@@ -3,15 +3,17 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+from typing import Any, cast
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.commerce_models import NotificationQuotaAccount, NotificationQuotaLedger
-from zylora_api.db.lead_models import Lead
+from zylora_api.db.lead_models import AnalyticsEvent, Lead, Notification
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import Website
 from zylora_api.modules.commerce.service import SubscriptionService
+from zylora_api.modules.leads.credits import CreditLedgerService
 from zylora_api.modules.templates.service import problem
 
 
@@ -85,6 +87,8 @@ class LeadCaptureResult:
 
 
 class LeadService:
+    """The sole form/chatbot Lead command path with transactional credit accounting."""
+
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -100,53 +104,92 @@ class LeadService:
         enquiry: str,
         owner_country_code: str,
         correlation_id: str,
+        page_path: str | None = None,
+        source_reference_id: UUID | None = None,
+        consent: dict[str, Any] | None = None,
     ) -> LeadCaptureResult:
         if source not in {"FORM", "CHATBOT"}:
             raise problem(422, "invalid_lead_source", "Lead source is invalid.")
+        if not 1 <= len(idempotency_key) <= 160:
+            raise problem(422, "idempotency_key_required", "Provide a valid idempotency key.")
         normalized = {
             "name": name.strip(),
             "email": email.strip().lower() if email else None,
             "phone": phone.strip() if phone else None,
             "enquiry": enquiry.strip(),
+            "page_path": page_path.strip() if page_path else None,
+            "source_reference_id": str(source_reference_id) if source_reference_id else None,
+            "consent": consent or {},
         }
         if not normalized["name"] or not normalized["enquiry"]:
             raise problem(422, "invalid_lead", "Name and enquiry are required.")
+        if len(normalized["name"]) > 160 or len(normalized["enquiry"]) > 10_000:
+            raise problem(422, "invalid_lead", "Lead details are too long.")
         fingerprint = hashlib.sha256(
             json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
-        existing = await self.session.scalar(
-            select(Lead).where(
-                Lead.website_id == website_id,
-                Lead.source == source,
-                Lead.idempotency_key == idempotency_key,
-            )
-        )
+        existing = await self._existing(website_id, source, idempotency_key)
         if existing:
-            if existing.request_fingerprint != fingerprint:
-                raise problem(
-                    409,
-                    "idempotency_key_reused",
-                    "This idempotency key was used for another Lead payload.",
-                )
-            return LeadCaptureResult(existing, True)
+            return self._duplicate_or_conflict(existing, fingerprint)
         website = await self.session.scalar(
             select(Website).where(Website.id == website_id).with_for_update()
         )
         if not website or website.status != "PUBLISHED" or not website.live_owner_user_id:
             raise problem(404, "published_website_not_found", "Published Website not found.")
+        existing = await self._existing(website_id, source, idempotency_key)
+        if existing:
+            return self._duplicate_or_conflict(existing, fingerprint)
+        credit_ledger = CreditLedgerService(self.session)
+        await credit_ledger.ensure_capture_allowed(website.live_owner_user_id)
         lead = Lead(
             website_id=website.id,
             owner_user_id=website.live_owner_user_id,
             source=source,
+            source_reference_id=source_reference_id,
             idempotency_key=idempotency_key,
             request_fingerprint=fingerprint,
             name=str(normalized["name"]),
             email=str(normalized["email"]) if normalized["email"] else None,
             phone=str(normalized["phone"]) if normalized["phone"] else None,
             enquiry=str(normalized["enquiry"]),
+            page_path=str(normalized["page_path"]) if normalized["page_path"] else None,
+            consent=consent or {},
         )
         self.session.add(lead)
         await self.session.flush()
+        await credit_ledger.consume_for_lead(lead)
+        self.session.add(
+            Notification(
+                recipient_user_id=lead.owner_user_id,
+                type="LEAD_CAPTURED",
+                resource_type="lead",
+                resource_id=lead.id,
+                dedupe_key=f"lead:{lead.id}",
+                data={"website_id": str(lead.website_id), "source": lead.source},
+            )
+        )
+        self.session.add(
+            AnalyticsEvent(
+                website_id=lead.website_id,
+                owner_user_id=lead.owner_user_id,
+                event_type="LEAD_CAPTURED",
+                idempotency_key=f"lead:{lead.id}",
+                properties={"source": lead.source},
+            )
+        )
+        self.session.add(
+            OutboxEvent(
+                aggregate_type="LEAD",
+                aggregate_id=lead.id,
+                event_type="lead.owner_notification_requested",
+                payload={
+                    "lead_id": str(lead.id),
+                    "website_id": str(website.id),
+                    "owner_user_id": str(website.live_owner_user_id),
+                },
+                correlation_id=correlation_id,
+            )
+        )
         queued = await NotificationQuotaService(self.session).reserve_whatsapp(
             website.live_owner_user_id, owner_country_code, lead.id
         )
@@ -166,3 +209,25 @@ class LeadService:
                 )
             )
         return LeadCaptureResult(lead, False)
+
+    async def _existing(self, website_id: UUID, source: str, idempotency_key: str) -> Lead | None:
+        return cast(
+            Lead | None,
+            await self.session.scalar(
+                select(Lead).where(
+                    Lead.website_id == website_id,
+                    Lead.source == source,
+                    Lead.idempotency_key == idempotency_key,
+                )
+            ),
+        )
+
+    @staticmethod
+    def _duplicate_or_conflict(existing: Lead, fingerprint: str) -> LeadCaptureResult:
+        if existing.request_fingerprint != fingerprint:
+            raise problem(
+                409,
+                "idempotency_key_reused",
+                "This idempotency key was used for another Lead payload.",
+            )
+        return LeadCaptureResult(existing, True)

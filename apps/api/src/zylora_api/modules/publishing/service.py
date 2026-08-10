@@ -565,6 +565,11 @@ class DeploymentService:
             website.published_version_id = deployment.website_version_id
             website.live_owner_user_id = website.owner_user_id
             website.publication_domain_type = domain.type
+            from zylora_api.modules.chatbot.indexing import KnowledgeIndexService
+
+            await KnowledgeIndexService(
+                self.session, artifacts.storage, get_settings()
+            ).request_for_published_website(website, deployment.website_version_id, correlation_id)
             return deployment
         except DomainProviderError as error:
             return await self._failure(

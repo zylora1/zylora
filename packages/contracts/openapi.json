@@ -476,6 +476,57 @@
         "title": "ChallengeConfigResponse",
         "type": "object"
       },
+      "ChatMessageRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "maxLength": 256,
+            "minLength": 20,
+            "title": "Access Token",
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "message"
+        ],
+        "title": "ChatMessageRequest",
+        "type": "object"
+      },
+      "ChatReplyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "source_paths": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Paths",
+            "type": "array"
+          }
+        },
+        "required": [
+          "conversation_id",
+          "answer",
+          "source_paths"
+        ],
+        "title": "ChatReplyResponse",
+        "type": "object"
+      },
       "CheckoutRequest": {
         "additionalProperties": false,
         "properties": {
@@ -523,6 +574,38 @@
           "detail"
         ],
         "title": "CheckoutResponse",
+        "type": "object"
+      },
+      "ConversationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "access_token"
+        ],
+        "title": "ConversationResponse",
+        "type": "object"
+      },
+      "ConversationStartRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "consent": {
+            "additionalProperties": true,
+            "title": "Consent",
+            "type": "object"
+          }
+        },
+        "title": "ConversationStartRequest",
         "type": "object"
       },
       "CreditResponse": {
@@ -1324,6 +1407,170 @@
         "additionalProperties": false,
         "properties": {},
         "title": "InstantiateRequest",
+        "type": "object"
+      },
+      "LeadCreditAdjustmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "maximum": 1000000.0,
+            "minimum": -1000000.0,
+            "title": "Delta",
+            "type": "integer"
+          },
+          "reason": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delta",
+          "reason"
+        ],
+        "title": "LeadCreditAdjustmentRequest",
+        "type": "object"
+      },
+      "LeadCreditAdjustmentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "integer"
+          },
+          "entry_type": {
+            "title": "Entry Type",
+            "type": "string"
+          },
+          "resulting_balance": {
+            "title": "Resulting Balance",
+            "type": "integer"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "delta",
+          "resulting_balance",
+          "entry_type"
+        ],
+        "title": "LeadCreditAdjustmentResponse",
+        "type": "object"
+      },
+      "LeadCreditPolicyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "policy": {
+            "pattern": "^(ALLOW_DEBT|REJECT_NEW)$",
+            "title": "Policy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "policy"
+        ],
+        "title": "LeadCreditPolicyRequest",
+        "type": "object"
+      },
+      "LeadCreditResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "policy"
+        ],
+        "title": "LeadCreditResponse",
+        "type": "object"
+      },
+      "LeadOwnerResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "captured_at": {
+            "title": "Captured At",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "enquiry": {
+            "title": "Enquiry",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Path"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "name",
+          "email",
+          "phone",
+          "enquiry",
+          "page_path",
+          "status",
+          "captured_at"
+        ],
+        "title": "LeadOwnerResponse",
         "type": "object"
       },
       "LoginRequest": {
@@ -2219,6 +2466,113 @@
           "checksum"
         ],
         "title": "PreviewResponse",
+        "type": "object"
+      },
+      "PublicLeadRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "consent": {
+            "additionalProperties": true,
+            "title": "Consent",
+            "type": "object"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "enquiry": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Enquiry",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "page_path": {
+            "anyOf": [
+              {
+                "maxLength": 1024,
+                "pattern": "^/",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Path"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
+          }
+        },
+        "required": [
+          "name",
+          "enquiry"
+        ],
+        "title": "PublicLeadRequest",
+        "type": "object"
+      },
+      "PublicLeadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "duplicate": {
+            "title": "Duplicate",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "whatsapp_notification_queued": {
+            "title": "Whatsapp Notification Queued",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "duplicate",
+          "whatsapp_notification_queued"
+        ],
+        "title": "PublicLeadResponse",
         "type": "object"
       },
       "PublicationStatusResponse": {
@@ -3579,6 +3933,66 @@
         ]
       }
     },
+    "/api/v1/admin/lead-credit-policy": {
+      "get": {
+        "operationId": "lead_credit_policy_api_v1_admin_lead_credit_policy_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadCreditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Lead Credit Policy",
+        "tags": [
+          "admin-leads"
+        ]
+      },
+      "post": {
+        "operationId": "configure_lead_credit_policy_api_v1_admin_lead_credit_policy_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadCreditPolicyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadCreditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Configure Lead Credit Policy",
+        "tags": [
+          "admin-leads"
+        ]
+      }
+    },
     "/api/v1/admin/me": {
       "get": {
         "operationId": "me_api_v1_admin_me_get",
@@ -4068,6 +4482,75 @@
         "summary": "Admin Validate",
         "tags": [
           "templates"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}/lead-credits": {
+      "post": {
+        "operationId": "adjust_lead_credits_api_v1_admin_users__user_id__lead_credits_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadCreditAdjustmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadCreditAdjustmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Adjust Lead Credits",
+        "tags": [
+          "admin-leads"
         ]
       }
     },
@@ -4693,6 +5176,27 @@
         ]
       }
     },
+    "/api/v1/lead-credits": {
+      "get": {
+        "operationId": "lead_credits_api_v1_lead_credits_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadCreditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Lead Credits",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
     "/api/v1/plans": {
       "get": {
         "operationId": "plans_api_v1_plans_get",
@@ -4711,6 +5215,228 @@
         "summary": "Plans",
         "tags": [
           "commerce"
+        ]
+      }
+    },
+    "/api/v1/public/chatbot/conversations": {
+      "post": {
+        "operationId": "start_conversation_api_v1_public_chatbot_conversations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Conversation",
+        "tags": [
+          "public-chatbot-and-leads"
+        ]
+      }
+    },
+    "/api/v1/public/chatbot/conversations/{conversation_id}/leads": {
+      "post": {
+        "operationId": "capture_chatbot_lead_api_v1_public_chatbot_conversations__conversation_id__leads_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicLeadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicLeadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Chatbot Lead",
+        "tags": [
+          "public-chatbot-and-leads"
+        ]
+      }
+    },
+    "/api/v1/public/chatbot/conversations/{conversation_id}/messages": {
+      "post": {
+        "operationId": "chat_message_api_v1_public_chatbot_conversations__conversation_id__messages_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatReplyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Chat Message",
+        "tags": [
+          "public-chatbot-and-leads"
+        ]
+      }
+    },
+    "/api/v1/public/leads": {
+      "post": {
+        "operationId": "capture_form_lead_api_v1_public_leads_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicLeadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicLeadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Form Lead",
+        "tags": [
+          "public-chatbot-and-leads"
         ]
       }
     },
@@ -5714,6 +6440,65 @@
         "summary": "Create Export Purchase",
         "tags": [
           "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/leads": {
+      "get": {
+        "operationId": "website_leads_api_v1_websites__website_id__leads_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LeadOwnerResponse"
+                  },
+                  "title": "Response Website Leads Api V1 Websites  Website Id  Leads Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Website Leads",
+        "tags": [
+          "leads"
         ]
       }
     },

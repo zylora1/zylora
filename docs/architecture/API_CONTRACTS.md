@@ -345,3 +345,16 @@ CI must fail on:
 - command schemas that accept owner, price, entitlement result, payment success, or filesystem path;
 - collection endpoints without bounded pagination;
 - missing authorization and idempotency test cases for state-changing routes.
+
+## Phase 10 public chatbot, Leads, and credit contracts
+
+`/api/v1/public/*` is a separate anonymous trust boundary. Form Leads and chatbot conversion resolve
+the Website from the active request hostname, not client Website/owner/index identifiers. Public Lead
+writes require `Idempotency-Key`; same payload retry returns the original result and a changed payload
+is rejected. Conversation messages require the per-conversation opaque capability and can only operate
+under their original active Website host.
+
+`/api/v1/websites/{website_id}/leads` and `/api/v1/lead-credits` use the User session and current owner
+filter. Super Admin uses isolated, CSRF-protected `/api/v1/admin/lead-credit-policy` and
+`/api/v1/admin/users/{user_id}/lead-credits` commands. Generated OpenAPI remains the transport source;
+FastAPI services retain authorization, credit, and index authority.

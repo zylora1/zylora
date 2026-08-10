@@ -231,6 +231,39 @@ class OwnershipService:
         transfer: OwnershipTransfer,
         now: datetime,
     ) -> None:
+        from zylora_api.db.chatbot_models import Chatbot, ChatbotKnowledgeIndex
+
+        chatbot = await self.session.scalar(
+            select(Chatbot).where(Chatbot.website_id == website.id).with_for_update()
+        )
+        if chatbot:
+            indexes = list(
+                (
+                    await self.session.scalars(
+                        select(ChatbotKnowledgeIndex)
+                        .where(
+                            ChatbotKnowledgeIndex.website_id == website.id,
+                            ChatbotKnowledgeIndex.state.not_in(("DELETED",)),
+                        )
+                        .with_for_update()
+                    )
+                ).all()
+            )
+            for knowledge_index in indexes:
+                knowledge_index.state = "DELETED"
+                if knowledge_index.artifact_key:
+                    self.session.add(
+                        OutboxEvent(
+                            aggregate_type="CHATBOT_KNOWLEDGE_INDEX",
+                            aggregate_id=knowledge_index.id,
+                            event_type="chatbot.cleanup_requested",
+                            payload={"artifact_key": knowledge_index.artifact_key},
+                            correlation_id=f"ownership-transfer:{transfer.id}",
+                        )
+                    )
+            chatbot.active_index_id = None
+            chatbot.state = "DISABLED"
+            chatbot.version += 1
         current.ended_at = now
         current.transfer_id = transfer.id
         self.session.add(
