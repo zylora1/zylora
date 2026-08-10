@@ -13,7 +13,7 @@ async def test_postgresql_migration_and_uuidv7_foundation() -> None:
     key = f"integration-{uuid4()}"
     async with engine.begin() as connection:
         revision = await connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert revision == "20260818_0013"
+        assert revision == "20260819_0014"
         column_rows = await connection.execute(
             text(
                 "SELECT table_name || '.' || column_name "

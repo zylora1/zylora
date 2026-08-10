@@ -18,6 +18,7 @@ def production_settings(**overrides: object) -> dict[str, object]:
         "google_client_secret": "google-secret",
         "google_redirect_uri": "https://app.example.com/api/v1/auth/google/callback",
         "smtp_host": "smtp.example.com",
+        "contact_recipient_email": "support@example.com",
         "storage_provider": "s3",
         "s3_bucket": "zylora-production",
         "s3_access_key": "production-access-key",
@@ -75,3 +76,8 @@ def test_production_requires_server_side_ai_provider_key() -> None:
 def test_production_rejects_non_official_openai_base_url() -> None:
     with pytest.raises(ValidationError, match="official HTTPS API"):
         Settings(**production_settings(openai_base_url="https://proxy.example.com/v1"))
+
+
+def test_production_requires_a_contact_delivery_recipient() -> None:
+    with pytest.raises(ValidationError, match="contact delivery recipient"):
+        Settings(**production_settings(contact_recipient_email=""))

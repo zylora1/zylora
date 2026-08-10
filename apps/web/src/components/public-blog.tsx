@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { apiRequest } from '@/lib/api';
+import { PublicFooter, PublicNavigation, PublicSite } from './public-site';
 
 type Post = {
   title: string;
@@ -43,22 +44,6 @@ function articleSchema(post: Article) {
   }).replace(/</g, '\\u003c');
 }
 
-function PublicNav() {
-  return (
-    <nav className="blog-nav" aria-label="Public">
-      <Link href="/" className="brand-mark">
-        Zylora
-      </Link>
-      <div>
-        <Link href="/blog">Journal</Link>
-        <Link href="/templates">Templates</Link>
-        <Link href="/pricing">Pricing</Link>
-        <Link href="/login">Sign in</Link>
-      </div>
-    </nav>
-  );
-}
-
 export function BlogIndex() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState('');
@@ -70,33 +55,36 @@ export function BlogIndex() {
       );
   }, []);
   return (
-    <main className="blog-shell">
-      <PublicNav />
-      <header className="blog-hero">
-        <p className="eyebrow">Zylora Journal</p>
-        <h1>Clear thinking for considered websites.</h1>
-        <p>Practical notes on shaping, publishing, and improving a Website you own.</p>
-      </header>
-      {error ? <p className="blog-message">{error}</p> : null}
-      {!error && !posts.length ? (
-        <p className="blog-message">No articles have been published yet.</p>
-      ) : null}
-      <section className="blog-list" aria-label="Published Blog posts">
-        {posts.map((post) => (
-          <article key={post.slug} className="blog-card">
-            <p>{post.categories.join(' / ') || 'Zylora Journal'}</p>
-            <h2>
-              <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-            </h2>
-            <p className="blog-card__excerpt">{post.excerpt}</p>
-            <footer>
-              <time dateTime={post.published_at ?? undefined}>{date(post.published_at)}</time>
-              <Link href={`/blog/${post.slug}`}>Read article &rarr;</Link>
-            </footer>
-          </article>
-        ))}
-      </section>
-    </main>
+    <PublicSite>
+      <PublicNavigation />
+      <main className="blog-shell">
+        <header className="blog-hero">
+          <p className="eyebrow">Zylora Journal</p>
+          <h1>Clear thinking for considered websites.</h1>
+          <p>Practical notes on shaping, publishing, and improving a Website you own.</p>
+        </header>
+        {error ? <p className="blog-message">{error}</p> : null}
+        {!error && !posts.length ? (
+          <p className="blog-message">No articles have been published yet.</p>
+        ) : null}
+        <section className="blog-list" aria-label="Published Blog posts">
+          {posts.map((post) => (
+            <article key={post.slug} className="blog-card">
+              <p>{post.categories.join(' / ') || 'Zylora Journal'}</p>
+              <h2>
+                <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+              </h2>
+              <p className="blog-card__excerpt">{post.excerpt}</p>
+              <footer>
+                <time dateTime={post.published_at ?? undefined}>{date(post.published_at)}</time>
+                <Link href={`/blog/${post.slug}`}>Read article &rarr;</Link>
+              </footer>
+            </article>
+          ))}
+        </section>
+      </main>
+      <PublicFooter />
+    </PublicSite>
   );
 }
 
@@ -126,56 +114,59 @@ export function BlogArticle({ slug }: { slug: string }) {
       );
   }, [slug]);
   return (
-    <main className="blog-shell">
-      <PublicNav />
-      {error ? <p className="blog-message">{error}</p> : null}
-      {!error && !post ? <p className="blog-message">Loading article...</p> : null}
-      {post ? (
-        <article className="blog-article">
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: articleSchema(post) }}
-          />
-          <nav className="blog-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/">Home</Link>
-            <span aria-hidden="true">/</span>
-            <Link href="/blog">Journal</Link>
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{post.title}</span>
-          </nav>
-          <p className="eyebrow">{post.categories.join(' / ') || 'Zylora Journal'}</p>
-          <h1>{post.title}</h1>
-          <p className="blog-article__excerpt">{post.excerpt}</p>
-          <p className="blog-article__meta">
-            <time dateTime={post.published_at ?? undefined}>{date(post.published_at)}</time>
-            {post.tags.length ? ` / ${post.tags.join(', ')}` : ''}
-          </p>
-          {post.featured_image_url ? (
-            // This is a Super Admin-provided external Open Graph asset, not a customer upload.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.featured_image_url} alt="" />
-          ) : null}
-          <div
-            className="blog-article__body"
-            dangerouslySetInnerHTML={{ __html: post.content_html }}
-          />
-          {related.length ? (
-            <aside className="blog-related" aria-label="Related articles">
-              <h2>Continue reading</h2>
-              <ul>
-                {related.map((item) => (
-                  <li key={item.slug}>
-                    <Link href={`/blog/${item.slug}`}>{item.title}</Link>
-                  </li>
-                ))}
-              </ul>
-            </aside>
-          ) : null}
-          <footer>
-            <Link href="/blog">&larr; All articles</Link>
-          </footer>
-        </article>
-      ) : null}
-    </main>
+    <PublicSite>
+      <PublicNavigation />
+      <main className="blog-shell">
+        {error ? <p className="blog-message">{error}</p> : null}
+        {!error && !post ? <p className="blog-message">Loading article...</p> : null}
+        {post ? (
+          <article className="blog-article">
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: articleSchema(post) }}
+            />
+            <nav className="blog-breadcrumb" aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <span aria-hidden="true">/</span>
+              <Link href="/blog">Journal</Link>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page">{post.title}</span>
+            </nav>
+            <p className="eyebrow">{post.categories.join(' / ') || 'Zylora Journal'}</p>
+            <h1>{post.title}</h1>
+            <p className="blog-article__excerpt">{post.excerpt}</p>
+            <p className="blog-article__meta">
+              <time dateTime={post.published_at ?? undefined}>{date(post.published_at)}</time>
+              {post.tags.length ? ` / ${post.tags.join(', ')}` : ''}
+            </p>
+            {post.featured_image_url ? (
+              // This is a Super Admin-provided external Open Graph asset, not a customer upload.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.featured_image_url} alt="" />
+            ) : null}
+            <div
+              className="blog-article__body"
+              dangerouslySetInnerHTML={{ __html: post.content_html }}
+            />
+            {related.length ? (
+              <aside className="blog-related" aria-label="Related articles">
+                <h2>Continue reading</h2>
+                <ul>
+                  {related.map((item) => (
+                    <li key={item.slug}>
+                      <Link href={`/blog/${item.slug}`}>{item.title}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            ) : null}
+            <footer>
+              <Link href="/blog">&larr; All articles</Link>
+            </footer>
+          </article>
+        ) : null}
+      </main>
+      <PublicFooter />
+    </PublicSite>
   );
 }

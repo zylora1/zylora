@@ -375,3 +375,12 @@ It changes marketing suppression only. Public Blog reads are `GET /api/v1/blog/p
 `GET /api/v1/blog/posts/{slug}`, and `GET /api/v1/blog/sitemap`; all return published data only.
 Super Admin Blog commands are isolated under `/api/v1/admin/blog/posts` and use the same CSRF/origin
 requirements as other Super Admin mutations.
+## Phase 14 public contact contract
+
+`POST /api/v1/public/contact` accepts `name`, `email`, `message`, and optional
+`turnstile_token`; it returns `202 { status, id }` only after the existing transactional-email
+outbox record is queued. The recipient comes exclusively from server configuration. The command
+requires the server-side `contact` Turnstile action and sends no contact fields to Cloudflare.
+Validation failures return `422`; missing production delivery configuration returns
+`contact_unavailable`; challenge failures retain the existing safe challenge error contract.
+No contact submission, recipient, visitor IP, or raw message has a public read endpoint.

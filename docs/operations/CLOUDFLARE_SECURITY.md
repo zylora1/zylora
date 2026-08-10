@@ -67,3 +67,9 @@ Turnstile challenge: it is emitted from normal published-page views. The API ins
 opaque-ID schema, active host-to-Website resolution, server-side HMAC attribution, event idempotency,
 and the Cloudflare WAF/rate limit. Do not broaden the rule to trust a client Website ID or record raw IP,
 email, Lead, or chatbot content.
+## Phase 14 public contact route
+
+`POST /api/v1/public/contact` is covered by the public contact/form WAF and rate-limit rule. Its
+Turnstile action is exactly `contact`; the API independently validates the action and hostname,
+queues the message only after verification, and uses the configured internal recipient. A
+Cloudflare outage, invalid token, replay, or unavailable recipient fails closed and sends no email.

@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Notice } from '@zylora/ui';
 
 import { apiRequest } from '@/lib/api';
-import { BrandMark } from './brand-mark';
+import { PublicFooter, PublicNavigation, PublicSite } from './public-site';
 import { formatMoney, planFeatures, type PlanCatalog } from './commerce-types';
 import styles from './commerce.module.css';
 
@@ -22,15 +21,8 @@ export function PricingCatalog() {
   }, []);
 
   return (
-    <div className={styles.pricingPage}>
-      <nav className={styles.nav} aria-label="Public navigation">
-        <BrandMark />
-        <div>
-          <Link href="/">Home</Link>
-          <Link href="/login">Sign in</Link>
-          <Link href="/signup">Create account</Link>
-        </div>
-      </nav>
+    <PublicSite>
+      <PublicNavigation />
       <main className={styles.main}>
         <section className={styles.hero}>
           <h1>Build freely. Choose a plan when you publish.</h1>
@@ -78,6 +70,7 @@ export function PricingCatalog() {
           </>
         ) : null}
       </main>
-    </div>
+      <PublicFooter />
+    </PublicSite>
   );
 }

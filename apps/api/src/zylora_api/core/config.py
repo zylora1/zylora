@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_from_email: str = "no-reply@zylora.local"
+    contact_recipient_email: str | None = None
 
     storage_provider: StorageProvider = "disabled"
     s3_endpoint_url: str | None = None
@@ -170,6 +171,8 @@ class Settings(BaseSettings):
                 raise ValueError("production Google redirect URI must use an exact User Web origin")
             if not self.smtp_host:
                 raise ValueError("production SMTP delivery must be configured")
+            if not self.contact_recipient_email:
+                raise ValueError("production contact delivery recipient must be configured")
             if (
                 not self.turnstile_enabled
                 or not self.turnstile_site_key

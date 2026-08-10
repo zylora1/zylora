@@ -9,6 +9,7 @@ from zylora_api.api.auth import router as auth_router
 from zylora_api.api.blog import router as blog_router
 from zylora_api.api.campaigns import router as campaigns_router
 from zylora_api.api.commerce import router as commerce_router
+from zylora_api.api.contact import router as contact_router
 from zylora_api.api.editor import router as editor_router
 from zylora_api.api.health import router as health_router
 from zylora_api.api.leads import router as leads_router
@@ -23,6 +24,7 @@ api_router.include_router(auth_router)
 api_router.include_router(blog_router)
 api_router.include_router(campaigns_router)
 api_router.include_router(commerce_router)
+api_router.include_router(contact_router)
 api_router.include_router(analytics_router)
 api_router.include_router(editor_router)
 api_router.include_router(leads_router)

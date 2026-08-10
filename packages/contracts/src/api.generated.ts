@@ -1114,6 +1114,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Contact */
+        post: operations["submit_contact_api_v1_public_contact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/leads": {
         parameters: {
             query?: never;
@@ -2311,6 +2328,33 @@ export interface components {
             provider_available: boolean;
             /** Status */
             status: string;
+        };
+        /** ContactAcceptedResponse */
+        ContactAcceptedResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "accepted";
+        };
+        /** ContactRequest */
+        ContactRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Message */
+            message: string;
+            /** Name */
+            name: string;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
         };
         /** ConversationResponse */
         ConversationResponse: {
@@ -5832,6 +5876,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatReplyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_contact_api_v1_public_contact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactAcceptedResponse"];
                 };
             };
             /** @description Validation Error */

@@ -8,9 +8,15 @@ describe('HomePage', () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'A considered home for what you do.' }),
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'Choose the shape. Make it unmistakably yours.',
+      }),
     ).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Create account' })).toHaveAttribute('href', '/signup');
+    expect(screen.getByRole('link', { name: 'Explore Templates' })).toHaveAttribute(
+      'href',
+      '/templates',
+    );
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
     expect(screen.queryByText(/trusted by/i)).not.toBeInTheDocument();
   });

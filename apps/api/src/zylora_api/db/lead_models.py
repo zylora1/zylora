@@ -231,7 +231,7 @@ class TransactionalEmail(Base):
             "kind IN ("
             "'AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT',"
             "'WEBSITE_PUBLISHED','WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED',"
-            "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL')",
+            "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION')",
             name="ck_transactional_emails_kind",
         ),
         CheckConstraint(

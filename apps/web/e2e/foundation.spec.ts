@@ -21,9 +21,9 @@ test('identity entry and health surfaces are responsive and hardened', async ({
 
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { level: 1, name: 'A considered home for what you do.' }),
+    page.getByRole('heading', { level: 1, name: 'Choose the shape. Make it unmistakably yours.' }),
   ).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Create account' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Explore Templates' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

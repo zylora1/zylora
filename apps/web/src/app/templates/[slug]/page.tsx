@@ -1,21 +1,81 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
+import { PublicFooter, PublicNavigation, PublicSite } from '@/components/public-site';
 import { TemplateDetail } from '@/components/template-detail';
 import styles from '@/components/template-platform.module.css';
 
-export const metadata: Metadata = { title: 'Template details' };
+type TemplateMetadata = {
+  slug: string;
+  name: string;
+  summary: string;
+  category: string;
+};
+
+export const dynamic = 'force-dynamic';
+
+async function templateMetadata(slug: string): Promise<TemplateMetadata | null> {
+  const api = process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:8000';
+  try {
+    const response = await fetch(`${api}/api/v1/templates/${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as TemplateMetadata;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const item = await templateMetadata((await params).slug);
+  if (!item) return { title: 'Template unavailable', robots: { index: false, follow: false } };
+  return {
+    title: `${item.name} Website Template`,
+    description: item.summary,
+    alternates: { canonical: `/templates/${item.slug}` },
+    openGraph: {
+      title: `${item.name} Website Template`,
+      description: item.summary,
+    },
+  };
+}
+
 export default async function TemplatePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const item = await templateMetadata(slug);
+  const schema = item
+    ? JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: `${item.name} Website Template`,
+        description: item.summary,
+        url: `/templates/${item.slug}`,
+        breadcrumb: {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: '/' },
+            { '@type': 'ListItem', position: 2, name: 'Templates', item: '/templates' },
+            { '@type': 'ListItem', position: 3, name: item.name, item: `/templates/${item.slug}` },
+          ],
+        },
+      }).replace(/</g, '\\u003c')
+    : null;
   return (
-    <div className={styles.catalogPage}>
-      <nav className={styles.publicNav}>
-        <Link href="/">Zylora</Link>
-        <Link href="/templates">All Templates</Link>
-      </nav>
-      <main className={styles.catalogMain}>
-        <TemplateDetail slug={slug} />
-      </main>
-    </div>
+    <PublicSite>
+      <PublicNavigation />
+      <div className={styles.catalogPage}>
+        <main className={styles.catalogMain}>
+          {schema ? (
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
+          ) : null}
+          <TemplateDetail slug={slug} />
+        </main>
+      </div>
+      <PublicFooter />
+    </PublicSite>
   );
 }
