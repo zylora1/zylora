@@ -80,6 +80,11 @@ class Website(Base):
         ForeignKey("website_versions.id", ondelete="RESTRICT", use_alter=True),
         nullable=True,
     )
+    active_deployment_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("deployments.id", ondelete="RESTRICT", use_alter=True),
+        nullable=True,
+    )
     publication_domain_type: Mapped[str | None] = mapped_column(String(24))
     publish_request_idempotency_key: Mapped[str | None] = mapped_column(String(160))
     updated_at: Mapped[datetime] = mapped_column(

@@ -18,6 +18,7 @@ from zylora_api.modules.commerce.service import (
     CatalogService,
     SubscriptionService,
 )
+from zylora_api.modules.publishing.service import DeploymentService
 from zylora_api.modules.templates.service import problem
 
 
@@ -168,6 +169,7 @@ class PublishService:
         domain_type: str,
         idempotency_key: str,
         correlation_id: str,
+        hostname: str | None = None,
     ) -> PublishCommandResponse:
         await self.session.execute(
             text("SELECT pg_advisory_xact_lock(hashtextextended(:owner, 0))"),
@@ -211,29 +213,17 @@ class PublishService:
                 "publish_ineligible",
                 "This Website is not currently eligible to publish.",
             )
-        website.status = "PUBLISHING"
-        website.live_owner_user_id = owner_user_id
-        website.published_version_id = website.current_version_id
-        website.publication_domain_type = domain_type
-        website.publish_request_idempotency_key = idempotency_key
-        self.session.add(
-            OutboxEvent(
-                aggregate_type="WEBSITE",
-                aggregate_id=website.id,
-                event_type="website.publish_requested",
-                payload={
-                    "website_id": str(website.id),
-                    "owner_user_id": str(owner_user_id),
-                    "website_version_id": str(website.current_version_id),
-                    "plan_code": evaluation.current_plan_code,
-                    "domain_type": domain_type,
-                    "idempotency_key": idempotency_key,
-                },
-                correlation_id=correlation_id,
-            )
+        deployment = await DeploymentService(self.session).queue_publish(
+            website,
+            domain_type,
+            hostname,
+            idempotency_key,
+            correlation_id,
         )
         return PublishCommandResponse(
             website_id=website.id,
+            deployment_id=deployment.id,
+            domain_id=deployment.domain_id,
             status="PUBLISHING",
             plan_code=evaluation.current_plan_code,
             reused_existing_subscription=True,
@@ -251,6 +241,7 @@ class PublishService:
         if not website:
             raise problem(404, "website_not_found", "Website not found.")
         if website.status == "PUBLISHING":
+            await DeploymentService(self.session).cancel_pending_publish(website, correlation_id)
             website.status = "DRAFT"
             website.live_owner_user_id = None
             website.published_version_id = None

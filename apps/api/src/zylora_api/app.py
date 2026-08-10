@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from zylora_api import __version__
+from zylora_api.api.published_sites import router as published_sites_router
 from zylora_api.api.router import api_router
 from zylora_api.core.config import get_settings
 from zylora_api.core.correlation import CorrelationIdMiddleware
@@ -44,6 +45,7 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(CorrelationIdMiddleware)
     app.include_router(api_router)
+    app.include_router(published_sites_router)
     return app
 
 

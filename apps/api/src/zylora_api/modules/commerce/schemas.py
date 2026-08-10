@@ -67,10 +67,13 @@ class PublishEvaluationResponse(Schema):
 
 class PublishRequest(Schema):
     domain_type: Literal["ZYLORA_SUBDOMAIN", "CUSTOM"] = "ZYLORA_SUBDOMAIN"
+    hostname: str | None = Field(default=None, min_length=3, max_length=253)
 
 
 class PublishCommandResponse(Schema):
     website_id: UUID
+    deployment_id: UUID | None = None
+    domain_id: UUID | None = None
     status: Literal["PUBLISHING"]
     plan_code: str
     reused_existing_subscription: bool

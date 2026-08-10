@@ -28,6 +28,11 @@ def production_settings(**overrides: object) -> dict[str, object]:
         "turnstile_allowed_hostnames": "app.example.com,admin.example.com",
         "ai_provider": "openai",
         "openai_api_key": "production-openai-secret",
+        "domain_provider": "cloudflare",
+        "cloudflare_api_token": "production-cloudflare-token",
+        "cloudflare_zone_id": "zone-id",
+        "cloudflare_published_origin": "origin.example.com",
+        "published_site_base_domain": "sites.example.com",
     }
     values.update(overrides)
     return values

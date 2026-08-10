@@ -8,7 +8,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from zylora_api.db.auth_models import User
 from zylora_api.db.commerce_models import Invoice, PaymentEvent, Subscription
+from zylora_api.db.deployment_models import Deployment, Domain
 from zylora_api.db.lead_models import Lead
+from zylora_api.db.models import OutboxEvent
 from zylora_api.db.session import get_engine
 from zylora_api.db.website_models import WebsiteOwnership
 from zylora_api.modules.auth.errors import AuthProblem
@@ -19,9 +21,17 @@ from zylora_api.modules.commerce.publishing import PublishEligibilityService, Pu
 from zylora_api.modules.commerce.quotas import LeadService
 from zylora_api.modules.commerce.service import CatalogService, SubscriptionService
 from zylora_api.modules.editor.revisions import AiCreditService
+from zylora_api.modules.publishing.artifacts import ArtifactBuilder
+from zylora_api.modules.publishing.providers import (
+    DomainProviderError,
+    MemoryDomainProvider,
+    ProviderDomain,
+)
+from zylora_api.modules.publishing.service import DeploymentService, DomainService
 from zylora_api.modules.templates.schemas import TemplateCreateRequest
 from zylora_api.modules.templates.service import TemplateService
 from zylora_api.modules.websites.service import WebsiteService
+from zylora_api.storage.memory import MemoryObjectStorage
 
 
 def template_document(page_count: int) -> dict[str, object]:
@@ -144,6 +154,110 @@ async def activate_plan(session: AsyncSession, user: User, code: str, marker: st
 
 
 @pytest.mark.integration
+async def test_deployment_activation_failure_preserves_the_current_live_site() -> None:
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        request = await PublishService(session).request_publish(
+            website.id,
+            owner.id,
+            owner.billing_country_code,
+            "ZYLORA_SUBDOMAIN",
+            "phase8-publish-activation-0001",
+            "phase8-activation",
+        )
+        deployment = await session.get(Deployment, request.deployment_id)
+        domain = await session.get(Domain, request.domain_id)
+        assert deployment is not None and domain is not None
+        provider = MemoryDomainProvider()
+        provider.healthy.add((domain.hostname, deployment.id))
+        activated = await DeploymentService(session).process_publish(
+            deployment.id,
+            provider,
+            ArtifactBuilder(MemoryObjectStorage()),
+            "phase8-activation",
+        )
+        assert activated.state == "ACTIVE"
+        assert website.status == "PUBLISHED" and website.active_deployment_id == deployment.id
+        assert domain.is_active and domain.state == "ACTIVE"
+
+        rollback = await DeploymentService(session).queue_rollback(
+            website.id,
+            owner.id,
+            deployment.id,
+            "phase8-rollback-failure-0001",
+            "phase8-rollback",
+        )
+        failed = await DeploymentService(session).process_publish(
+            rollback.id,
+            provider,
+            ArtifactBuilder(MemoryObjectStorage()),
+            "phase8-rollback",
+        )
+        assert failed.state == "FAILED"
+        assert website.status == "PUBLISHED" and website.active_deployment_id == deployment.id
+        assert domain.is_active and domain.state == "ACTIVE"
+        await session.rollback()
+
+
+@pytest.mark.integration
+async def test_verified_custom_domain_activates_only_after_server_side_dns_check() -> None:
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        await activate_plan(session, owner, "BASIC", "phase8-custom-domain")
+        provider = MemoryDomainProvider()
+        domain = await DomainService(session).create_custom(
+            website.id,
+            owner.id,
+            "www.phase8-example.test",
+            "phase8-custom-domain-request-0001",
+            provider,
+        )
+        assert domain.state == "PENDING_DNS" and domain.verification_record_value
+        provider.mark_custom_active(domain.hostname)
+        verified = await DomainService(session).verify_custom(domain.id, owner.id, provider)
+        assert verified.state == "VERIFIED" and verified.tls_status == "ACTIVE"
+        request = await PublishService(session).request_publish(
+            website.id,
+            owner.id,
+            owner.billing_country_code,
+            "CUSTOM",
+            "phase8-custom-domain-publish-0001",
+            "phase8-custom-domain",
+            hostname=domain.hostname,
+        )
+        deployment = await session.get(Deployment, request.deployment_id)
+        event = await session.scalar(
+            select(OutboxEvent).where(OutboxEvent.aggregate_id == deployment.id)
+        )
+        assert deployment is not None and event is not None
+        provider.healthy.add((domain.hostname, deployment.id))
+        processed = await DeploymentService(session).process_outbox_event(
+            event.id,
+            provider,
+            ArtifactBuilder(MemoryObjectStorage()),
+        )
+        assert processed.state == "PUBLISHED" and deployment.state == "ACTIVE"
+        assert website.status == "PUBLISHED" and domain.is_active
+        await PublishService(session).request_unpublish(website.id, owner.id, "phase8-unpublish")
+        unpublish_event = await session.scalar(
+            select(OutboxEvent).where(
+                OutboxEvent.aggregate_id == website.id,
+                OutboxEvent.event_type == "website.unpublish_requested",
+            )
+        )
+        assert unpublish_event is not None
+        completed = await DeploymentService(session).process_outbox_event(
+            unpublish_event.id,
+            provider,
+            ArtifactBuilder(MemoryObjectStorage()),
+        )
+        assert completed.state == "PUBLISHED" and website.status == "UNPUBLISHED"
+        await session.rollback()
+
+
+@pytest.mark.integration
 async def test_permanent_regional_catalog_and_entitlements() -> None:
     factory = async_sessionmaker(get_engine(), expire_on_commit=False)
     async with factory() as session:
@@ -219,7 +333,7 @@ async def test_publish_limits_existing_plan_reuse_and_one_live_reservation() -> 
             thirty_pages.id,
             owner.id,
             owner.billing_country_code,
-            "CUSTOM",
+            "ZYLORA_SUBDOMAIN",
             "publish-business-0001",
             "phase7-publish",
         )
@@ -366,4 +480,332 @@ async def test_unlimited_leads_whatsapp_quota_and_atomic_owner_transfer() -> Non
             await session.scalar(select(func.count(Lead.id)).where(Lead.website_id == website.id))
             == 151
         )
+        await session.rollback()
+
+
+@pytest.mark.integration
+async def test_domain_service_preserves_owner_entitlements_idempotency_and_verification_state() -> (
+    None
+):
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        service = DomainService(session)
+        provider = MemoryDomainProvider()
+
+        with pytest.raises(AuthProblem, match="does not include custom domains"):
+            await service.create_custom(
+                website.id,
+                owner.id,
+                "www.entitlement.example",
+                "phase8-domain-entitlement-0001",
+                provider,
+            )
+        await activate_plan(session, owner, "BASIC", "phase8-domain-entitlement")
+
+        class UnavailableCreateProvider:
+            async def create_custom(self, _: str, __: str) -> ProviderDomain:
+                raise DomainProviderError(
+                    "cloudflare_unavailable", "Cloudflare could not be reached."
+                )
+
+        with pytest.raises(AuthProblem, match="Cloudflare could not be reached"):
+            await service.create_custom(
+                website.id,
+                owner.id,
+                "www.unavailable.example",
+                "phase8-domain-provider-failure-0001",
+                UnavailableCreateProvider(),  # type: ignore[arg-type]
+            )
+
+        created = await service.create_custom(
+            website.id,
+            owner.id,
+            "WWW.Example.TEST",
+            "phase8-domain-idempotency-0001",
+            provider,
+        )
+        duplicate = await service.create_custom(
+            website.id,
+            owner.id,
+            "www.example.test",
+            "phase8-domain-idempotency-0002",
+            provider,
+        )
+        assert duplicate.id == created.id and duplicate.hostname == "www.example.test"
+
+        with pytest.raises(AuthProblem, match="Custom domain not found"):
+            await service.verify_custom(uuid4(), owner.id, provider)
+        created.provider_hostname_id = None
+        with pytest.raises(AuthProblem, match="verification is not ready"):
+            await service.verify_custom(created.id, owner.id, provider)
+
+        class UnavailableInspectProvider:
+            async def inspect(self, *_: object) -> ProviderDomain:
+                raise DomainProviderError(
+                    "cloudflare_unavailable", "Cloudflare could not be reached."
+                )
+
+        created.provider_hostname_id = "custom-provider-id"
+        with pytest.raises(AuthProblem, match="Cloudflare could not be reached"):
+            await service.verify_custom(created.id, owner.id, UnavailableInspectProvider())  # type: ignore[arg-type]
+
+        class FailedVerificationProvider:
+            async def inspect(self, *_: object) -> ProviderDomain:
+                return ProviderDomain("custom-provider-id", "FAILED", "FAILED")
+
+        failed = await service.verify_custom(
+            created.id,
+            owner.id,
+            FailedVerificationProvider(),  # type: ignore[arg-type]
+        )
+        assert failed.state == "VERIFICATION_FAILED"
+        assert failed.failure_code == "cloudflare_verification_failed"
+
+        with pytest.raises(AuthProblem, match="Enter a verified custom domain"):
+            await service.reserve_for_publish(website, "CUSTOM", None)
+        with pytest.raises(AuthProblem, match="Verify the custom domain"):
+            await service.reserve_for_publish(website, "CUSTOM", created.hostname)
+        with pytest.raises(AuthProblem, match="assigned safely"):
+            await service.reserve_for_publish(website, "ZYLORA_SUBDOMAIN", "unsafe.example.test")
+        reserved = await service.reserve_for_publish(website, "ZYLORA_SUBDOMAIN", None)
+        assert (
+            await service.reserve_for_publish(website, "ZYLORA_SUBDOMAIN", None)
+        ).id == reserved.id
+        await session.rollback()
+
+
+@pytest.mark.integration
+async def test_deployment_state_machine_handles_supersession_and_outbox_terminal_cases() -> None:
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        request = await PublishService(session).request_publish(
+            website.id,
+            owner.id,
+            owner.billing_country_code,
+            "ZYLORA_SUBDOMAIN",
+            "phase8-state-machine-publish-0001",
+            "phase8-state-machine",
+        )
+        first = await session.get(Deployment, request.deployment_id)
+        domain = await session.get(Domain, request.domain_id)
+        assert first is not None and domain is not None
+        assert (
+            await DeploymentService(session).queue_publish(
+                website,
+                "ZYLORA_SUBDOMAIN",
+                None,
+                "phase8-state-machine-publish-0001",
+                "phase8-state-machine",
+            )
+        ).id == first.id
+        provider = MemoryDomainProvider()
+        provider.healthy.add((domain.hostname, first.id))
+        artifacts = ArtifactBuilder(MemoryObjectStorage())
+        assert (
+            await DeploymentService(session).process_publish(first.id, provider, artifacts, "first")
+        ).state == "ACTIVE"
+        assert (
+            await DeploymentService(session).process_publish(
+                first.id, provider, artifacts, "duplicate"
+            )
+        ) is first
+
+        replacement = await DeploymentService(session).queue_rollback(
+            website.id,
+            owner.id,
+            first.id,
+            "phase8-state-machine-rollback-0001",
+            "phase8-state-machine",
+        )
+        provider.healthy.add((domain.hostname, replacement.id))
+        activated = await DeploymentService(session).process_publish(
+            replacement.id, provider, artifacts, "replacement"
+        )
+        assert activated.state == "ACTIVE" and first.state == "SUPERSEDED"
+        assert website.active_deployment_id == replacement.id
+        assert (
+            await DeploymentService(session).cancel_pending_publish(website, "cancel-none") is None
+        )
+        with pytest.raises(AuthProblem, match="cannot be restored"):
+            await DeploymentService(session).queue_rollback(
+                website.id,
+                owner.id,
+                uuid4(),
+                "phase8-missing-rollback-target-0001",
+                "phase8-state-machine",
+            )
+        with pytest.raises(AuthProblem, match="Publication event not found"):
+            await DeploymentService(session).process_outbox_event(uuid4(), provider, artifacts)
+
+        delivered = OutboxEvent(
+            aggregate_type="DEPLOYMENT",
+            aggregate_id=replacement.id,
+            event_type="deployment.publish_requested",
+            payload={"deployment_id": str(replacement.id)},
+            correlation_id="phase8-already-delivered",
+            state="PUBLISHED",
+        )
+        unsupported = OutboxEvent(
+            aggregate_type="DEPLOYMENT",
+            aggregate_id=replacement.id,
+            event_type="deployment.unknown",
+            payload={},
+            correlation_id="phase8-unsupported-event",
+        )
+        session.add_all((delivered, unsupported))
+        await session.flush()
+        assert (
+            await DeploymentService(session).process_outbox_event(delivered.id, provider, artifacts)
+            is delivered
+        )
+        completed = await DeploymentService(session).process_outbox_event(
+            unsupported.id, provider, artifacts
+        )
+        assert completed.state == "FAILED"
+        assert completed.last_error_code == "publication_processing_failed"
+
+        await PublishService(session).request_unpublish(
+            website.id, owner.id, "phase8-unpublish-failure"
+        )
+        unpublish_event = await session.scalar(
+            select(OutboxEvent).where(
+                OutboxEvent.aggregate_id == website.id,
+                OutboxEvent.event_type == "website.unpublish_requested",
+            )
+        )
+        assert unpublish_event is not None
+
+        class FailingDeactivateProvider:
+            async def deactivate(self, _: str, __: str) -> None:
+                raise DomainProviderError(
+                    "cloudflare_unavailable", "Cloudflare could not be reached."
+                )
+
+        failed_event = await DeploymentService(session).process_outbox_event(
+            unpublish_event.id,
+            FailingDeactivateProvider(),  # type: ignore[arg-type]
+            artifacts,
+        )
+        assert failed_event.state == "FAILED"
+        assert failed_event.last_error_code == "cloudflare_unavailable"
+        assert website.status == "PUBLISHED" and domain.state == "ACTIVE" and domain.is_active
+        await session.rollback()
+
+
+@pytest.mark.integration
+async def test_worker_claims_only_ready_publication_events_with_a_durable_lease() -> None:
+    """The dispatcher lease is database-backed so retries cannot double-dispatch a publication."""
+
+    from sqlalchemy import delete
+    from zylora_worker import tasks
+
+    marker = f"phase8-worker-claim-{uuid4().hex}"
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    event_ids: set[str] = set()
+    try:
+        async with factory() as session:
+            events = [
+                OutboxEvent(
+                    aggregate_type="DEPLOYMENT",
+                    aggregate_id=uuid4(),
+                    event_type="deployment.publish_requested",
+                    payload={"deployment_id": str(uuid4())},
+                    correlation_id=marker,
+                ),
+                OutboxEvent(
+                    aggregate_type="DEPLOYMENT",
+                    aggregate_id=uuid4(),
+                    event_type="deployment.rollback_requested",
+                    payload={"deployment_id": str(uuid4())},
+                    correlation_id=marker,
+                ),
+            ]
+            session.add_all(events)
+            await session.commit()
+            event_ids = {str(event.id) for event in events}
+
+        claimed = set(await tasks._claim_publication_events(100))
+        assert event_ids.issubset(claimed)
+
+        async with factory() as session:
+            leased = list(
+                (
+                    await session.scalars(
+                        select(OutboxEvent).where(OutboxEvent.correlation_id == marker)
+                    )
+                ).all()
+            )
+            assert len(leased) == 2
+            assert all(event.lease_owner and event.leased_until for event in leased)
+    finally:
+        async with factory() as session:
+            await session.execute(delete(OutboxEvent).where(OutboxEvent.correlation_id == marker))
+            await session.commit()
+
+
+@pytest.mark.integration
+async def test_deployment_service_rejects_invalid_queues_and_keeps_first_failure_offline() -> None:
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        service = DeploymentService(session)
+        assert await DomainService(session).list_for_owner(website.id, owner.id) == []
+        assert await service.cancel_pending_publish(website, "no-pending-deployment") is None
+        with pytest.raises(AuthProblem, match="live Website deployment is required"):
+            await service.queue_rollback(
+                website.id,
+                owner.id,
+                uuid4(),
+                "phase8-draft-rollback-0001",
+                "phase8-invalid-queue",
+            )
+        website.current_version_id = None
+        with pytest.raises(AuthProblem, match="no valid revision"):
+            await service.queue_publish(
+                website,
+                "ZYLORA_SUBDOMAIN",
+                None,
+                "phase8-no-revision-0001",
+                "phase8-invalid-queue",
+            )
+        with pytest.raises(AuthProblem, match="Deployment not found"):
+            await service.process_publish(
+                uuid4(),
+                MemoryDomainProvider(),
+                ArtifactBuilder(MemoryObjectStorage()),
+                "phase8-missing-deployment",
+            )
+        await session.rollback()
+
+
+@pytest.mark.integration
+async def test_first_deployment_failure_never_sets_a_live_website_pointer() -> None:
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await make_site(session, 1)
+        request = await PublishService(session).request_publish(
+            website.id,
+            owner.id,
+            owner.billing_country_code,
+            "ZYLORA_SUBDOMAIN",
+            "phase8-first-failure-publish-0001",
+            "phase8-first-failure",
+        )
+        deployment = await session.get(Deployment, request.deployment_id)
+        domain = await session.get(Domain, request.domain_id)
+        assert deployment is not None and domain is not None
+
+        failed = await DeploymentService(session).process_publish(
+            deployment.id,
+            MemoryDomainProvider(),
+            ArtifactBuilder(MemoryObjectStorage()),
+            "phase8-first-failure",
+        )
+        assert failed.state == "FAILED"
+        assert failed.failure_code == "deployment_health_check_failed"
+        assert website.status == "FAILED" and website.active_deployment_id is None
+        assert website.live_owner_user_id is None and website.publication_domain_type is None
+        assert domain.state == "PROVISIONING_FAILED" and not domain.is_active
         await session.rollback()

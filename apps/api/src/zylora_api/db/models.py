@@ -44,6 +44,7 @@ from zylora_api.db.commerce_models import (
     PlanPrice,
     Subscription,
 )
+from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
 from zylora_api.db.lead_models import Lead
 from zylora_api.db.template_models import (
     Template,
@@ -73,6 +74,9 @@ __all__ = [
     "AuditLog",
     "AuthAttempt",
     "AuthIdentity",
+    "Deployment",
+    "DeploymentEvent",
+    "Domain",
     "EmailVerification",
     "Invoice",
     "Lead",

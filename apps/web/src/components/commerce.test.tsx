@@ -116,4 +116,67 @@ describe('Phase 7 commerce surfaces', () => {
       ),
     );
   });
+  it('connects and verifies a custom domain before including its hostname in publish', async () => {
+    const pendingDomain = {
+      id: 'domain-id',
+      hostname: 'www.example.com',
+      state: 'PENDING_DNS',
+      tls_status: 'PENDING',
+      verification_record_name: '_cf-custom-hostname.www.example.com',
+      verification_record_type: 'TXT',
+      verification_record_value: 'proof-value',
+    };
+    const verifiedDomain = { ...pendingDomain, state: 'VERIFIED', tls_status: 'ACTIVE' };
+    const evaluation = {
+      website_id: 'website-id',
+      page_count: 1,
+      domain_type: 'CUSTOM',
+      current_plan_code: 'BASIC',
+      reuse_existing_subscription: true,
+      can_request_publish: true,
+      status: 'ELIGIBLE',
+      recommended_plan_code: 'BASIC',
+      plans: plans.map((plan) => ({
+        plan,
+        eligible: plan.code !== 'FREE',
+        reasons: [],
+        is_current_plan: plan.code === 'BASIC',
+      })),
+    };
+    const fetcher = vi.fn().mockImplementation((path: string, options?: RequestInit) => {
+      if (path.endsWith('/domains/custom')) {
+        expect(options?.method).toBe('POST');
+        expect(options?.body).toBe(JSON.stringify({ hostname: 'www.example.com' }));
+        return Promise.resolve({ ok: true, status: 201, json: async () => pendingDomain });
+      }
+      if (path.endsWith('/domains/domain-id/verify')) {
+        return Promise.resolve({ ok: true, status: 200, json: async () => verifiedDomain });
+      }
+      if (path.includes('publish-evaluation')) {
+        return Promise.resolve({ ok: true, status: 200, json: async () => evaluation });
+      }
+      expect(options?.body).toBe(
+        JSON.stringify({ domain_type: 'CUSTOM', hostname: 'www.example.com' }),
+      );
+      return Promise.resolve({ ok: true, status: 202, json: async () => ({ message: 'Queued' }) });
+    });
+    vi.stubGlobal('fetch', fetcher);
+
+    render(<PublishControls websiteId="website-id" status="DRAFT" />);
+    fireEvent.change(screen.getByLabelText('Publication address'), {
+      target: { value: 'CUSTOM' },
+    });
+    fireEvent.change(screen.getByLabelText('Custom domain'), {
+      target: { value: 'www.example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Connect domain' }));
+    expect(await screen.findByText('PENDING DNS')).toBeVisible();
+    expect(screen.getByText('_cf-custom-hostname.www.example.com')).toBeVisible();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check verification' }));
+    expect(await screen.findByText('VERIFIED')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Check publishing' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Request publish' }));
+    expect(await screen.findByText('Queued')).toBeVisible();
+  });
 });

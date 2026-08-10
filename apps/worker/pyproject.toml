@@ -12,7 +12,11 @@ dependencies = [
   "pydantic==2.13.4",
   "pydantic-settings==2.15.0",
   "redis==8.1.0",
+  "zylora-api",
 ]
+
+[tool.uv.sources]
+zylora-api = { workspace = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/zylora_worker"]

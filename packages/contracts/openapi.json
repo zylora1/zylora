@@ -556,6 +556,227 @@
         "title": "CreditResponse",
         "type": "object"
       },
+      "DeploymentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_checksum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Checksum"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "domain_id": {
+            "format": "uuid",
+            "title": "Domain Id",
+            "type": "string"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "operation": {
+            "enum": [
+              "PUBLISH",
+              "ROLLBACK"
+            ],
+            "title": "Operation",
+            "type": "string"
+          },
+          "queued_at": {
+            "format": "date-time",
+            "title": "Queued At",
+            "type": "string"
+          },
+          "safe_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Error"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "website_id",
+          "domain_id",
+          "operation",
+          "state",
+          "artifact_checksum",
+          "failure_code",
+          "safe_error",
+          "queued_at",
+          "completed_at"
+        ],
+        "title": "DeploymentResponse",
+        "type": "object"
+      },
+      "DomainCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "hostname": {
+            "maxLength": 253,
+            "minLength": 3,
+            "title": "Hostname",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hostname"
+        ],
+        "title": "DomainCreateRequest",
+        "type": "object"
+      },
+      "DomainResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "hostname": {
+            "title": "Hostname",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_primary": {
+            "title": "Is Primary",
+            "type": "boolean"
+          },
+          "safe_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Error"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "tls_status": {
+            "title": "Tls Status",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "ZYLORA_SUBDOMAIN",
+              "CUSTOM"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "verification_record_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Record Name"
+          },
+          "verification_record_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Record Type"
+          },
+          "verification_record_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Record Value"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "website_id",
+          "type",
+          "hostname",
+          "state",
+          "tls_status",
+          "is_primary",
+          "is_active",
+          "verification_record_name",
+          "verification_record_type",
+          "verification_record_value",
+          "safe_error",
+          "updated_at"
+        ],
+        "title": "DomainResponse",
+        "type": "object"
+      },
       "EditorMutationResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1682,9 +1903,82 @@
         "title": "PreviewResponse",
         "type": "object"
       },
+      "PublicationStatusResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active_deployment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Deployment Id"
+          },
+          "deployments": {
+            "items": {
+              "$ref": "#/components/schemas/DeploymentResponse"
+            },
+            "title": "Deployments",
+            "type": "array"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/DomainResponse"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "website_id": {
+            "format": "uuid",
+            "title": "Website Id",
+            "type": "string"
+          },
+          "website_status": {
+            "title": "Website Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "website_id",
+          "website_status",
+          "active_deployment_id",
+          "domains",
+          "deployments"
+        ],
+        "title": "PublicationStatusResponse",
+        "type": "object"
+      },
       "PublishCommandResponse": {
         "additionalProperties": false,
         "properties": {
+          "deployment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deployment Id"
+          },
+          "domain_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
           "message": {
             "title": "Message",
             "type": "string"
@@ -1803,6 +2097,19 @@
             ],
             "title": "Domain Type",
             "type": "string"
+          },
+          "hostname": {
+            "anyOf": [
+              {
+                "maxLength": 253,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hostname"
           }
         },
         "title": "PublishRequest",
@@ -1926,6 +2233,21 @@
           }
         },
         "title": "RevokeSessionRequest",
+        "type": "object"
+      },
+      "RollbackRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "deployment_id": {
+            "format": "uuid",
+            "title": "Deployment Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deployment_id"
+        ],
+        "title": "RollbackRequest",
         "type": "object"
       },
       "SessionListResponse": {
@@ -4360,6 +4682,175 @@
         ]
       }
     },
+    "/api/v1/websites/{website_id}/domains": {
+      "get": {
+        "operationId": "domains_api_v1_websites__website_id__domains_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DomainResponse"
+                  },
+                  "title": "Response Domains Api V1 Websites  Website Id  Domains Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Domains",
+        "tags": [
+          "publishing"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/domains/custom": {
+      "post": {
+        "operationId": "create_custom_domain_api_v1_websites__website_id__domains_custom_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DomainCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Custom Domain",
+        "tags": [
+          "publishing"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/domains/{domain_id}/verify": {
+      "post": {
+        "operationId": "verify_custom_domain_api_v1_websites__website_id__domains__domain_id__verify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "domain_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Domain Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Custom Domain",
+        "tags": [
+          "publishing"
+        ]
+      }
+    },
     "/api/v1/websites/{website_id}/editor": {
       "get": {
         "operationId": "editor_state_api_v1_websites__website_id__editor_get",
@@ -4792,6 +5283,49 @@
         ]
       }
     },
+    "/api/v1/websites/{website_id}/publication": {
+      "get": {
+        "operationId": "publication_status_api_v1_websites__website_id__publication_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publication Status",
+        "tags": [
+          "publishing"
+        ]
+      }
+    },
     "/api/v1/websites/{website_id}/publish": {
       "post": {
         "operationId": "publish_api_v1_websites__website_id__publish_post",
@@ -4912,6 +5446,75 @@
         "summary": "Publish Evaluation",
         "tags": [
           "commerce"
+        ]
+      }
+    },
+    "/api/v1/websites/{website_id}/rollbacks": {
+      "post": {
+        "operationId": "rollback_api_v1_websites__website_id__rollbacks_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rollback",
+        "tags": [
+          "publishing"
         ]
       }
     },

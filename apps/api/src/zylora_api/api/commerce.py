@@ -206,13 +206,16 @@ async def publish(
 ) -> PublishCommandResponse:
     require_json_origin(request, settings)
     require_csrf(request, identity, crypto)
-    result = await PublishService(session).request_publish(
+    publish_service = PublishService(session)
+    publish_kwargs = {"hostname": payload.hostname} if payload.hostname is not None else {}
+    result = await publish_service.request_publish(
         website_id,
         identity.user.id,
         request_country(request, settings, identity.user),
         payload.domain_type,
         require_idempotency_key(idempotency_key),
         correlation_id(request),
+        **publish_kwargs,
     )
     AuditService(session, crypto).record(
         "website.publish_requested",
@@ -222,7 +225,11 @@ async def publish(
         target_id=str(website_id),
         reason="PUBLISH_ELIGIBLE",
         ip_address=request_ip(request, settings),
-        metadata={"plan_code": result.plan_code, "domain_type": payload.domain_type},
+        metadata={
+            "plan_code": result.plan_code,
+            "domain_type": payload.domain_type,
+            "deployment_id": str(result.deployment_id) if result.deployment_id else None,
+        },
     )
     await session.commit()
     return result

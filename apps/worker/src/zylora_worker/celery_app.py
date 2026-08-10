@@ -28,6 +28,12 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
         task_time_limit=300,
         broker_connection_retry_on_startup=True,
         result_expires=3600,
+        beat_schedule={
+            "zylora-publishing-outbox": {
+                "task": "zylora.publishing.dispatch_outbox",
+                "schedule": 10.0,
+            }
+        },
     )
     application.conf.zylora_version = __version__
     return application

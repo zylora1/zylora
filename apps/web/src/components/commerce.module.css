@@ -206,7 +206,8 @@
   flex-wrap: wrap;
   gap: 0.65rem;
 }
-.publish select {
+.publish select,
+.publish input {
   min-height: 2.65rem;
   border: 1px solid #9aa19c;
   background: white;
@@ -253,4 +254,28 @@
   .compactPlans {
     grid-template-columns: 1fr;
   }
+}
+
+.customDomain {
+  display: grid;
+  gap: 0.5rem;
+  width: min(100%, 34rem);
+}
+.customDomain label,
+.domainStatus p {
+  color: var(--z-color-ink-muted);
+  font-size: 0.76rem;
+}
+.domainStatus {
+  display: grid;
+  gap: 0.45rem;
+  border-left: 3px solid #a83f27;
+  padding-left: 0.7rem;
+}
+.domainStatus p {
+  margin: 0;
+  line-height: 1.45;
+}
+.domainStatus code {
+  overflow-wrap: anywhere;
 }

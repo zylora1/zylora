@@ -10,6 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 Environment = Literal["development", "test", "staging", "production"]
 StorageProvider = Literal["s3", "memory", "disabled"]
 AiProvider = Literal["openai", "disabled"]
+DomainProviderName = Literal["cloudflare", "disabled", "memory"]
 
 
 class Settings(BaseSettings):
@@ -32,6 +33,12 @@ class Settings(BaseSettings):
     trusted_hosts: str = "localhost,127.0.0.1,testserver,admin.localhost"
     trusted_proxy_ips: str = ""
     cloudflare_country_header_trusted: bool = False
+    domain_provider: DomainProviderName = "disabled"
+    cloudflare_api_token: str | None = None
+    cloudflare_zone_id: str | None = None
+    cloudflare_published_origin: str | None = None
+    published_site_base_domain: str = "sites.zylora.local"
+    cloudflare_api_timeout_seconds: float = 5.0
 
     auth_secret: str = "zylora_development_auth_secret_change_me"  # noqa: S105
     cookie_secure: bool = False
@@ -96,6 +103,9 @@ class Settings(BaseSettings):
     def validate_environment_safety(self) -> Self:
         if not 1 <= self.turnstile_timeout_seconds <= 10:
             raise ValueError("Turnstile timeout must be between 1 and 10 seconds")
+
+        if not 1 <= self.cloudflare_api_timeout_seconds <= 15:
+            raise ValueError("Cloudflare API timeout must be between 1 and 15 seconds")
 
         if not 5 <= self.ai_timeout_seconds <= 120:
             raise ValueError("AI timeout must be between 5 and 120 seconds")
@@ -191,6 +201,20 @@ class Settings(BaseSettings):
                     "production Turnstile hostnames must exactly match User and Admin origins"
                 )
 
+            if self.domain_provider != "cloudflare":
+                raise ValueError("production Website domains require the Cloudflare provider")
+            required_cloudflare = {
+                "cloudflare_api_token": self.cloudflare_api_token,
+                "cloudflare_zone_id": self.cloudflare_zone_id,
+                "cloudflare_published_origin": self.cloudflare_published_origin,
+            }
+            missing_cloudflare = [name for name, value in required_cloudflare.items() if not value]
+            if missing_cloudflare:
+                raise ValueError("missing required Cloudflare domain configuration")
+            if ".local" in self.published_site_base_domain or "localhost" in (
+                self.cloudflare_published_origin or ""
+            ):
+                raise ValueError("production Cloudflare domain configuration contains local hosts")
         return self
 
 
