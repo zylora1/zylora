@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from zylora_api.api.admin_auth import router as admin_auth_router
 from zylora_api.api.admin_exports import router as admin_exports_router
 from zylora_api.api.admin_leads import router as admin_leads_router
+from zylora_api.api.analytics import router as analytics_router
 from zylora_api.api.auth import router as auth_router
 from zylora_api.api.commerce import router as commerce_router
 from zylora_api.api.editor import router as editor_router
@@ -17,6 +18,7 @@ api_router = APIRouter()
 api_router.include_router(health_router)
 api_router.include_router(auth_router)
 api_router.include_router(commerce_router)
+api_router.include_router(analytics_router)
 api_router.include_router(editor_router)
 api_router.include_router(leads_router)
 api_router.include_router(publishing_router)

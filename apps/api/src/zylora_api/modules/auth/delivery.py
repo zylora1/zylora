@@ -13,14 +13,18 @@ class EmailSender(Protocol):
     async def send_password_reset(self, *, email: str, token: str) -> None: ...
 
 
+class TransactionalEmailProvider(Protocol):
+    async def send_transactional(self, *, recipient: str, subject: str, body: str) -> None: ...
+
+
 class SMTPEmailSender:
-    """Production-capable SMTP adapter. Secret values are never returned or logged."""
+    """Production SMTP adapter; provider credentials and mail bodies are never logged."""
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
     async def send_verification(self, *, email: str, code: str) -> None:
-        await self._send(
+        await self.send_transactional(
             recipient=email,
             subject="Verify your Zylora account",
             body=f"Your Zylora verification code is {code}. It expires in 15 minutes.",
@@ -28,13 +32,13 @@ class SMTPEmailSender:
 
     async def send_password_reset(self, *, email: str, token: str) -> None:
         reset_url = f"{self._settings.allowed_origins[0]}/reset-password?token={token}"
-        await self._send(
+        await self.send_transactional(
             recipient=email,
             subject="Reset your Zylora password",
             body=f"Use this one-time link within 15 minutes: {reset_url}",
         )
 
-    async def _send(self, *, recipient: str, subject: str, body: str) -> None:
+    async def send_transactional(self, *, recipient: str, subject: str, body: str) -> None:
         if not self._settings.smtp_host:
             raise RuntimeError("SMTP is not configured")
         message = EmailMessage()

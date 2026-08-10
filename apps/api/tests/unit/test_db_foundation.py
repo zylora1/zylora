@@ -10,6 +10,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
     assert set(Base.metadata.tables) == {
         "ai_credit_accounts",
         "analytics_events",
+        "analytics_daily_rollups",
         "ai_credit_ledger",
         "ai_operations",
         "audit_logs",
@@ -35,6 +36,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "sessions",
         "super_admin_profiles",
         "template_assets",
+        "transactional_emails",
         "template_categories",
         "template_tag_assignments",
         "template_tags",

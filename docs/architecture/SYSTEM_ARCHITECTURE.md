@@ -249,3 +249,11 @@ pressure and an ADR; they are not Phase 1 assumptions.
 - No global vector index or client-selected tenant key.
 - No synchronous request waiting for long deployments, index builds, campaigns, or ZIP generation.
 - No direct state mutation that bypasses canonical transition services and audit/outbox records.
+
+## Phase 11 implementation note
+
+`AnalyticsService`, `NotificationService`, and `TransactionalEmailService` are the implemented
+canonical services. Public artifact instrumentation uses the same origin API, resolves its Website by
+host, and stores only minimised purpose-digested identifiers. Celery owns rollup recomputation and
+transactional delivery. Portal endpoints are owner/recipient-scoped API reads; no frontend state creates
+metrics, notification state, or delivery success.

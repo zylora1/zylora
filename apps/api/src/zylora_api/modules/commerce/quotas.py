@@ -9,11 +9,12 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.commerce_models import NotificationQuotaAccount, NotificationQuotaLedger
-from zylora_api.db.lead_models import AnalyticsEvent, Lead, Notification
+from zylora_api.db.lead_models import AnalyticsEvent, Lead
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import Website
 from zylora_api.modules.commerce.service import SubscriptionService
 from zylora_api.modules.leads.credits import CreditLedgerService
+from zylora_api.modules.notifications.service import NotificationService
 from zylora_api.modules.templates.service import problem
 
 
@@ -158,15 +159,13 @@ class LeadService:
         self.session.add(lead)
         await self.session.flush()
         await credit_ledger.consume_for_lead(lead)
-        self.session.add(
-            Notification(
-                recipient_user_id=lead.owner_user_id,
-                type="LEAD_CAPTURED",
-                resource_type="lead",
-                resource_id=lead.id,
-                dedupe_key=f"lead:{lead.id}",
-                data={"website_id": str(lead.website_id), "source": lead.source},
-            )
+        await NotificationService(self.session).create(
+            recipient_user_id=lead.owner_user_id,
+            notification_type="LEAD_CAPTURED",
+            resource_type="lead",
+            resource_id=lead.id,
+            dedupe_key=f"lead:{lead.id}",
+            data={"website_id": str(lead.website_id), "source": lead.source},
         )
         self.session.add(
             AnalyticsEvent(

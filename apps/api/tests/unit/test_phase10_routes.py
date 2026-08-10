@@ -8,6 +8,7 @@ import httpx
 import pytest
 from starlette.requests import Request
 from zylora_api.api import admin_leads
+from zylora_api.api import analytics as analytics_api
 from zylora_api.api import leads as leads_api
 from zylora_api.api import public as public_api
 from zylora_api.app import create_app
@@ -73,6 +74,7 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
     website_id = uuid4()
     database = FakeSession()
     challenge_calls: list[dict[str, object]] = []
+    analytics_calls: list[dict[str, object]] = []
 
     class Challenge:
         async def enforce(self, token: str | None, **values: object) -> None:
@@ -89,6 +91,13 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
                 ),
                 duplicate=source == "CHATBOT",
             )
+
+    class Analytics:
+        def __init__(self, _: object) -> None: ...
+
+        async def record(self, **values: object) -> SimpleNamespace:
+            analytics_calls.append(values)
+            return SimpleNamespace(duplicate=False)
 
     class Chats:
         @classmethod
@@ -128,11 +137,30 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
     )
     monkeypatch.setattr(public_api, "resolve_public_website", context)
     monkeypatch.setattr(public_api, "LeadService", Leads)
+    monkeypatch.setattr(public_api, "AnalyticsService", Analytics)
     monkeypatch.setattr(public_api, "ChatbotService", Chats)
+    app.dependency_overrides[get_crypto] = lambda: AuthCrypto("phase11-public-analytics-secret")
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://testserver"
     ) as client:
+        page_view = await client.post(
+            "/api/v1/public/analytics/page-views",
+            json={
+                "event_id": "phase11-public-page-view-0001",
+                "session_id": "phase11-public-session-0001",
+                "page_path": "/about",
+            },
+        )
+        rejected_analytics_tenant = await client.post(
+            "/api/v1/public/analytics/page-views",
+            json={
+                "event_id": "phase11-public-page-view-0002",
+                "session_id": "phase11-public-session-0002",
+                "page_path": "/about",
+                "website_id": str(uuid4()),
+            },
+        )
         form = await client.post(
             "/api/v1/public/leads",
             json={"name": "Ada", "enquiry": "Please call", "page_path": "/contact"},
@@ -157,6 +185,13 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
             headers={"Idempotency-Key": "phase10-public-invalid-0001"},
         )
 
+    assert page_view.status_code == 202 and page_view.json() == {
+        "accepted": True,
+        "duplicate": False,
+    }
+    assert rejected_analytics_tenant.status_code == 422
+    assert analytics_calls[0]["website_id"] == website_id
+    assert analytics_calls[0]["page_path"] == "/about"
     assert form.status_code == 201 and form.json()["source"] == "FORM"
     assert start.status_code == 201 and start.json()["access_token"] == "opaque-capability"
     assert message.json()["answer"] == "Grounded answer"
@@ -164,7 +199,7 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
     assert rejected_tenant.status_code == 422
     assert len(challenge_calls) == 2
     assert all(call["expected_hostname"] == "site.example" for call in challenge_calls)
-    assert database.commits == 4
+    assert database.commits == 5
 
 
 async def test_owner_lead_and_credit_routes_filter_through_the_user_identity(
@@ -314,3 +349,106 @@ async def test_public_website_resolution_uses_only_the_active_request_hostname()
 
     with pytest.raises(AuthProblem, match="Published Website not found"):
         await public_api.resolve_public_website(request, MissingDomainSession())
+
+
+async def test_phase11_analytics_and_notification_routes_are_identity_scoped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity, crypto = user_identity()
+    database = FakeSession()
+    notification_id = uuid4()
+    captured: dict[str, object] = {}
+
+    class Analytics:
+        def __init__(self, _: object) -> None: ...
+
+        async def dashboard(self, **values: object) -> SimpleNamespace:
+            captured["analytics"] = values
+            return SimpleNamespace(
+                website_id=None,
+                timezone="UTC",
+                period_days=30,
+                has_published_website=True,
+                has_meaningful_data=True,
+                page_views=4,
+                sessions=3,
+                visitors=2,
+                leads=1,
+                form_leads=1,
+                chatbot_leads=0,
+                chatbot_conversations=1,
+                chatbot_messages=2,
+                conversions=1,
+                points=[],
+            )
+
+    class Notifications:
+        def __init__(self, _: object) -> None: ...
+
+        async def page_for_user(self, **values: object) -> tuple[list[SimpleNamespace], int, None]:
+            captured["notification_page"] = values
+            return (
+                [
+                    SimpleNamespace(
+                        id=notification_id,
+                        type="LEAD_CAPTURED",
+                        title="New lead captured",
+                        body="A form enquiry is ready to review.",
+                        deep_link="/app/leads",
+                        state="UNREAD",
+                        read_at=None,
+                        created_at=datetime(2026, 8, 10, tzinfo=UTC),
+                    )
+                ],
+                1,
+                None,
+            )
+
+        async def mark_read(self, received_id: object, recipient_id: object) -> SimpleNamespace:
+            captured["notification_read"] = (received_id, recipient_id)
+            return SimpleNamespace(
+                id=notification_id,
+                type="LEAD_CAPTURED",
+                title="New lead captured",
+                body="A form enquiry is ready to review.",
+                deep_link="/app/leads",
+                state="READ",
+                read_at=datetime(2026, 8, 10, 1, tzinfo=UTC),
+                created_at=datetime(2026, 8, 10, tzinfo=UTC),
+            )
+
+    app = create_app()
+    app.dependency_overrides[get_session] = lambda: database
+    app.dependency_overrides[get_user_identity] = lambda: identity
+    app.dependency_overrides[get_crypto] = lambda: crypto
+    monkeypatch.setattr(analytics_api, "AnalyticsService", Analytics)
+    monkeypatch.setattr(analytics_api, "NotificationService", Notifications)
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        client.cookies.set("zylora_user_csrf", "phase10-user-csrf")
+        dashboard = await client.get("/api/v1/analytics?period_days=30")
+        notifications = await client.get("/api/v1/notifications?limit=10")
+        marked = await client.post(
+            f"/api/v1/notifications/{notification_id}/read",
+            json={},
+            headers={"X-CSRF-Token": "phase10-user-csrf"},
+        )
+
+    assert dashboard.status_code == 200 and dashboard.json()["page_views"] == 4
+    assert notifications.status_code == 200 and notifications.json()["unread_count"] == 1
+    assert marked.status_code == 200 and marked.json()["state"] == "READ"
+    assert captured["analytics"] == {
+        "owner_user_id": identity.user.id,
+        "timezone": identity.user.timezone,
+        "period_days": 30,
+        "website_id": None,
+    }
+    assert captured["notification_page"] == {
+        "recipient_user_id": identity.user.id,
+        "limit": 10,
+        "before": None,
+    }
+    assert captured["notification_read"] == (notification_id, identity.user.id)
+    assert database.commits == 3

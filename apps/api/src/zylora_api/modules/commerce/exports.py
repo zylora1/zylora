@@ -24,6 +24,7 @@ from zylora_api.modules.commerce.export_schemas import (
 )
 from zylora_api.modules.commerce.schemas import MoneyResponse
 from zylora_api.modules.commerce.service import region_for_country
+from zylora_api.modules.notifications.service import NotificationService
 from zylora_api.modules.publishing.artifacts import render_page
 from zylora_api.modules.publishing.service import DeploymentService
 from zylora_api.modules.templates.service import problem
@@ -351,6 +352,13 @@ class ExportService:
             purchase.state = "READY"
             purchase.ready_at = purchase.ready_at or now
             purchase.expires_at = existing.expires_at
+            await NotificationService(self.session).create(
+                recipient_user_id=purchase.owner_user_id,
+                notification_type="EXPORT_READY",
+                resource_type="website_export",
+                resource_id=purchase.id,
+                dedupe_key=f"export-ready:{purchase.id}",
+            )
             return existing
         if purchase.state not in {"GENERATING", "PAID"}:
             raise problem(
@@ -405,6 +413,13 @@ class ExportService:
         purchase.expires_at = expires_at
         purchase.failure_code = None
         purchase.safe_error = None
+        await NotificationService(self.session).create(
+            recipient_user_id=purchase.owner_user_id,
+            notification_type="EXPORT_READY",
+            resource_type="website_export",
+            resource_id=purchase.id,
+            dedupe_key=f"export-ready:{purchase.id}",
+        )
         return artifact
 
     async def artifact_for_download(
@@ -455,7 +470,9 @@ class ExportService:
                 path = str(page.get("path") or "/")
                 filename = "index.html" if path == "/" else f"{path.strip('/')}/index.html"
                 ExportService._write_archive_file(
-                    archive, filename, render_page(page, navigation, include_chatbot=False)
+                    archive,
+                    filename,
+                    render_page(page, navigation, include_chatbot=False, include_analytics=False),
                 )
                 files.append({"path": path, "file": filename})
             manifest = {

@@ -41,6 +41,14 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
                 "task": "zylora.chatbot.dispatch_outbox",
                 "schedule": 10.0,
             },
+            "zylora-transactional-email-outbox": {
+                "task": "zylora.notifications.dispatch_transactional_email",
+                "schedule": 10.0,
+            },
+            "zylora-analytics-rollups": {
+                "task": "zylora.analytics.refresh",
+                "schedule": 60.0,
+            },
         },
     )
     application.conf.zylora_version = __version__

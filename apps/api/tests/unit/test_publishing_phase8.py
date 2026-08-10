@@ -337,9 +337,15 @@ def test_deployed_renderer_includes_a_real_chatbot_widget_but_export_mode_does_n
         "components": [],
     }
     deployed = render_page(page, [("Home", "/")]).decode()
-    exported = render_page(page, [("Home", "/")], include_chatbot=False).decode()
+    exported = render_page(
+        page, [("Home", "/")], include_chatbot=False, include_analytics=False
+    ).decode()
     assert "/api/v1/public/chatbot/conversations" in deployed
     assert "Ask this Website" in deployed
     assert "textContent" in deployed
+    assert "/api/v1/public/analytics/page-views" in deployed
+    assert "zylora.analytics.session" in deployed
     assert "/api/v1/public/chatbot/conversations" not in exported
     assert "Ask this Website" not in exported
+    assert "/api/v1/public/analytics/page-views" not in exported
+    assert "zylora.analytics.session" not in exported

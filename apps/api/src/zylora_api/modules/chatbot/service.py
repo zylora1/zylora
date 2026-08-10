@@ -17,6 +17,7 @@ from zylora_api.db.chatbot_models import (
     ChatMessage,
 )
 from zylora_api.db.website_models import Website
+from zylora_api.modules.analytics.service import AnalyticsService
 from zylora_api.modules.chatbot.embeddings import EmbeddingProvider, OpenAIEmbeddingProvider
 from zylora_api.modules.chatbot.indexing import FaissIndexCodec
 from zylora_api.modules.commerce.quotas import LeadCaptureResult, LeadService
@@ -68,6 +69,13 @@ class ChatbotService:
         )
         self.session.add(conversation)
         await self.session.flush()
+        await AnalyticsService(self.session).record(
+            website_id=website_id,
+            owner_user_id=chatbot.owner_user_id,
+            event_type="CHATBOT_CONVERSATION_STARTED",
+            idempotency_key=f"chatbot-conversation:{conversation.id}",
+            properties={},
+        )
         return ConversationSession(conversation=conversation, access_token=token)
 
     async def reply(
@@ -143,6 +151,13 @@ class ChatbotService:
             "knowledge_index_id": str(index.id),
             "chunk_ids": [str(item.id) for item in ordered],
         }
+        await AnalyticsService(self.session).record(
+            website_id=website_id,
+            owner_user_id=chatbot.owner_user_id,
+            event_type="CHATBOT_MESSAGE",
+            idempotency_key=f"chatbot-message:{conversation.id}:{next_sequence + 1}",
+            properties={},
+        )
         self.session.add_all(
             [
                 ChatMessage(

@@ -262,6 +262,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analytics Dashboard */
+        get: operations["analytics_dashboard_api_v1_analytics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/challenge/config": {
         parameters: {
             query?: never;
@@ -568,6 +585,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notifications */
+        get: operations["notifications_api_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Notification Read */
+        post: operations["mark_notification_read_api_v1_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plans": {
         parameters: {
             query?: never;
@@ -579,6 +630,23 @@ export interface paths {
         get: operations["plans_api_v1_plans_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/analytics/page-views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Page View */
+        post: operations["capture_page_view_api_v1_public_analytics_page_views_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1340,6 +1408,65 @@ export interface components {
                 [key: string]: number | string;
             };
         };
+        /** AnalyticsDashboardResponse */
+        AnalyticsDashboardResponse: {
+            /** Chatbot Conversations */
+            chatbot_conversations: number;
+            /** Chatbot Leads */
+            chatbot_leads: number;
+            /** Chatbot Messages */
+            chatbot_messages: number;
+            /** Conversions */
+            conversions: number;
+            /** Form Leads */
+            form_leads: number;
+            /** Has Meaningful Data */
+            has_meaningful_data: boolean;
+            /** Has Published Website */
+            has_published_website: boolean;
+            /** Leads */
+            leads: number;
+            /** Page Views */
+            page_views: number;
+            /** Period Days */
+            period_days: number;
+            /** Points */
+            points: components["schemas"]["AnalyticsPointResponse"][];
+            /** Sessions */
+            sessions: number;
+            /** Timezone */
+            timezone: string;
+            /** Visitors */
+            visitors: number;
+            /** Website Id */
+            website_id: string | null;
+        };
+        /** AnalyticsPointResponse */
+        AnalyticsPointResponse: {
+            /** Chatbot Conversations */
+            chatbot_conversations: number;
+            /** Chatbot Leads */
+            chatbot_leads: number;
+            /** Chatbot Messages */
+            chatbot_messages: number;
+            /** Conversions */
+            conversions: number;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Form Leads */
+            form_leads: number;
+            /** Leads */
+            leads: number;
+            /** Page Views */
+            page_views: number;
+            /** Sessions */
+            sessions: number;
+            /** Visitors */
+            visitors: number;
+        };
         /** AssetUploadRequest */
         AssetUploadRequest: {
             /** Content Base64 */
@@ -1947,6 +2074,40 @@ export interface components {
             /** Path */
             path: string;
         };
+        /** NotificationPageResponse */
+        NotificationPageResponse: {
+            /** Next Cursor */
+            next_cursor: string | null;
+            /** Notifications */
+            notifications: components["schemas"]["NotificationResponse"][];
+            /** Unread Count */
+            unread_count: number;
+        };
+        /** NotificationResponse */
+        NotificationResponse: {
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Href */
+            href: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Read At */
+            read_at: string | null;
+            /** State */
+            state: string;
+            /** Title */
+            title: string;
+            /** Type */
+            type: string;
+        };
         /** OAuthStartRequest */
         OAuthStartRequest: {
             /** Turnstile Token */
@@ -2221,6 +2382,24 @@ export interface components {
             source: string;
             /** Whatsapp Notification Queued */
             whatsapp_notification_queued: boolean;
+        };
+        /** PublicPageViewRequest */
+        PublicPageViewRequest: {
+            /** Event Id */
+            event_id: string;
+            /** Page Path */
+            page_path: string;
+            /** Session Id */
+            session_id: string;
+            /** Visitor Id */
+            visitor_id?: string | null;
+        };
+        /** PublicPageViewResponse */
+        PublicPageViewResponse: {
+            /** Accepted */
+            accepted: boolean;
+            /** Duplicate */
+            duplicate: boolean;
         };
         /** PublicationStatusResponse */
         PublicationStatusResponse: {
@@ -3298,6 +3477,38 @@ export interface operations {
             };
         };
     };
+    analytics_dashboard_api_v1_analytics_get: {
+        parameters: {
+            query?: {
+                website_id?: string | null;
+                period_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsDashboardResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     challenge_config_api_v1_auth_challenge_config_get: {
         parameters: {
             query?: never;
@@ -3799,6 +4010,69 @@ export interface operations {
             };
         };
     };
+    notifications_api_v1_notifications_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                before?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_notification_read_api_v1_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     plans_api_v1_plans_get: {
         parameters: {
             query?: never;
@@ -3815,6 +4089,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanListResponse"];
+                };
+            };
+        };
+    };
+    capture_page_view_api_v1_public_analytics_page_views_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicPageViewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPageViewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -336,3 +336,13 @@ is the seeded zero-credit policy so the approved unlimited-lead behavior remains
 valid Lead still gets exactly one append-only `-1` credit ledger entry. `REJECT_NEW` is evaluated
 before Lead insertion under the same locked credit account. Published FAISS index artifacts are
 invalidated and deleted after ownership transfer; they are never reassigned to a recipient.
+## Phase 11 implementation note
+
+Analytics event writes are append-only and idempotent. The background rollup task recomputes each
+Website/timezone/day bucket atomically; a retry produces the same derived totals. Dashboard queries never
+aggregate raw events during a request.
+
+In-app notifications transition `UNREAD -> READ -> ARCHIVED` only for their recipient. Transactional
+email jobs use `QUEUED -> SENDING -> SENT`, or `SENDING -> RETRY_WAIT -> SENDING` with bounded retry;
+permanent failure reaches `FAILED`. The durable outbox event is terminal only after provider acceptance
+or a safe exhausted failure state.

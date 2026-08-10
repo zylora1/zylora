@@ -445,3 +445,170 @@
     transition: none;
   }
 }
+
+.analytics-panel,
+.notifications-panel {
+  display: grid;
+  gap: var(--z-space-5);
+}
+.analytics-panel__summary,
+.notifications-panel__summary,
+.analytics-panel__daily,
+.notifications-panel__row {
+  border: 1px solid var(--z-color-border);
+  background: var(--z-color-surface);
+}
+.analytics-panel__summary,
+.notifications-panel__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--z-space-5);
+  padding: var(--z-space-6);
+}
+.analytics-panel__summary h2,
+.analytics-panel__daily h2,
+.notifications-panel__summary h2,
+.notifications-panel__heading h3 {
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+.analytics-panel__summary p:not(.workspace-kicker),
+.notifications-panel__row p,
+.notifications-panel__row time {
+  color: var(--z-color-ink-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+.analytics-panel__summary p:not(.workspace-kicker) {
+  max-width: 42rem;
+  margin: var(--z-space-2) 0 0;
+}
+.analytics-panel__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  margin: 0;
+  border: 1px solid var(--z-color-border);
+  background: var(--z-color-surface);
+}
+.analytics-panel__metrics div {
+  min-width: 0;
+  padding: var(--z-space-5);
+}
+.analytics-panel__metrics div + div {
+  border-left: 1px solid var(--z-color-border);
+}
+.analytics-panel__metrics dt {
+  color: var(--z-color-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.analytics-panel__metrics dd {
+  margin: var(--z-space-2) 0 0;
+  font-family: var(--z-font-mono);
+  font-size: 1.4rem;
+  font-weight: 750;
+}
+.analytics-panel__daily {
+  display: grid;
+  gap: var(--z-space-5);
+  padding: var(--z-space-6);
+}
+.analytics-panel__table-wrap {
+  overflow-x: auto;
+}
+.analytics-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  text-align: left;
+}
+.analytics-panel th,
+.analytics-panel td {
+  border-top: 1px solid var(--z-color-border);
+  padding: var(--z-space-3);
+}
+.analytics-panel th {
+  color: var(--z-color-ink-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.notifications-panel__list {
+  display: grid;
+  gap: var(--z-space-3);
+}
+.notifications-panel__row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--z-space-5);
+  padding: var(--z-space-5);
+}
+.notifications-panel__row--unread {
+  border-left: 3px solid var(--z-color-action);
+}
+.notifications-panel__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--z-space-3);
+}
+.notifications-panel__row p {
+  max-width: 46rem;
+  margin: var(--z-space-2) 0;
+}
+.notifications-panel__row time {
+  display: block;
+}
+.notifications-panel__actions {
+  display: grid;
+  min-width: max-content;
+  gap: var(--z-space-2);
+}
+.notifications-panel__actions a,
+.notifications-panel__actions button,
+.notifications-panel__more {
+  border: 1px solid var(--z-color-border-strong);
+  border-radius: var(--z-radius-sm);
+  background: var(--z-color-surface);
+  color: var(--z-color-ink);
+  cursor: pointer;
+  padding: var(--z-space-2) var(--z-space-3);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.notifications-panel__actions a:hover,
+.notifications-panel__actions button:hover,
+.notifications-panel__more:hover {
+  border-color: var(--z-color-action);
+  color: var(--z-color-action);
+}
+.notifications-panel__actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.notifications-panel__more {
+  justify-self: start;
+}
+
+@media (max-width: 42rem) {
+  .analytics-panel__summary,
+  .notifications-panel__summary,
+  .notifications-panel__row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .analytics-panel__metrics div + div {
+    border-top: 1px solid var(--z-color-border);
+    border-left: 0;
+  }
+  .notifications-panel__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

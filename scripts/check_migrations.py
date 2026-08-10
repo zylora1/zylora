@@ -12,8 +12,8 @@ def main() -> None:
     config = Config(str(ROOT / "apps" / "api" / "alembic.ini"))
     scripts = ScriptDirectory.from_config(config)
     heads = scripts.get_heads()
-    if heads != ["20260816_0011"]:
-        raise SystemExit(f"expected one Phase 10 migration head, found: {heads}")
+    if heads != ["20260817_0012"]:
+        raise SystemExit(f"expected one Phase 11 migration head, found: {heads}")
 
 
 if __name__ == "__main__":

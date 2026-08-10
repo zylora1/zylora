@@ -298,3 +298,137 @@ def test_chatbot_task_and_dispatcher_validate_and_enqueue_independently(
     assert enqueued == event_ids
     with pytest.raises(ValueError, match="between 1 and 50"):
         tasks.dispatch_chatbot_events(51)
+
+
+@pytest.mark.asyncio
+async def test_transactional_email_worker_uses_durable_service_and_commits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sqlalchemy.ext.asyncio as sqlalchemy_asyncio
+    from zylora_api.core import config
+    from zylora_api.db import session as db_session
+    from zylora_api.modules.auth import delivery
+    from zylora_api.modules.notifications import email
+
+    event_id = uuid4()
+    captured: dict[str, object] = {}
+
+    class FakeSession:
+        async def __aenter__(self) -> "FakeSession":
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            captured["committed"] = True
+
+    class FakeEmailService:
+        def __init__(self, session: FakeSession, crypto: object) -> None:
+            captured.update({"session": session, "crypto": crypto})
+
+        async def process_outbox_event(
+            self, received_id: UUID, provider: object
+        ) -> SimpleNamespace:
+            captured.update({"event_id": received_id, "provider": provider})
+            return SimpleNamespace(state="PUBLISHED")
+
+    worker_session = FakeSession()
+    worker_settings = Settings(_env_file=None, environment="test", storage_provider="memory")
+    provider = object()
+    monkeypatch.setattr(config, "get_settings", lambda: worker_settings)
+    monkeypatch.setattr(db_session, "get_engine", lambda: object())
+    monkeypatch.setattr(
+        sqlalchemy_asyncio,
+        "async_sessionmaker",
+        lambda *_args, **_kwargs: lambda: worker_session,
+    )
+    monkeypatch.setattr(delivery, "SMTPEmailSender", lambda _: provider)
+    monkeypatch.setattr(email, "TransactionalEmailService", FakeEmailService)
+
+    assert await tasks._process_transactional_email_event(event_id) == "PUBLISHED"
+    assert captured["session"] is worker_session
+    assert captured["event_id"] == event_id
+    assert captured["provider"] is provider
+    assert captured["committed"] is True
+
+
+def test_transactional_email_task_and_dispatcher_validate_and_enqueue_independently(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called: list[UUID] = []
+    event_ids = [str(uuid4()), str(uuid4())]
+    enqueued: list[str] = []
+
+    async def successful(event_id: UUID) -> str:
+        called.append(event_id)
+        return "PUBLISHED"
+
+    async def claim(limit: int) -> list[str]:
+        assert limit == 2
+        return event_ids
+
+    monkeypatch.setattr(tasks, "_process_transactional_email_event", successful)
+    first = uuid4()
+    assert tasks.process_transactional_email_event(str(first)) == "PUBLISHED"
+    assert called == [first]
+    with pytest.raises(ValueError):
+        tasks.process_transactional_email_event("not-a-uuid")
+    monkeypatch.setattr(tasks, "_claim_transactional_email_events", claim)
+    monkeypatch.setattr(tasks.process_transactional_email_event, "delay", enqueued.append)
+    assert tasks.dispatch_transactional_email_events(2) == 2
+    assert enqueued == event_ids
+    with pytest.raises(ValueError, match="between 1 and 100"):
+        tasks.dispatch_transactional_email_events(101)
+
+
+@pytest.mark.asyncio
+async def test_analytics_worker_refreshes_through_canonical_service_and_commits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sqlalchemy.ext.asyncio as sqlalchemy_asyncio
+    from zylora_api.db import session as db_session
+    from zylora_api.modules.analytics import service
+
+    captured: dict[str, object] = {}
+
+    class FakeSession:
+        async def __aenter__(self) -> "FakeSession":
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            captured["committed"] = True
+
+    class FakeAnalyticsService:
+        def __init__(self, session: FakeSession) -> None:
+            captured["session"] = session
+
+        async def refresh_recent(self, limit: int) -> int:
+            captured["limit"] = limit
+            return 3
+
+    worker_session = FakeSession()
+    monkeypatch.setattr(db_session, "get_engine", lambda: object())
+    monkeypatch.setattr(
+        sqlalchemy_asyncio,
+        "async_sessionmaker",
+        lambda *_args, **_kwargs: lambda: worker_session,
+    )
+    monkeypatch.setattr(service, "AnalyticsService", FakeAnalyticsService)
+
+    assert await tasks._refresh_analytics(12) == 3
+    assert captured == {"session": worker_session, "limit": 12, "committed": True}
+
+
+def test_analytics_task_validates_its_batch_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def refresh(limit: int) -> int:
+        assert limit == 5
+        return 2
+
+    monkeypatch.setattr(tasks, "_refresh_analytics", refresh)
+    assert tasks.refresh_analytics(5) == 2
+    with pytest.raises(ValueError, match="between 1 and 500"):
+        tasks.refresh_analytics(0)

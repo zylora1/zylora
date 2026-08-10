@@ -56,11 +56,13 @@ from zylora_api.db.commerce_models import (
 )
 from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
 from zylora_api.db.lead_models import (
+    AnalyticsDailyRollup,
     AnalyticsEvent,
     Lead,
     LeadCreditAccount,
     LeadCreditLedger,
     Notification,
+    TransactionalEmail,
 )
 from zylora_api.db.template_models import (
     Template,
@@ -87,6 +89,7 @@ __all__ = [
     "AiCreditAccount",
     "AiCreditLedger",
     "AiOperation",
+    "AnalyticsDailyRollup",
     "AnalyticsEvent",
     "AuditLog",
     "AuthAttempt",
@@ -128,6 +131,7 @@ __all__ = [
     "TemplateTagAssignment",
     "TemplateValidation",
     "TemplateVersion",
+    "TransactionalEmail",
     "User",
     "Website",
     "WebsiteExportArtifact",

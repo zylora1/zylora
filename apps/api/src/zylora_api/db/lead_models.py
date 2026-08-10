@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -8,10 +8,12 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -130,9 +132,10 @@ class LeadCreditLedger(Base):
 class Notification(Base):
     __tablename__ = "notifications"
     __table_args__ = (
-        CheckConstraint("state IN ('QUEUED','READ','ARCHIVED')", name="ck_notifications_state"),
+        CheckConstraint("state IN ('UNREAD','READ','ARCHIVED')", name="ck_notifications_state"),
         UniqueConstraint("recipient_user_id", "dedupe_key", name="uq_notifications_dedupe"),
         Index("ix_notifications_recipient_time", "recipient_user_id", "created_at"),
+        Index("ix_notifications_recipient_state", "recipient_user_id", "state", "created_at"),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
@@ -144,8 +147,11 @@ class Notification(Base):
     resource_type: Mapped[str] = mapped_column(String(80), nullable=False)
     resource_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default="{}")
+    title: Mapped[str] = mapped_column(String(180), nullable=False)
+    body: Mapped[str] = mapped_column(String(500), nullable=False)
+    deep_link: Mapped[str] = mapped_column(String(500), nullable=False)
     dedupe_key: Mapped[str] = mapped_column(String(200), nullable=False)
-    state: Mapped[str] = mapped_column(String(20), nullable=False, server_default="QUEUED")
+    state: Mapped[str] = mapped_column(String(20), nullable=False, server_default="UNREAD")
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -155,6 +161,8 @@ class AnalyticsEvent(Base):
     __table_args__ = (
         UniqueConstraint("website_id", "idempotency_key", name="uq_analytics_events_idempotency"),
         Index("ix_analytics_events_website_time", "website_id", "occurred_at"),
+        Index("ix_analytics_events_owner_time", "owner_user_id", "occurred_at"),
+        Index("ix_analytics_events_website_type_time", "website_id", "event_type", "occurred_at"),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
@@ -168,9 +176,94 @@ class AnalyticsEvent(Base):
     event_type: Mapped[str] = mapped_column(String(80), nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     properties: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default="{}")
+    page_path: Mapped[str | None] = mapped_column(String(1024))
+    visitor_hash: Mapped[bytes | None] = mapped_column(LargeBinary)
+    session_hash: Mapped[bytes | None] = mapped_column(LargeBinary)
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
     received_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class AnalyticsDailyRollup(Base):
+    __tablename__ = "analytics_daily_rollups"
+    __table_args__ = (
+        UniqueConstraint(
+            "website_id", "timezone", "bucket_date", name="uq_analytics_daily_rollups_bucket"
+        ),
+        Index("ix_analytics_daily_rollups_owner_date", "owner_user_id", "bucket_date"),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    website_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("websites.id", ondelete="RESTRICT"), nullable=False
+    )
+    owner_user_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    timezone: Mapped[str] = mapped_column(String(80), nullable=False)
+    bucket_date: Mapped[date] = mapped_column(Date, nullable=False)
+    event_count: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    page_views: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    sessions: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    visitors: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    form_leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    chatbot_leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    chatbot_conversations: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, server_default="0"
+    )
+    chatbot_messages: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    conversions: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    refreshed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class TransactionalEmail(Base):
+    __tablename__ = "transactional_emails"
+    __table_args__ = (
+        CheckConstraint(
+            "kind IN ("
+            "'AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT',"
+            "'WEBSITE_PUBLISHED','WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED',"
+            "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL')",
+            name="ck_transactional_emails_kind",
+        ),
+        CheckConstraint(
+            "state IN ('QUEUED','SENDING','RETRY_WAIT','SENT','DELIVERED','FAILED','SUPPRESSED')",
+            name="ck_transactional_emails_state",
+        ),
+        UniqueConstraint("idempotency_key", name="uq_transactional_emails_idempotency"),
+        Index("ix_transactional_emails_dispatch", "state", "next_attempt_at", "created_at"),
+        Index("ix_transactional_emails_recipient", "recipient_user_id", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    recipient_user_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT")
+    )
+    resource_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    resource_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    recipient_ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    content_ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(200), nullable=False)
+    state: Mapped[str] = mapped_column(String(20), nullable=False, server_default="QUEUED")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    next_attempt_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    provider_message_id: Mapped[str | None] = mapped_column(String(200))
+    last_error_code: Mapped[str | None] = mapped_column(String(100))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

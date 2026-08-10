@@ -323,6 +323,161 @@
         "title": "AiUsageResponse",
         "type": "object"
       },
+      "AnalyticsDashboardResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "chatbot_conversations": {
+            "title": "Chatbot Conversations",
+            "type": "integer"
+          },
+          "chatbot_leads": {
+            "title": "Chatbot Leads",
+            "type": "integer"
+          },
+          "chatbot_messages": {
+            "title": "Chatbot Messages",
+            "type": "integer"
+          },
+          "conversions": {
+            "title": "Conversions",
+            "type": "integer"
+          },
+          "form_leads": {
+            "title": "Form Leads",
+            "type": "integer"
+          },
+          "has_meaningful_data": {
+            "title": "Has Meaningful Data",
+            "type": "boolean"
+          },
+          "has_published_website": {
+            "title": "Has Published Website",
+            "type": "boolean"
+          },
+          "leads": {
+            "title": "Leads",
+            "type": "integer"
+          },
+          "page_views": {
+            "title": "Page Views",
+            "type": "integer"
+          },
+          "period_days": {
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsPointResponse"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "visitors": {
+            "title": "Visitors",
+            "type": "integer"
+          },
+          "website_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website Id"
+          }
+        },
+        "required": [
+          "website_id",
+          "timezone",
+          "period_days",
+          "has_published_website",
+          "has_meaningful_data",
+          "page_views",
+          "sessions",
+          "visitors",
+          "leads",
+          "form_leads",
+          "chatbot_leads",
+          "chatbot_conversations",
+          "chatbot_messages",
+          "conversions",
+          "points"
+        ],
+        "title": "AnalyticsDashboardResponse",
+        "type": "object"
+      },
+      "AnalyticsPointResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "chatbot_conversations": {
+            "title": "Chatbot Conversations",
+            "type": "integer"
+          },
+          "chatbot_leads": {
+            "title": "Chatbot Leads",
+            "type": "integer"
+          },
+          "chatbot_messages": {
+            "title": "Chatbot Messages",
+            "type": "integer"
+          },
+          "conversions": {
+            "title": "Conversions",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "form_leads": {
+            "title": "Form Leads",
+            "type": "integer"
+          },
+          "leads": {
+            "title": "Leads",
+            "type": "integer"
+          },
+          "page_views": {
+            "title": "Page Views",
+            "type": "integer"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "visitors": {
+            "title": "Visitors",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "page_views",
+          "sessions",
+          "visitors",
+          "leads",
+          "form_leads",
+          "chatbot_leads",
+          "chatbot_conversations",
+          "chatbot_messages",
+          "conversions"
+        ],
+        "title": "AnalyticsPointResponse",
+        "type": "object"
+      },
       "AssetUploadRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1854,6 +2009,100 @@
         "title": "NavigationNodeResponse",
         "type": "object"
       },
+      "NotificationPageResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "notifications": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationResponse"
+            },
+            "title": "Notifications",
+            "type": "array"
+          },
+          "unread_count": {
+            "title": "Unread Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "notifications",
+          "unread_count",
+          "next_cursor"
+        ],
+        "title": "NotificationPageResponse",
+        "type": "object"
+      },
+      "NotificationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "href": {
+            "title": "Href",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "body",
+          "href",
+          "state",
+          "read_at",
+          "created_at"
+        ],
+        "title": "NotificationResponse",
+        "type": "object"
+      },
       "OAuthStartRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2573,6 +2822,66 @@
           "whatsapp_notification_queued"
         ],
         "title": "PublicLeadResponse",
+        "type": "object"
+      },
+      "PublicPageViewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "pattern": "^[A-Za-z0-9_-]{16,160}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "page_path": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^/",
+            "title": "Page Path",
+            "type": "string"
+          },
+          "session_id": {
+            "pattern": "^[A-Za-z0-9_-]{16,160}$",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "visitor_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9_-]{16,160}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visitor Id"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "page_path"
+        ],
+        "title": "PublicPageViewRequest",
+        "type": "object"
+      },
+      "PublicPageViewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "duplicate": {
+            "title": "Duplicate",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accepted",
+          "duplicate"
+        ],
+        "title": "PublicPageViewResponse",
         "type": "object"
       },
       "PublicationStatusResponse": {
@@ -4554,6 +4863,66 @@
         ]
       }
     },
+    "/api/v1/analytics": {
+      "get": {
+        "operationId": "analytics_dashboard_api_v1_analytics_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "website_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Website Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "title": "Period Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsDashboardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analytics Dashboard",
+        "tags": [
+          "analytics-and-notifications"
+        ]
+      }
+    },
     "/api/v1/auth/challenge/config": {
       "get": {
         "operationId": "challenge_config_api_v1_auth_challenge_config_get",
@@ -5197,6 +5566,111 @@
         ]
       }
     },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "notifications_api_v1_notifications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Notifications",
+        "tags": [
+          "analytics-and-notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}/read": {
+      "post": {
+        "operationId": "mark_notification_read_api_v1_notifications__notification_id__read_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Notification Read",
+        "tags": [
+          "analytics-and-notifications"
+        ]
+      }
+    },
     "/api/v1/plans": {
       "get": {
         "operationId": "plans_api_v1_plans_get",
@@ -5215,6 +5689,47 @@
         "summary": "Plans",
         "tags": [
           "commerce"
+        ]
+      }
+    },
+    "/api/v1/public/analytics/page-views": {
+      "post": {
+        "operationId": "capture_page_view_api_v1_public_analytics_page_views_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicPageViewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPageViewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Page View",
+        "tags": [
+          "public-chatbot-and-leads"
         ]
       }
     },

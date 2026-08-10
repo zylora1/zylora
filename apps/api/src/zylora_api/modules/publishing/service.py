@@ -12,7 +12,9 @@ from zylora_api.db.auth_models import User
 from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import Website, WebsitePagePathChange, WebsiteVersion
+from zylora_api.modules.analytics.service import AnalyticsService
 from zylora_api.modules.commerce.service import SubscriptionService
+from zylora_api.modules.notifications.service import NotificationService
 from zylora_api.modules.publishing.artifacts import ArtifactBuilder
 from zylora_api.modules.publishing.providers import DomainProvider, DomainProviderError
 from zylora_api.modules.templates.service import problem
@@ -464,6 +466,14 @@ class DeploymentService:
         domain.failure_code = code
         domain.safe_error = safe_message
         domain.version += 1
+        await NotificationService(self.session).create(
+            recipient_user_id=website.owner_user_id,
+            notification_type="WEBSITE_PUBLISH_FAILED",
+            resource_type="deployment",
+            resource_id=deployment.id,
+            dedupe_key=f"deployment-failed:{deployment.id}",
+            data={"website_id": str(website.id)},
+        )
         return deployment
 
     async def process_publish(
@@ -570,6 +580,21 @@ class DeploymentService:
             await KnowledgeIndexService(
                 self.session, artifacts.storage, get_settings()
             ).request_for_published_website(website, deployment.website_version_id, correlation_id)
+            await AnalyticsService(self.session).record(
+                website_id=website.id,
+                owner_user_id=website.owner_user_id,
+                event_type="WEBSITE_PUBLISHED",
+                idempotency_key=f"website-published:{deployment.id}",
+                properties={"operation": deployment.operation},
+            )
+            await NotificationService(self.session).create(
+                recipient_user_id=website.owner_user_id,
+                notification_type="WEBSITE_PUBLISHED",
+                resource_type="deployment",
+                resource_id=deployment.id,
+                dedupe_key=f"deployment-published:{deployment.id}",
+                data={"website_id": str(website.id)},
+            )
             return deployment
         except DomainProviderError as error:
             return await self._failure(

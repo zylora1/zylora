@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.auth_models import User
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import OwnershipTransfer, Website, WebsiteOwnership
+from zylora_api.modules.notifications.service import NotificationService
 from zylora_api.modules.templates.service import problem
 
 TRANSFER_CONFIRMATION_VERSION = "OWNER_TRANSFER_V1"
@@ -285,3 +286,10 @@ class OwnershipService:
         transfer.status = "COMPLETED"
         transfer.completed_at = now
         transfer.failure_code = None
+        await NotificationService(self.session).create(
+            recipient_user_id=transfer.recipient_user_id,
+            notification_type="TRANSFER_COMPLETED",
+            resource_type="ownership_transfer",
+            resource_id=transfer.id,
+            dedupe_key=f"transfer-completed:{transfer.id}",
+        )

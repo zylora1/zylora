@@ -358,3 +358,15 @@ under their original active Website host.
 filter. Super Admin uses isolated, CSRF-protected `/api/v1/admin/lead-credit-policy` and
 `/api/v1/admin/users/{user_id}/lead-credits` commands. Generated OpenAPI remains the transport source;
 FastAPI services retain authorization, credit, and index authority.
+## Phase 11 analytics, notification, and email contracts
+
+`POST /api/v1/public/analytics/page-views` accepts only an opaque event ID, session ID, optional visitor
+ID, and path. It returns `202` with `accepted` and `duplicate`; Website/owner IDs are forbidden. The API
+resolves the active published Website from the request host, purpose-digests identifiers, and is
+rate-limited at Cloudflare.
+
+`GET /api/v1/analytics?period_days=7|30|90&website_id=` uses the User session/current owner filter and
+returns only rollup-derived real metrics with `has_published_website` and `has_meaningful_data` state.
+`GET /api/v1/notifications?limit=&before=` is recipient-private, timestamp-paginated, and returns a
+server-authored safe link. `POST /api/v1/notifications/{id}/read` requires the User session, JSON origin,
+and CSRF token. Transactional-email job data is never exposed through these APIs.

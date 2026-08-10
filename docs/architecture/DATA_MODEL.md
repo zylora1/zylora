@@ -282,17 +282,26 @@ Append-only event ID/idempotency key, Website, published version, owner snapshot
 received times, privacy-safe visitor/session IDs, page/referrer/device properties, consent category,
 and bounded properties. Partition by time when needed; unique event ID supports retry.
 
-### `analytics_aggregates`
+### `analytics_daily_rollups`
 
-Website, bucket type/start, metric/dimension key, exact count/value, source watermark, computed time,
-and algorithm version. Unique composite key allows idempotent upsert. Portal shows analytics only when
-real events pass the meaningful-data threshold.
+Phase 11 stores tenant-scoped daily totals by `(website_id, timezone, bucket_date)`: page views,
+sessions, consent-available visitors, Leads by source, chatbot conversations/messages, conversions,
+event count, and refresh time. The unique bucket key supports idempotent recomputation. Portal reads
+these rollups only and displays no metrics until recorded activity is meaningful.
 
 ### `notifications`
 
-Recipient User, type, resource reference, title/body data (not pre-rendered unsafe HTML), read time,
-delivery policy, dedupe key, and timestamps. `notification_deliveries` records channel, provider,
-state, attempt, provider reference, safe error, and delivery event.
+Recipient User, server-authored type/title/body/deep link, resource reference, `UNREAD`/`READ`/`ARCHIVED`
+state, read time, dedupe key, and timestamps. Unique `(recipient_user_id, dedupe_key)` and recipient-state
+index support retry-safe private inbox delivery and pagination; unsafe customer-authored HTML/links are
+not persisted.
+
+### `transactional_emails`
+
+Recipient User/resource reference, approved transactional kind, encrypted recipient and rendered
+content, stable idempotency key, attempt/next-attempt/provider/safe-error fields, and state. The unique
+idempotency key links one durable outbox event to at-least-once provider delivery without storing email
+content in the outbox payload. This is distinct from marketing campaign/delivery tables.
 
 ## Campaigns, suppression, and Blog
 

@@ -59,3 +59,11 @@ in action/hostname failures without logging tokens. During a Cloudflare outage, 
 commands closed, preserve existing authenticated sessions, publish status communication, and follow
 the DNS/Cloudflare incident procedure. Rotate a suspected widget secret in Cloudflare and the server
 secret manager, invalidate the old secret, and verify repository/log history remains clean.
+
+## Phase 11 public analytics route
+
+`/api/v1/public/analytics/page-views` belongs to the public API rate-limit rule. It intentionally has no
+Turnstile challenge: it is emitted from normal published-page views. The API instead requires a strict
+opaque-ID schema, active host-to-Website resolution, server-side HMAC attribution, event idempotency,
+and the Cloudflare WAF/rate limit. Do not broaden the rule to trust a client Website ID or record raw IP,
+email, Lead, or chatbot content.

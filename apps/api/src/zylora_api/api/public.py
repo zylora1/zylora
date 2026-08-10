@@ -13,12 +13,16 @@ from zylora_api.db.auth_models import User
 from zylora_api.db.deployment_models import Domain
 from zylora_api.db.session import get_session
 from zylora_api.db.website_models import Website
+from zylora_api.modules.analytics.schemas import PublicPageViewRequest, PublicPageViewResponse
+from zylora_api.modules.analytics.service import AnalyticsService
 from zylora_api.modules.auth.challenge import ChallengeService
 from zylora_api.modules.auth.http import (
     correlation_id,
     get_challenge_service,
+    get_crypto,
     request_ip,
 )
+from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.chatbot.schemas import (
     ChatMessageRequest,
     ChatReplyResponse,
@@ -99,6 +103,36 @@ async def _enforce_public_challenge(
         remote_ip=request_ip(request, settings),
         correlation_id=correlation_id(request),
     )
+
+
+@router.post(
+    "/analytics/page-views",
+    response_model=PublicPageViewResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def capture_page_view(
+    payload: PublicPageViewRequest,
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> PublicPageViewResponse:
+    context = await resolve_public_website(request, session)
+    result = await AnalyticsService(session).record(
+        website_id=context.website.id,
+        event_type="PAGE_VIEW",
+        idempotency_key=payload.event_id,
+        page_path=payload.page_path,
+        session_hash=crypto.digest(
+            payload.session_id, purpose=f"analytics-session:{context.website.id}"
+        ),
+        visitor_hash=(
+            crypto.digest(payload.visitor_id, purpose=f"analytics-visitor:{context.website.id}")
+            if payload.visitor_id
+            else None
+        ),
+    )
+    await session.commit()
+    return PublicPageViewResponse(accepted=True, duplicate=result.duplicate)
 
 
 @router.post("/leads", response_model=PublicLeadResponse, status_code=status.HTTP_201_CREATED)

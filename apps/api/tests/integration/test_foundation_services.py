@@ -13,19 +13,25 @@ async def test_postgresql_migration_and_uuidv7_foundation() -> None:
     key = f"integration-{uuid4()}"
     async with engine.begin() as connection:
         revision = await connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert revision == "20260816_0011"
+        assert revision == "20260817_0012"
         column_rows = await connection.execute(
             text(
                 "SELECT table_name || '.' || column_name "
                 "FROM information_schema.columns "
                 "WHERE table_schema = 'public' "
-                "AND table_name IN ('outbox_events', 'job_runs')"
+                "AND table_name IN ("
+                "'outbox_events', 'job_runs', 'analytics_events', 'notifications'"
+                ")"
             )
         )
         assert {
             "outbox_events.lease_owner",
             "outbox_events.leased_until",
             "job_runs.dead_lettered_at",
+            "analytics_events.page_path",
+            "analytics_events.session_hash",
+            "notifications.title",
+            "notifications.deep_link",
         }.issubset(set(column_rows.scalars()))
         foreign_key_count = await connection.scalar(
             text(

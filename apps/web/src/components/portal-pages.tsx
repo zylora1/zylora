@@ -1,8 +1,10 @@
 import { ActionLink, EmptyState, Notice, PageHeader, StatusBadge } from '@zylora/ui';
 import { ArrowRight, Check } from 'lucide-react';
 
+import { AnalyticsPanel } from './analytics-panel';
 import { BillingPanel } from './billing-panel';
 import { LeadsPanel } from './leads-panel';
+import { NotificationsPanel } from './notifications-panel';
 import type { PortalSection } from './portal-navigation';
 
 export function UserHomePage() {
@@ -102,6 +104,22 @@ export function UserSectionPage({ section }: { section: PortalSection }) {
       <div className="workspace-page">
         <PageHeader eyebrow="Your Zylora" title={section.label} description={section.description} />
         <BillingPanel />
+      </div>
+    );
+  }
+  if (section.slug === 'analytics') {
+    return (
+      <div className="workspace-page">
+        <PageHeader eyebrow="Your Zylora" title={section.label} description={section.description} />
+        <AnalyticsPanel />
+      </div>
+    );
+  }
+  if (section.slug === 'notifications') {
+    return (
+      <div className="workspace-page">
+        <PageHeader eyebrow="Your Zylora" title={section.label} description={section.description} />
+        <NotificationsPanel />
       </div>
     );
   }

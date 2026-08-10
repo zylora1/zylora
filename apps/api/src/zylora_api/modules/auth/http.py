@@ -15,7 +15,7 @@ from zylora_api.modules.auth.challenge import (
     CloudflareTurnstileVerifier,
     TurnstileVerifier,
 )
-from zylora_api.modules.auth.delivery import EmailSender, SMTPEmailSender
+from zylora_api.modules.auth.delivery import EmailSender
 from zylora_api.modules.auth.errors import CSRF_REJECTED
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.auth.service import Audience, AuthenticationService, SessionService
@@ -31,8 +31,14 @@ def get_crypto() -> AuthCrypto:
     return AuthCrypto(get_settings().auth_secret)
 
 
-def get_email_sender(settings: Annotated[Settings, Depends(get_settings)]) -> EmailSender:
-    return SMTPEmailSender(settings)
+def get_email_sender(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> EmailSender:
+    from zylora_api.modules.notifications.email import TransactionalEmailSender
+
+    return TransactionalEmailSender(session, crypto, settings)
 
 
 def get_turnstile_verifier(
