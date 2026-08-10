@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Notice, StatusBadge } from '@zylora/ui';
 
 import { apiRequest, csrfToken } from '@/lib/api';
+import { ContentOperations } from './content-operations';
 import type { PortalSection } from './portal-navigation';
 
 type Metric = { key: string; label: string; value: number };
@@ -453,5 +454,6 @@ export function AdminSectionPanel({ section }: { section: PortalSection }) {
   if (section.slug === 'users') return <AdminUsersPanel />;
   if (section.slug === 'health') return <AdminHealthPanel />;
   if (section.slug === 'configuration') return <AdminConfigurationPanel />;
+  if (section.slug === 'communications') return <ContentOperations />;
   return <AdminOperationalRecords section={section} />;
 }

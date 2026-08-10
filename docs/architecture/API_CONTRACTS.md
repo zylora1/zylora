@@ -362,3 +362,16 @@ returns only rollup-derived real metrics with `has_published_website` and `has_m
 `GET /api/v1/notifications?limit=&before=` is recipient-private, timestamp-paginated, and returns a
 server-authored safe link. `POST /api/v1/notifications/{id}/read` requires the User session, JSON origin,
 and CSRF token. Transactional-email job data is never exposed through these APIs.
+## Phase 13 campaign and Blog contracts
+
+Super Admin campaign commands are CSRF- and JSON-origin-protected: `GET/POST/PATCH
+/api/v1/admin/campaigns`, plus `ready`, `cancel`, `send`, and `schedule` transitions. Audience
+selection is a constrained segment enum, never a browser-supplied list of users. Recipient addresses,
+recipient records, raw provider identifiers, and unsubscribe token material are never responses.
+`POST /api/v1/admin/users/{user_id}/administrative-email` enqueues a separate transactional message.
+
+`POST /api/v1/public/marketing/unsubscribe` accepts one opaque token and returns no recipient data.
+It changes marketing suppression only. Public Blog reads are `GET /api/v1/blog/posts`,
+`GET /api/v1/blog/posts/{slug}`, and `GET /api/v1/blog/sitemap`; all return published data only.
+Super Admin Blog commands are isolated under `/api/v1/admin/blog/posts` and use the same CSRF/origin
+requirements as other Super Admin mutations.

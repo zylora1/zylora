@@ -45,6 +45,18 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
                 "task": "zylora.notifications.dispatch_transactional_email",
                 "schedule": 10.0,
             },
+            "zylora-campaign-outbox": {
+                "task": "zylora.campaigns.dispatch_deliveries",
+                "schedule": 10.0,
+            },
+            "zylora-campaign-schedules": {
+                "task": "zylora.campaigns.start_scheduled",
+                "schedule": 30.0,
+            },
+            "zylora-blog-schedules": {
+                "task": "zylora.blog.publish_scheduled",
+                "schedule": 30.0,
+            },
             "zylora-analytics-rollups": {
                 "task": "zylora.analytics.refresh",
                 "schedule": 60.0,

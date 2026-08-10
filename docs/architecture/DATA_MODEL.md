@@ -308,8 +308,8 @@ content in the outbox payload. This is distinct from marketing campaign/delivery
 - `campaigns`: creator, state, audience query snapshot, content/template version, schedule, consent
   category, counters derived from deliveries, and audit metadata.
 - `campaign_recipients`: immutable resolved audience snapshot with suppression decision/reason.
-- `campaign_deliveries`: recipient, idempotency key, provider reference, state, attempt and events.
-- `email_suppressions`: normalized email digest/address as legally appropriate, scope/reason/source,
+- `campaign_delivery_events`: immutable recipient/provider acceptance, failure, bounce, complaint, and unsubscribe facts; campaign recipient state is the current delivery projection.
+- `email_suppressions`: recipient reference, scope/reason/source,
   hard-bounce/complaint/unsubscribe evidence, and effective time. Marketing suppression never blocks
   security/transactional email.
 - `blog_posts`: author Super Admin, slug, structured content, state, scheduled/published time, SEO and

@@ -300,7 +300,7 @@ PUBLISHED ──archive──> ARCHIVED
 ARCHIVED ──restore as new revision──> DRAFT
 ```
 
-Publishing creates an immutable rendered revision and updates sitemap/cache through outbox jobs.
+Publishing creates an immutable rendered revision. The public dynamic sitemap and Blog metadata read only the published projection, so no stale cache artifact is treated as authoritative.
 
 ## Background job lifecycle
 

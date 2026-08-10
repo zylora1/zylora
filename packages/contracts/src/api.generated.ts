@@ -38,6 +38,212 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/blog/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin Posts */
+        get: operations["admin_posts_api_v1_admin_blog_posts_get"];
+        put?: never;
+        /** Create Post */
+        post: operations["create_post_api_v1_admin_blog_posts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog/posts/{post_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Post */
+        patch: operations["update_post_api_v1_admin_blog_posts__post_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/blog/posts/{post_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Post */
+        post: operations["publish_post_api_v1_admin_blog_posts__post_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog/posts/{post_id}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ready Post */
+        post: operations["ready_post_api_v1_admin_blog_posts__post_id__ready_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog/posts/{post_id}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Schedule Post */
+        post: operations["schedule_post_api_v1_admin_blog_posts__post_id__schedule_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog/posts/{post_id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unpublish Post */
+        post: operations["unpublish_post_api_v1_admin_blog_posts__post_id__unpublish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Campaigns */
+        get: operations["campaigns_api_v1_admin_campaigns_get"];
+        put?: never;
+        /** Create Campaign */
+        post: operations["create_campaign_api_v1_admin_campaigns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns/{campaign_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Campaign */
+        patch: operations["update_campaign_api_v1_admin_campaigns__campaign_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns/{campaign_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Campaign */
+        post: operations["cancel_campaign_api_v1_admin_campaigns__campaign_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns/{campaign_id}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Campaign */
+        post: operations["prepare_campaign_api_v1_admin_campaigns__campaign_id__ready_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns/{campaign_id}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Schedule Campaign */
+        post: operations["schedule_campaign_api_v1_admin_campaigns__campaign_id__schedule_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/campaigns/{campaign_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send Campaign */
+        post: operations["send_campaign_api_v1_admin_campaigns__campaign_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/export-prices": {
         parameters: {
             query?: never;
@@ -381,6 +587,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{user_id}/administrative-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send Administrative Email */
+        post: operations["send_administrative_email_api_v1_admin_users__user_id__administrative_email_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{user_id}/lead-credits": {
         parameters: {
             query?: never;
@@ -704,6 +927,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/blog/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Posts */
+        get: operations["public_posts_api_v1_blog_posts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/blog/posts/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Post */
+        get: operations["public_post_api_v1_blog_posts__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/blog/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Blog Sitemap */
+        get: operations["blog_sitemap_api_v1_blog_sitemap_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lead-credits": {
         parameters: {
             query?: never;
@@ -851,6 +1125,23 @@ export interface paths {
         put?: never;
         /** Capture Form Lead */
         post: operations["capture_form_lead_api_v1_public_leads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/marketing/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unsubscribe */
+        post: operations["unsubscribe_api_v1_public_marketing_unsubscribe_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1650,6 +1941,15 @@ export interface components {
             /** Website Count */
             website_count: number;
         };
+        /** AdministrativeEmailRequest */
+        AdministrativeEmailRequest: {
+            /** Body */
+            body: string;
+            /** Reason */
+            reason: string;
+            /** Subject */
+            subject: string;
+        };
         /** AiEditRequest */
         AiEditRequest: {
             /** Base Revision */
@@ -1785,6 +2085,160 @@ export interface components {
             /** Csrf Token */
             csrf_token: string;
             user: components["schemas"]["UserResponse"];
+        };
+        /** BlogPostRequest */
+        BlogPostRequest: {
+            /** Canonical Url */
+            canonical_url?: string | null;
+            /** Categories */
+            categories?: string[];
+            /** Content */
+            content: string;
+            /** Excerpt */
+            excerpt: string;
+            /** Featured Image Url */
+            featured_image_url?: string | null;
+            /** Meta Description */
+            meta_description?: string | null;
+            /** Og Description */
+            og_description?: string | null;
+            /** Og Title */
+            og_title?: string | null;
+            /** Seo Title */
+            seo_title?: string | null;
+            /** Slug */
+            slug: string;
+            /** Tags */
+            tags?: string[];
+            /** Title */
+            title: string;
+        };
+        /** BlogPostResponse */
+        BlogPostResponse: {
+            /** Categories */
+            categories: string[];
+            /** Excerpt */
+            excerpt: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Published At */
+            published_at: string | null;
+            /** Scheduled At */
+            scheduled_at: string | null;
+            /** Slug */
+            slug: string;
+            /** State */
+            state: string;
+            /** Tags */
+            tags: string[];
+            /** Title */
+            title: string;
+        };
+        /** BlogReasonRequest */
+        BlogReasonRequest: {
+            /** Reason */
+            reason: string;
+        };
+        /** BlogScheduleRequest */
+        BlogScheduleRequest: {
+            /** Reason */
+            reason: string;
+            /**
+             * Scheduled At
+             * Format: date-time
+             */
+            scheduled_at: string;
+        };
+        /** BlogSitemapItem */
+        BlogSitemapItem: {
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Slug */
+            slug: string;
+        };
+        /** CampaignReasonRequest */
+        CampaignReasonRequest: {
+            /** Reason */
+            reason: string;
+        };
+        /** CampaignRequest */
+        CampaignRequest: {
+            /** Audience Plan Code */
+            audience_plan_code?: ("FREE" | "BASIC" | "GROWTH" | "BUSINESS") | null;
+            /**
+             * Audience Type
+             * @enum {string}
+             */
+            audience_type: "ALL_USERS" | "FREE_USERS" | "PAID_USERS" | "PLAN_USERS" | "RECENT_USERS" | "HAS_DRAFT" | "NO_PUBLISHED_WEBSITE";
+            /** Body */
+            body: string;
+            /** Name */
+            name: string;
+            /** Subject */
+            subject: string;
+        };
+        /** CampaignResponse */
+        CampaignResponse: {
+            /**
+             * Accepted Count
+             * @default 0
+             */
+            accepted_count: number;
+            /** Audience Plan Code */
+            audience_plan_code: string | null;
+            /** Audience Snapshot Count */
+            audience_snapshot_count: number;
+            /** Audience Type */
+            audience_type: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Failed Count
+             * @default 0
+             */
+            failed_count: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Scheduled At */
+            scheduled_at: string | null;
+            /** State */
+            state: string;
+            /** Subject */
+            subject: string;
+            /**
+             * Suppressed Count
+             * @default 0
+             */
+            suppressed_count: number;
+            /**
+             * Unsubscribed Count
+             * @default 0
+             */
+            unsubscribed_count: number;
+        };
+        /** CampaignScheduleRequest */
+        CampaignScheduleRequest: {
+            /** Reason */
+            reason: string;
+            /**
+             * Scheduled At
+             * Format: date-time
+             */
+            scheduled_at: string;
         };
         /** CancelSubscriptionResponse */
         CancelSubscriptionResponse: {
@@ -2643,6 +3097,44 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** PublicBlogPostResponse */
+        PublicBlogPostResponse: {
+            /** Canonical Path */
+            canonical_path: string;
+            /** Categories */
+            categories: string[];
+            /** Content Html */
+            content_html: string;
+            /** Excerpt */
+            excerpt: string;
+            /** Featured Image Url */
+            featured_image_url: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Meta Description */
+            meta_description: string | null;
+            /** Og Description */
+            og_description: string | null;
+            /** Og Title */
+            og_title: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Scheduled At */
+            scheduled_at: string | null;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Slug */
+            slug: string;
+            /** State */
+            state: string;
+            /** Tags */
+            tags: string[];
+            /** Title */
+            title: string;
+        };
         /** PublicLeadRequest */
         PublicLeadRequest: {
             /** Consent */
@@ -3069,6 +3561,11 @@ export interface components {
              */
             website_id: string;
         };
+        /** UnsubscribeRequest */
+        UnsubscribeRequest: {
+            /** Token */
+            token: string;
+        };
         /** UserResponse */
         UserResponse: {
             /**
@@ -3301,6 +3798,462 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    admin_posts_api_v1_admin_blog_posts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"][];
+                };
+            };
+        };
+    };
+    create_post_api_v1_admin_blog_posts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogPostRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_post_api_v1_admin_blog_posts__post_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogPostRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_post_api_v1_admin_blog_posts__post_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ready_post_api_v1_admin_blog_posts__post_id__ready_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    schedule_post_api_v1_admin_blog_posts__post_id__schedule_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogScheduleRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unpublish_post_api_v1_admin_blog_posts__post_id__unpublish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlogReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    campaigns_api_v1_admin_campaigns_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"][];
+                };
+            };
+        };
+    };
+    create_campaign_api_v1_admin_campaigns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_campaign_api_v1_admin_campaigns__campaign_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_campaign_api_v1_admin_campaigns__campaign_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_campaign_api_v1_admin_campaigns__campaign_id__ready_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    schedule_campaign_api_v1_admin_campaigns__campaign_id__schedule_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignScheduleRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_campaign_api_v1_admin_campaigns__campaign_id__send_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -3993,6 +4946,43 @@ export interface operations {
             };
         };
     };
+    send_administrative_email_api_v1_admin_users__user_id__administrative_email_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdministrativeEmailRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     adjust_lead_credits_api_v1_admin_users__user_id__lead_credits_post: {
         parameters: {
             query?: never;
@@ -4543,6 +5533,77 @@ export interface operations {
             };
         };
     };
+    public_posts_api_v1_blog_posts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogPostResponse"][];
+                };
+            };
+        };
+    };
+    public_post_api_v1_blog_posts__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBlogPostResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    blog_sitemap_api_v1_blog_sitemap_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlogSitemapItem"][];
+                };
+            };
+        };
+    };
     lead_credits_api_v1_lead_credits_get: {
         parameters: {
             query?: never;
@@ -4807,6 +5868,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PublicLeadResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unsubscribe_api_v1_public_marketing_unsubscribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnsubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

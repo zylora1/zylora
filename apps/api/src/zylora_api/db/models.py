@@ -32,6 +32,18 @@ from zylora_api.db.auth_models import (
     User,
 )
 from zylora_api.db.base import Base
+from zylora_api.db.blog_models import (
+    BlogCategory,
+    BlogPost,
+    BlogPostVersion,
+    BlogTag,
+)
+from zylora_api.db.campaign_models import (
+    Campaign,
+    CampaignDeliveryEvent,
+    CampaignRecipient,
+    EmailSuppression,
+)
 from zylora_api.db.chatbot_models import (
     Chatbot,
     ChatbotKnowledgeChunk,
@@ -94,6 +106,13 @@ __all__ = [
     "AuditLog",
     "AuthAttempt",
     "AuthIdentity",
+    "BlogCategory",
+    "BlogPost",
+    "BlogPostVersion",
+    "BlogTag",
+    "Campaign",
+    "CampaignDeliveryEvent",
+    "CampaignRecipient",
     "ChatConversation",
     "ChatMessage",
     "Chatbot",
@@ -102,6 +121,7 @@ __all__ = [
     "Deployment",
     "DeploymentEvent",
     "Domain",
+    "EmailSuppression",
     "EmailVerification",
     "ExportPrice",
     "ExportPurchase",

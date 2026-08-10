@@ -694,6 +694,36 @@
         "title": "AdminUserSummary",
         "type": "object"
       },
+      "AdministrativeEmailRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "body",
+          "reason"
+        ],
+        "title": "AdministrativeEmailRequest",
+        "type": "object"
+      },
       "AiEditRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1048,6 +1078,456 @@
           "csrf_token"
         ],
         "title": "AuthenticatedResponse",
+        "type": "object"
+      },
+      "BlogPostRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_url": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Url"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Categories",
+            "type": "array"
+          },
+          "content": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "excerpt": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "featured_image_url": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Image Url"
+          },
+          "meta_description": {
+            "anyOf": [
+              {
+                "maxLength": 320,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta Description"
+          },
+          "og_description": {
+            "anyOf": [
+              {
+                "maxLength": 320,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Description"
+          },
+          "og_title": {
+            "anyOf": [
+              {
+                "maxLength": 180,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Title"
+          },
+          "seo_title": {
+            "anyOf": [
+              {
+                "maxLength": 180,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Title"
+          },
+          "slug": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 180,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "excerpt",
+          "content"
+        ],
+        "title": "BlogPostRequest",
+        "type": "object"
+      },
+      "BlogPostResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "excerpt",
+          "state",
+          "scheduled_at",
+          "published_at",
+          "categories",
+          "tags"
+        ],
+        "title": "BlogPostResponse",
+        "type": "object"
+      },
+      "BlogReasonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "BlogReasonRequest",
+        "type": "object"
+      },
+      "BlogScheduleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "format": "date-time",
+            "title": "Scheduled At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scheduled_at",
+          "reason"
+        ],
+        "title": "BlogScheduleRequest",
+        "type": "object"
+      },
+      "BlogSitemapItem": {
+        "additionalProperties": false,
+        "properties": {
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "published_at"
+        ],
+        "title": "BlogSitemapItem",
+        "type": "object"
+      },
+      "CampaignReasonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "CampaignReasonRequest",
+        "type": "object"
+      },
+      "CampaignRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "audience_plan_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "FREE",
+                  "BASIC",
+                  "GROWTH",
+                  "BUSINESS"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience Plan Code"
+          },
+          "audience_type": {
+            "enum": [
+              "ALL_USERS",
+              "FREE_USERS",
+              "PAID_USERS",
+              "PLAN_USERS",
+              "RECENT_USERS",
+              "HAS_DRAFT",
+              "NO_PUBLISHED_WEBSITE"
+            ],
+            "title": "Audience Type",
+            "type": "string"
+          },
+          "body": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "subject",
+          "body",
+          "audience_type"
+        ],
+        "title": "CampaignRequest",
+        "type": "object"
+      },
+      "CampaignResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_count": {
+            "default": 0,
+            "title": "Accepted Count",
+            "type": "integer"
+          },
+          "audience_plan_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience Plan Code"
+          },
+          "audience_snapshot_count": {
+            "title": "Audience Snapshot Count",
+            "type": "integer"
+          },
+          "audience_type": {
+            "title": "Audience Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "failed_count": {
+            "default": 0,
+            "title": "Failed Count",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "suppressed_count": {
+            "default": 0,
+            "title": "Suppressed Count",
+            "type": "integer"
+          },
+          "unsubscribed_count": {
+            "default": 0,
+            "title": "Unsubscribed Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "state",
+          "audience_type",
+          "audience_plan_code",
+          "audience_snapshot_count",
+          "scheduled_at",
+          "created_at"
+        ],
+        "title": "CampaignResponse",
+        "type": "object"
+      },
+      "CampaignScheduleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "format": "date-time",
+            "title": "Scheduled At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scheduled_at",
+          "reason"
+        ],
+        "title": "CampaignScheduleRequest",
         "type": "object"
       },
       "CancelSubscriptionResponse": {
@@ -3225,6 +3705,153 @@
         "title": "PreviewResponse",
         "type": "object"
       },
+      "PublicBlogPostResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_path": {
+            "title": "Canonical Path",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "content_html": {
+            "title": "Content Html",
+            "type": "string"
+          },
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "featured_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Image Url"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "meta_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta Description"
+          },
+          "og_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Description"
+          },
+          "og_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Title"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "seo_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Title"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "excerpt",
+          "state",
+          "scheduled_at",
+          "published_at",
+          "categories",
+          "tags",
+          "content_html",
+          "featured_image_url",
+          "seo_title",
+          "meta_description",
+          "canonical_path",
+          "og_title",
+          "og_description"
+        ],
+        "title": "PublicBlogPostResponse",
+        "type": "object"
+      },
       "PublicLeadRequest": {
         "additionalProperties": false,
         "properties": {
@@ -4326,6 +4953,22 @@
         "title": "UnpublishCommandResponse",
         "type": "object"
       },
+      "UnsubscribeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "maxLength": 200,
+            "minLength": 20,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "UnsubscribeRequest",
+        "type": "object"
+      },
       "UserResponse": {
         "properties": {
           "account_type": {
@@ -4783,6 +5426,664 @@
         "summary": "Logout",
         "tags": [
           "super-admin-authentication"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts": {
+      "get": {
+        "operationId": "admin_posts_api_v1_admin_blog_posts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BlogPostResponse"
+                  },
+                  "title": "Response Admin Posts Api V1 Admin Blog Posts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Admin Posts",
+        "tags": [
+          "blog"
+        ]
+      },
+      "post": {
+        "operationId": "create_post_api_v1_admin_blog_posts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogPostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts/{post_id}": {
+      "patch": {
+        "operationId": "update_post_api_v1_admin_blog_posts__post_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogPostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts/{post_id}/publish": {
+      "post": {
+        "operationId": "publish_post_api_v1_admin_blog_posts__post_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts/{post_id}/ready": {
+      "post": {
+        "operationId": "ready_post_api_v1_admin_blog_posts__post_id__ready_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ready Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts/{post_id}/schedule": {
+      "post": {
+        "operationId": "schedule_post_api_v1_admin_blog_posts__post_id__schedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Schedule Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/blog/posts/{post_id}/unpublish": {
+      "post": {
+        "operationId": "unpublish_post_api_v1_admin_blog_posts__post_id__unpublish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Post Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unpublish Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns": {
+      "get": {
+        "operationId": "campaigns_api_v1_admin_campaigns_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignResponse"
+                  },
+                  "title": "Response Campaigns Api V1 Admin Campaigns Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Campaigns",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      },
+      "post": {
+        "operationId": "create_campaign_api_v1_admin_campaigns_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Campaign",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns/{campaign_id}": {
+      "patch": {
+        "operationId": "update_campaign_api_v1_admin_campaigns__campaign_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Campaign",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns/{campaign_id}/cancel": {
+      "post": {
+        "operationId": "cancel_campaign_api_v1_admin_campaigns__campaign_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Campaign",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns/{campaign_id}/ready": {
+      "post": {
+        "operationId": "prepare_campaign_api_v1_admin_campaigns__campaign_id__ready_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Campaign",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns/{campaign_id}/schedule": {
+      "post": {
+        "operationId": "schedule_campaign_api_v1_admin_campaigns__campaign_id__schedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Schedule Campaign",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
+    "/api/v1/admin/campaigns/{campaign_id}/send": {
+      "post": {
+        "operationId": "send_campaign_api_v1_admin_campaigns__campaign_id__send_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Campaign",
+        "tags": [
+          "super-admin-campaigns"
         ]
       }
     },
@@ -5790,6 +7091,63 @@
         ]
       }
     },
+    "/api/v1/admin/users/{user_id}/administrative-email": {
+      "post": {
+        "operationId": "send_administrative_email_api_v1_admin_users__user_id__administrative_email_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdministrativeEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Send Administrative Email Api V1 Admin Users  User Id  Administrative Email Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Administrative Email",
+        "tags": [
+          "super-admin-campaigns"
+        ]
+      }
+    },
     "/api/v1/admin/users/{user_id}/lead-credits": {
       "post": {
         "operationId": "adjust_lead_credits_api_v1_admin_users__user_id__lead_credits_post",
@@ -6541,6 +7899,98 @@
         ]
       }
     },
+    "/api/v1/blog/posts": {
+      "get": {
+        "operationId": "public_posts_api_v1_blog_posts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BlogPostResponse"
+                  },
+                  "title": "Response Public Posts Api V1 Blog Posts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Public Posts",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/blog/posts/{slug}": {
+      "get": {
+        "operationId": "public_post_api_v1_blog_posts__slug__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicBlogPostResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Post",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/v1/blog/sitemap": {
+      "get": {
+        "operationId": "blog_sitemap_api_v1_blog_sitemap_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BlogSitemapItem"
+                  },
+                  "title": "Response Blog Sitemap Api V1 Blog Sitemap Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Blog Sitemap",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
     "/api/v1/lead-credits": {
       "get": {
         "operationId": "lead_credits_api_v1_lead_credits_get",
@@ -6948,6 +8398,40 @@
         "summary": "Capture Form Lead",
         "tags": [
           "public-chatbot-and-leads"
+        ]
+      }
+    },
+    "/api/v1/public/marketing/unsubscribe": {
+      "post": {
+        "operationId": "unsubscribe_api_v1_public_marketing_unsubscribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnsubscribeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unsubscribe",
+        "tags": [
+          "super-admin-campaigns"
         ]
       }
     },
