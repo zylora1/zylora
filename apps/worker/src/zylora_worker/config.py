@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Literal, Self
+from urllib.parse import urlparse
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,10 +26,25 @@ class WorkerSettings(BaseSettings):
         if self.environment in {"staging", "production"}:
             if "localhost" in self.celery_broker_url + self.celery_result_backend:
                 raise ValueError("staging/production worker transport cannot use localhost")
-            if not self.celery_broker_url.startswith("rediss://") or not (
-                self.celery_result_backend.startswith("rediss://")
+
+            def approved_transport(url: str) -> bool:
+                parsed = urlparse(url)
+                return parsed.scheme == "rediss" or (
+                    self.environment == "staging"
+                    and parsed.scheme == "redis"
+                    and parsed.hostname == "redis.railway.internal"
+                    and bool(parsed.username)
+                    and bool(parsed.password)
+                )
+
+            if not all(
+                approved_transport(url)
+                for url in (self.celery_broker_url, self.celery_result_backend)
             ):
-                raise ValueError("staging/production worker transport must require TLS")
+                raise ValueError(
+                    "staging/production worker transport must require TLS "
+                    "or authenticated Railway private transport in staging"
+                )
         if not 1 <= self.worker_concurrency <= 64:
             raise ValueError("worker concurrency must be between 1 and 64")
         if not 300 <= self.celery_visibility_timeout_seconds <= 86_400:
