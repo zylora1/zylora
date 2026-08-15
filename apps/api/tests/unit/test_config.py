@@ -18,6 +18,18 @@ def test_memory_storage_is_test_only() -> None:
         Settings(_env_file=None, environment="development", storage_provider="memory")
 
 
+def test_resend_provider_requires_an_api_key() -> None:
+    with pytest.raises(ValidationError, match="Resend email delivery requires an API key"):
+        Settings(_env_file=None, email_provider="resend")
+
+    settings = Settings(
+        _env_file=None,
+        email_provider="resend",
+        resend_api_key="resend-test-key",
+    )
+    assert settings.email_provider == "resend"
+
+
 def test_production_rejects_development_credentials() -> None:
     with pytest.raises(ValidationError, match="production object storage must be configured"):
         Settings(_env_file=None, environment="production")

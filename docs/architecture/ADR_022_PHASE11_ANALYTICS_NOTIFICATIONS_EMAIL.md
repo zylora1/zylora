@@ -21,7 +21,7 @@ link mappings. A recipient/deduplication advisory lock makes retry safe. User AP
 time and only the recipient may mark an item read.
 
 Transactional email uses encrypted recipient/content fields in PostgreSQL plus the existing durable
-outbox. The worker decrypts immediately before calling the SMTP adapter, records bounded retry state,
+outbox. The worker decrypts immediately before calling the configured provider adapter, records bounded retry state,
 and uses the stable idempotency key to avoid duplicate sends. Authentication verification and password
 recovery use this same queue; the reset URL is encrypted with the message content. Marketing campaigns
 remain a distinct later capability and are not implied by the transactional queue.

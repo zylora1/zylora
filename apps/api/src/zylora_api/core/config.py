@@ -13,6 +13,7 @@ StorageProvider = Literal["s3", "memory", "disabled"]
 AiProvider = Literal["openai", "disabled"]
 DomainProviderName = Literal["cloudflare", "disabled", "memory"]
 DocumentScannerProvider = Literal["clamav", "test"]
+EmailProvider = Literal["smtp", "resend"]
 
 
 CLOUDFLARE_TURNSTILE_TEST_SITE_KEYS = frozenset(
@@ -80,6 +81,8 @@ class Settings(BaseSettings):
     google_client_id: str | None = None
     google_client_secret: str | None = None
     google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
+    email_provider: EmailProvider = "smtp"
+    resend_api_key: str | None = None
     smtp_host: str | None = None
     smtp_port: int = 587
     smtp_start_tls: bool = True
@@ -205,6 +208,8 @@ class Settings(BaseSettings):
             raise ValueError("database lock timeout must be shorter than statement timeout")
         if not 1 <= self.cloudflare_api_timeout_seconds <= 15:
             raise ValueError("Cloudflare API timeout must be between 1 and 15 seconds")
+        if self.email_provider == "resend" and not self.resend_api_key:
+            raise ValueError("Resend email delivery requires an API key")
 
         if not 5 <= self.ai_timeout_seconds <= 120:
             raise ValueError("AI timeout must be between 5 and 120 seconds")
@@ -440,7 +445,7 @@ class Settings(BaseSettings):
             }
             if self.google_redirect_uri not in allowed_callbacks:
                 raise ValueError("production Google redirect URI must use an exact User Web origin")
-            if not self.smtp_host:
+            if self.email_provider == "smtp" and not self.smtp_host:
                 raise ValueError("production SMTP delivery must be configured")
             if not self.contact_recipient_email:
                 raise ValueError("production contact delivery recipient must be configured")

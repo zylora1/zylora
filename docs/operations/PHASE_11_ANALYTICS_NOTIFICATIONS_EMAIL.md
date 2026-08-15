@@ -23,8 +23,10 @@ secret. Its outbox payload has only the job ID. SMTP provider failures retry wit
 delays, then become `FAILED`; inspect the safe error code and requeue only through an audited operation.
 Do not copy ciphertext, recipient addresses, password-reset links, or provider credentials into logs.
 
-The local Mailpit setup remains useful for delivery smoke tests. Production requires an authenticated
-SMTP provider and uses secrets only from the deployment secret manager.
+The local Mailpit setup remains useful for SMTP delivery smoke tests. Runtime email delivery is selected
+with `EMAIL_PROVIDER=smtp|resend`. SMTP uses the `SMTP_*` settings; Resend uses `RESEND_API_KEY` over its
+official HTTPS API and reuses `SMTP_FROM_EMAIL` as the verified sender identity. Production requires
+valid credentials for the selected provider and uses secrets only from the deployment secret manager.
 
 ## Analytics privacy and retention
 

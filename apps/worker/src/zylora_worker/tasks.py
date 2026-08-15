@@ -286,7 +286,7 @@ async def _process_transactional_email_event(event_id: UUID) -> str:
     from sqlalchemy.ext.asyncio import async_sessionmaker
     from zylora_api.core.config import get_settings
     from zylora_api.db.session import get_engine
-    from zylora_api.modules.auth.delivery import SMTPEmailSender
+    from zylora_api.modules.auth.delivery import transactional_email_provider_for
     from zylora_api.modules.auth.security import AuthCrypto
     from zylora_api.modules.notifications.email import TransactionalEmailService
 
@@ -295,7 +295,7 @@ async def _process_transactional_email_event(event_id: UUID) -> str:
     async with factory() as session:
         event = await TransactionalEmailService(
             session, AuthCrypto(settings.auth_secret)
-        ).process_outbox_event(event_id, SMTPEmailSender(settings))
+        ).process_outbox_event(event_id, transactional_email_provider_for(settings))
         await session.commit()
         return event.state
 
@@ -449,7 +449,7 @@ async def _process_campaign_event(event_id: UUID) -> str:
     from sqlalchemy.ext.asyncio import async_sessionmaker
     from zylora_api.core.config import get_settings
     from zylora_api.db.session import get_engine
-    from zylora_api.modules.auth.delivery import SMTPEmailSender
+    from zylora_api.modules.auth.delivery import transactional_email_provider_for
     from zylora_api.modules.auth.security import AuthCrypto
     from zylora_api.modules.campaigns.service import CampaignService
 
@@ -460,7 +460,7 @@ async def _process_campaign_event(event_id: UUID) -> str:
             session,
             AuthCrypto(settings.auth_secret),
             public_origin=settings.allowed_origins[0],
-        ).process_outbox_event(event_id, SMTPEmailSender(settings))
+        ).process_outbox_event(event_id, transactional_email_provider_for(settings))
         await session.commit()
         return event.state
 

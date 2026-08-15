@@ -348,7 +348,7 @@ async def test_transactional_email_worker_uses_durable_service_and_commits(
         "async_sessionmaker",
         lambda *_args, **_kwargs: lambda: worker_session,
     )
-    monkeypatch.setattr(delivery, "SMTPEmailSender", lambda _: provider)
+    monkeypatch.setattr(delivery, "transactional_email_provider_for", lambda _: provider)
     monkeypatch.setattr(email, "TransactionalEmailService", FakeEmailService)
 
     assert await tasks._process_transactional_email_event(event_id) == "PUBLISHED"
