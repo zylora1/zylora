@@ -39,6 +39,16 @@ describe('AuthForm', () => {
     expect(screen.queryByText(/administration/i)).not.toBeInTheDocument();
   });
 
+  it('allows the password to be revealed without changing the form value', () => {
+    render(<AuthForm mode="login" />);
+
+    const password = screen.getByLabelText('Password');
+    expect(password).toHaveAttribute('type', 'password');
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(password).toHaveAttribute('type', 'text');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
   it('shows safe API errors and does not navigate', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ detail: 'Email or password is incorrect.' }), {

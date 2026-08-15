@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from typing import Annotated, Protocol
 
@@ -31,6 +32,27 @@ class DatabaseProbe:
             return True
         except Exception:
             return False
+
+
+class AiBuilderReadinessProbe:
+    def __init__(self, settings: Settings) -> None:
+        self._settings = settings
+
+    async def check(self) -> bool:
+        from zylora_api.modules.ai_builder.client import AiBuilderClient
+
+        return await AiBuilderClient(self._settings).ready()
+
+
+class ArtifactStorageReadinessProbe:
+    def __init__(self, settings: Settings) -> None:
+        self._settings = settings
+
+    async def check(self) -> bool:
+        from zylora_api.modules.publishing.runtime import publication_storage_for
+
+        storage = publication_storage_for(self._settings)
+        return await asyncio.to_thread(storage.check)
 
 
 class IdentityReadinessProbe:
@@ -69,6 +91,8 @@ class ReadinessService:
     database: Probe
     redis: Probe
     identity: Probe | None = None
+    ai_builder: Probe | None = None
+    artifact_storage: Probe | None = None
 
     async def evaluate(self) -> tuple[str, dict[str, str]]:
         database_ready = await self.database.check()
@@ -81,6 +105,16 @@ class ReadinessService:
             identity_ready = await self.identity.check()
             checks["identity"] = "ready" if identity_ready else "not_ready"
             if not identity_ready:
+                return "not_ready", checks
+        if self.ai_builder is not None:
+            builder_ready = await self.ai_builder.check()
+            checks["ai_builder"] = "ready" if builder_ready else "not_ready"
+            if not builder_ready:
+                return "not_ready", checks
+        if self.artifact_storage is not None:
+            storage_ready = await self.artifact_storage.check()
+            checks["ai_artifact_storage"] = "ready" if storage_ready else "not_ready"
+            if not storage_ready:
                 return "not_ready", checks
         if not database_ready:
             return "not_ready", checks
@@ -104,7 +138,17 @@ def get_readiness_service(
     identity = (
         IdentityReadinessProbe(get_engine()) if settings.environment == "production" else None
     )
-    return ReadinessService(DatabaseProbe(get_engine()), RedisProbe(settings.redis_url), identity)
+    ai_builder = AiBuilderReadinessProbe(settings) if settings.ai_builder_enabled else None
+    artifact_storage = (
+        ArtifactStorageReadinessProbe(settings) if settings.ai_builder_enabled else None
+    )
+    return ReadinessService(
+        DatabaseProbe(get_engine()),
+        RedisProbe(settings.redis_url),
+        identity,
+        ai_builder,
+        artifact_storage,
+    )
 
 
 @router.get("/liveness", response_model=HealthResponse, operation_id="getLiveness")

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from zylora_api.app import create_app
 from zylora_api.db.auth_models import User
 from zylora_api.db.session import get_engine
-from zylora_api.db.template_models import Template, TemplateCategory, TemplateTag
+from zylora_api.db.template_models import Template
 from zylora_api.modules.auth.errors import AuthProblem
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.templates.fixtures import CURATED_CATALOG
@@ -37,8 +37,13 @@ async def test_template_lifecycle_exposes_only_current_published_version() -> No
         await session.flush()
         service = TemplateService(session, crypto)
         fixture = CURATED_CATALOG[0]
+        unique_name = f"Haven {slug}"
         payload = TemplateCreateRequest.model_validate(
-            {**{key: value for key, value in fixture.items() if key != "document"}, "slug": slug}
+            {
+                **{key: value for key, value in fixture.items() if key != "document"},
+                "slug": slug,
+                "name": unique_name,
+            }
         )
         template = await service.create(payload, actor.id)
         version = await service.add_version(template.id, deepcopy(fixture["document"]), actor.id)  # type: ignore[arg-type]
@@ -63,7 +68,11 @@ async def test_template_lifecycle_exposes_only_current_published_version() -> No
         ) as client:
             listed = await client.get(
                 "/api/v1/templates",
-                params={"query": "Haven", "category": fixture["category_slug"], "tag": "clinic"},
+                params={
+                    "query": unique_name,
+                    "category": fixture["category_slug"],
+                    "tag": "clinic",
+                },
             )
             detail = await client.get(f"/api/v1/templates/{slug}")
             preview = await client.get(f"/api/v1/templates/{slug}/versions/1/preview")
@@ -79,10 +88,6 @@ async def test_template_lifecycle_exposes_only_current_published_version() -> No
             assert (await client.get(f"/api/v1/templates/{slug}")).status_code == 404
 
         await session.execute(delete(Template).where(Template.id == template.id))
-        await session.execute(delete(TemplateTag).where(TemplateTag.slug.in_(fixture["tags"])))
-        await session.execute(
-            delete(TemplateCategory).where(TemplateCategory.slug == fixture["category_slug"])
-        )
         await session.execute(delete(User).where(User.id == actor.id))
         await session.commit()
 
@@ -105,8 +110,13 @@ async def test_stale_or_rejected_validation_cannot_be_approved() -> None:
         await session.flush()
         fixture = CURATED_CATALOG[1]
         service = TemplateService(session, crypto)
+        unique_name = f"Haven {slug}"
         payload = TemplateCreateRequest.model_validate(
-            {**{key: value for key, value in fixture.items() if key != "document"}, "slug": slug}
+            {
+                **{key: value for key, value in fixture.items() if key != "document"},
+                "slug": slug,
+                "name": unique_name,
+            }
         )
         template = await service.create(payload, actor.id)
         invalid = deepcopy(fixture["document"])

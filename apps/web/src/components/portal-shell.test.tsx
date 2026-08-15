@@ -41,7 +41,11 @@ describe('PortalShell', () => {
 
     expect(await screen.findByRole('heading', { name: 'Workspace content' })).toBeVisible();
     const navigation = screen.getByRole('navigation', { name: 'User portal navigation' });
-    expect(within(navigation).getAllByRole('link')).toHaveLength(10);
+    expect(within(navigation).getAllByRole('link')).toHaveLength(11);
+    expect(within(navigation).getByRole('link', { name: 'AI Builder' })).toHaveAttribute(
+      'href',
+      '/app/ai-builder',
+    );
     expect(within(navigation).getByRole('link', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',

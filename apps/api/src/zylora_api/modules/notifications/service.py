@@ -151,6 +151,12 @@ class NotificationService:
                 "Your domain or TLS state has changed.",
                 "/app/domains",
             ),
+            "ZERO_LEAD_CHECKPOINT": NotificationPresentation(
+                "Improve your enquiry results",
+                "Your Website is live but has not received an enquiry yet. "
+                "Review practical next steps.",
+                "/app/analytics",
+            ),
         }
         presentation = presentations.get(notification_type)
         if not presentation:

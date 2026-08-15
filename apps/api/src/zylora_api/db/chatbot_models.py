@@ -68,7 +68,10 @@ class ChatbotKnowledgeIndex(Base):
             name="ck_chatbot_knowledge_indexes_state",
         ),
         UniqueConstraint(
-            "website_id", "website_version_id", name="uq_chatbot_index_website_version"
+            "website_id",
+            "website_version_id",
+            "knowledge_generation",
+            name="uq_chatbot_index_website_version_generation",
         ),
         Index(
             "uq_chatbot_active_index_website",
@@ -93,6 +96,7 @@ class ChatbotKnowledgeIndex(Base):
     website_version_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("website_versions.id", ondelete="RESTRICT"), nullable=False
     )
+    knowledge_generation: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     embedding_model: Mapped[str] = mapped_column(String(160), nullable=False)
     embedding_dimension: Mapped[int] = mapped_column(Integer, nullable=False)
     chunker_version: Mapped[str] = mapped_column(String(40), nullable=False)
@@ -126,6 +130,14 @@ class ChatbotKnowledgeChunk(Base):
     chunk_key: Mapped[str] = mapped_column(String(120), nullable=False)
     source_page_path: Mapped[str] = mapped_column(String(1024), nullable=False)
     source_component_path: Mapped[str] = mapped_column(String(1024), nullable=False)
+    source_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("knowledge_sources.id", ondelete="RESTRICT")
+    )
+    source_type: Mapped[str] = mapped_column(String(20), nullable=False, server_default="WEBSITE")
+    source_title: Mapped[str] = mapped_column(String(240), nullable=False, server_default="Website")
+    source_location: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, server_default="{}"
+    )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     token_count: Mapped[int] = mapped_column(Integer, nullable=False)
     checksum: Mapped[str] = mapped_column(String(64), nullable=False)

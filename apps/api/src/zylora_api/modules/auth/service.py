@@ -16,6 +16,7 @@ from zylora_api.db.auth_models import (
     Session,
     User,
 )
+from zylora_api.modules.analytics.activation import AttributionInput, ProductAnalyticsService
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.delivery import EmailSender
 from zylora_api.modules.auth.errors import (
@@ -276,7 +277,14 @@ class AuthenticationService:
         self.audit = AuditService(session, crypto)
 
     async def signup(
-        self, email: str, password: str, *, ip_address: str, correlation_id: str
+        self,
+        email: str,
+        password: str,
+        *,
+        ip_address: str,
+        correlation_id: str,
+        attribution: AttributionInput | None = None,
+        country_code: str = "ZZ",
     ) -> None:
         normalized, display = self.crypto.normalize_email(email)
         await self.abuse.enforce(
@@ -313,6 +321,19 @@ class AuthenticationService:
             target_type="user",
             target_id=str(user.id),
             ip_address=ip_address,
+        )
+        product_analytics = ProductAnalyticsService(self.session)
+        await product_analytics.record_event(
+            event_type="ACCOUNT_CREATED",
+            idempotency_key=f"account-created:{user.id}",
+            user_id=user.id,
+            properties={"signup_source": "EMAIL"},
+        )
+        await product_analytics.capture_attribution(
+            user_id=user.id,
+            attribution=attribution or AttributionInput(),
+            country_code=country_code,
+            signup_source="EMAIL",
         )
         await self.session.commit()
         try:

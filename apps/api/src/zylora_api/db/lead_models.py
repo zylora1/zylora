@@ -212,6 +212,10 @@ class AnalyticsDailyRollup(Base):
     sessions: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     visitors: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    lead_form_opens: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
+    lead_form_submissions: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, server_default="0"
+    )
     form_leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     chatbot_leads: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     chatbot_conversations: Mapped[int] = mapped_column(
@@ -231,7 +235,8 @@ class TransactionalEmail(Base):
             "kind IN ("
             "'AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT',"
             "'WEBSITE_PUBLISHED','WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED',"
-            "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION')",
+            "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION',"
+            "'MONTHLY_WEBSITE_DIGEST')",
             name="ck_transactional_emails_kind",
         ),
         CheckConstraint(

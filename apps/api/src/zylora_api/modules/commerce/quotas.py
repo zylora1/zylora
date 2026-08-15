@@ -12,6 +12,7 @@ from zylora_api.db.commerce_models import NotificationQuotaAccount, Notification
 from zylora_api.db.lead_models import AnalyticsEvent, Lead
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import Website
+from zylora_api.db.whatsapp_models import WhatsAppNotificationSetting
 from zylora_api.modules.commerce.service import SubscriptionService
 from zylora_api.modules.leads.credits import CreditLedgerService
 from zylora_api.modules.notifications.service import NotificationService
@@ -88,7 +89,7 @@ class LeadCaptureResult:
 
 
 class LeadService:
-    """The sole form/chatbot Lead command path with transactional credit accounting."""
+    """The sole Website-form Lead command path with transactional credit accounting."""
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -106,10 +107,9 @@ class LeadService:
         owner_country_code: str,
         correlation_id: str,
         page_path: str | None = None,
-        source_reference_id: UUID | None = None,
         consent: dict[str, Any] | None = None,
     ) -> LeadCaptureResult:
-        if source not in {"FORM", "CHATBOT"}:
+        if source != "FORM":
             raise problem(422, "invalid_lead_source", "Lead source is invalid.")
         if not 1 <= len(idempotency_key) <= 160:
             raise problem(422, "idempotency_key_required", "Provide a valid idempotency key.")
@@ -119,7 +119,6 @@ class LeadService:
             "phone": phone.strip() if phone else None,
             "enquiry": enquiry.strip(),
             "page_path": page_path.strip() if page_path else None,
-            "source_reference_id": str(source_reference_id) if source_reference_id else None,
             "consent": consent or {},
         }
         if not normalized["name"] or not normalized["enquiry"]:
@@ -146,7 +145,7 @@ class LeadService:
             website_id=website.id,
             owner_user_id=website.live_owner_user_id,
             source=source,
-            source_reference_id=source_reference_id,
+            source_reference_id=None,
             idempotency_key=idempotency_key,
             request_fingerprint=fingerprint,
             name=str(normalized["name"]),
@@ -167,15 +166,27 @@ class LeadService:
             dedupe_key=f"lead:{lead.id}",
             data={"website_id": str(lead.website_id), "source": lead.source},
         )
-        self.session.add(
-            AnalyticsEvent(
-                website_id=lead.website_id,
-                owner_user_id=lead.owner_user_id,
-                event_type="LEAD_CAPTURED",
-                idempotency_key=f"lead:{lead.id}",
-                properties={"source": lead.source},
-            )
+        self.session.add_all(
+            [
+                AnalyticsEvent(
+                    website_id=lead.website_id,
+                    owner_user_id=lead.owner_user_id,
+                    event_type="LEAD_CAPTURED",
+                    idempotency_key=f"lead:{lead.id}",
+                    properties={"source": lead.source},
+                ),
+                AnalyticsEvent(
+                    website_id=lead.website_id,
+                    owner_user_id=lead.owner_user_id,
+                    event_type="LEAD_FORM_SUBMITTED",
+                    idempotency_key=f"lead-form-submitted:{lead.id}",
+                    properties={},
+                ),
+            ]
         )
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        await ProductAnalyticsService(self.session).mark_lead_created(lead)
         self.session.add(
             OutboxEvent(
                 aggregate_type="LEAD",
@@ -189,9 +200,16 @@ class LeadService:
                 correlation_id=correlation_id,
             )
         )
-        queued = await NotificationQuotaService(self.session).reserve_whatsapp(
-            website.live_owner_user_id, owner_country_code, lead.id
+        whatsapp_setting = await self.session.scalar(
+            select(WhatsAppNotificationSetting).where(
+                WhatsAppNotificationSetting.owner_user_id == website.live_owner_user_id,
+                WhatsAppNotificationSetting.enabled.is_(True),
+                WhatsAppNotificationSetting.status == "READY",
+            )
         )
+        queued = bool(whatsapp_setting) and await NotificationQuotaService(
+            self.session
+        ).reserve_whatsapp(website.live_owner_user_id, owner_country_code, lead.id)
         lead.whatsapp_notification_queued = queued
         if queued:
             self.session.add(

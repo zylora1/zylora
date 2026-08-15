@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.auth_models import User
 from zylora_api.db.session import get_session
+from zylora_api.modules.analytics.activation import ProductAnalyticsService
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.http import (
     RequestIdentity,
@@ -123,6 +124,12 @@ async def checkout(
         payload.plan_id,
         require_idempotency_key(idempotency_key),
     )
+    await ProductAnalyticsService(session).record_event(
+        event_type="PLAN_UPGRADE_STARTED",
+        idempotency_key=f"plan-upgrade-started:{payment.id}",
+        user_id=identity.user.id,
+        properties={"plan_id": str(payment.plan_id)},
+    )
     AuditService(session, crypto).record(
         "billing.checkout_requested",
         correlation_id=correlation_id(request),
@@ -165,6 +172,12 @@ async def cancel_subscription(
     require_csrf(request, identity, crypto)
     result = await SubscriptionService(session).cancel(
         identity.user.id, request_country(request, settings, identity.user)
+    )
+    await ProductAnalyticsService(session).record_event(
+        event_type="SUBSCRIPTION_CANCELLED",
+        idempotency_key=f"subscription-cancelled:{identity.user.id}:{result.current_period_end.isoformat()}",
+        user_id=identity.user.id,
+        properties={"plan_code": result.plan_code},
     )
     AuditService(session, crypto).record(
         "billing.subscription_cancelled",
@@ -219,14 +232,22 @@ async def publish(
     require_csrf(request, identity, crypto)
     publish_service = PublishService(session)
     publish_kwargs = {"hostname": payload.hostname} if payload.hostname is not None else {}
+    publish_key = require_idempotency_key(idempotency_key)
     result = await publish_service.request_publish(
         website_id,
         identity.user.id,
         request_country(request, settings, identity.user),
         payload.domain_type,
-        require_idempotency_key(idempotency_key),
+        publish_key,
         correlation_id(request),
         **publish_kwargs,
+    )
+    await ProductAnalyticsService(session).record_event(
+        event_type="SITE_PUBLISH_REQUESTED",
+        idempotency_key=f"site-publish-requested:{website_id}:{publish_key}",
+        user_id=identity.user.id,
+        website_id=website_id,
+        properties={"domain_type": payload.domain_type},
     )
     AuditService(session, crypto).record(
         "website.publish_requested",

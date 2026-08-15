@@ -16,3 +16,7 @@ Run `terraform init`, `terraform fmt -check`, `terraform validate`, inspect
 apply, place the public site key in `TURNSTILE_SITE_KEY` and retrieve the secret
 directly into `TURNSTILE_SECRET_KEY`. Do not copy the secret into a frontend
 environment variable, issue tracker, log, or Terraform output.
+
+The rate-limit rules include authenticated AI Builder generation commands and status/artifact
+polling. Application responses under `/api/v1/` remain `private, no-store`; validate the live
+zone separately because static Terraform checks do not prove deployment.

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 
 import { apiRequest, csrfToken } from '@/lib/api';
+import { TemplateCardPreview } from './template-card-preview';
 import styles from './template-platform.module.css';
 
 export type TemplateSummary = {
@@ -22,8 +23,6 @@ export type TemplateSummary = {
 };
 type Catalog = { items: TemplateSummary[]; next_cursor: string | null };
 type Category = { slug: string; name: string };
-
-const swatches = ['#164E46', '#2C342F', '#6B2E24', '#203D63', '#67412C'];
 
 export function TemplateGallery({ createDraft = false }: { createDraft?: boolean }) {
   const router = useRouter();
@@ -160,15 +159,7 @@ export function TemplateGallery({ createDraft = false }: { createDraft?: boolean
           <div className={styles.grid} aria-live="polite">
             {catalog.items.map((item, index) => (
               <article className={styles.card} key={item.id}>
-                <div
-                  className={styles.cardPreview}
-                  style={
-                    { '--card-primary': swatches[index % swatches.length] } as React.CSSProperties
-                  }
-                >
-                  <span>{item.category}</span>
-                  <strong>{item.name}</strong>
-                </div>
+                <TemplateCardPreview item={item} index={index} />
                 <div className={styles.cardBody}>
                   <h2>{item.name}</h2>
                   <p>{item.summary}</p>

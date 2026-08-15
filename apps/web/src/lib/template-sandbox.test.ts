@@ -52,4 +52,26 @@ describe('sandboxDocument', () => {
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
   });
+  it('renders code-native media without network-backed asset references', () => {
+    const withMedia = structuredClone(document);
+    withMedia.pages[0]!.components.push({
+      id: 'family-media',
+      type: 'MEDIA',
+      props: {
+        mode: 'gallery',
+        heading: 'A closer look',
+        body: 'Original visual composition',
+      },
+      children: [],
+      responsive: {},
+      interactions: [],
+    });
+
+    const html = sandboxDocument(withMedia);
+
+    expect(html).toContain('class="media native gallery"');
+    expect(html).toContain('aria-label="Original visual composition"');
+    expect(html.match(/class="media-art"/g)).toHaveLength(3);
+    expect(withMedia.assets).toEqual([]);
+  });
 });

@@ -26,10 +26,10 @@ export const userSections: PortalSection[] = [
   {
     slug: 'leads',
     label: 'Leads',
-    description: 'Website forms and chatbot enquiries in one place.',
+    description: 'Website enquiry-form submissions in one place.',
     emptyTitle: 'No Leads to review',
     emptyDescription:
-      'Leads will appear after a published Website receives a valid form or chatbot enquiry.',
+      'Leads will appear after a published Website receives a valid enquiry form submission.',
   },
   {
     slug: 'analytics',

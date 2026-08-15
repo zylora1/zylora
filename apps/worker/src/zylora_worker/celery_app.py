@@ -23,15 +23,37 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
         task_acks_late=True,
         task_reject_on_worker_lost=True,
         task_track_started=True,
-        worker_prefetch_multiplier=1,
-        task_soft_time_limit=270,
-        task_time_limit=300,
+        worker_prefetch_multiplier=resolved.celery_prefetch_multiplier,
+        task_soft_time_limit=resolved.celery_soft_time_limit_seconds,
+        task_time_limit=resolved.celery_time_limit_seconds,
         broker_connection_retry_on_startup=True,
         result_expires=3600,
+        worker_concurrency=resolved.worker_concurrency,
+        worker_max_tasks_per_child=resolved.celery_max_tasks_per_child,
+        broker_transport_options={
+            "visibility_timeout": resolved.celery_visibility_timeout_seconds,
+        },
+        result_backend_transport_options={
+            "visibility_timeout": resolved.celery_visibility_timeout_seconds,
+        },
+        task_annotations={
+            "zylora.ai_builder.execute_generation": {
+                "soft_time_limit": resolved.ai_generation_soft_time_limit_seconds,
+                "time_limit": resolved.ai_generation_time_limit_seconds,
+            }
+        },
         beat_schedule={
             "zylora-publishing-outbox": {
                 "task": "zylora.publishing.dispatch_outbox",
                 "schedule": 10.0,
+            },
+            "zylora-ai-builder-outbox": {
+                "task": "zylora.ai_builder.dispatch_outbox",
+                "schedule": 10.0,
+            },
+            "zylora-ai-builder-recovery": {
+                "task": "zylora.ai_builder.recover_stale",
+                "schedule": 30.0,
             },
             "zylora-export-outbox": {
                 "task": "zylora.exports.dispatch_outbox",
@@ -43,6 +65,10 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
             },
             "zylora-transactional-email-outbox": {
                 "task": "zylora.notifications.dispatch_transactional_email",
+                "schedule": 10.0,
+            },
+            "zylora-lead-channel-outbox": {
+                "task": "zylora.notifications.dispatch_lead_channels",
                 "schedule": 10.0,
             },
             "zylora-campaign-outbox": {
@@ -60,6 +86,10 @@ def create_celery(settings: WorkerSettings | None = None) -> Celery:
             "zylora-analytics-rollups": {
                 "task": "zylora.analytics.refresh",
                 "schedule": 60.0,
+            },
+            "zylora-activation-maintenance": {
+                "task": "zylora.analytics.activation_maintenance",
+                "schedule": 3600.0,
             },
         },
     )

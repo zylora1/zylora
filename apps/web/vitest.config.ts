@@ -17,6 +17,7 @@ export default defineConfig({
       reporter: ['text', 'json-summary'],
       include: [
         'src/components/auth-form.tsx',
+        'src/components/ai-builder-project.tsx',
         'src/components/turnstile-widget.tsx',
         'src/components/portal-shell.tsx',
         'src/components/portal-pages.tsx',

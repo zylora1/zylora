@@ -16,6 +16,8 @@ from zylora_api.modules.templates.service import problem
 EVENT_TYPES = frozenset(
     {
         "PAGE_VIEW",
+        "LEAD_FORM_OPENED",
+        "LEAD_FORM_SUBMITTED",
         "LEAD_CAPTURED",
         "CHATBOT_CONVERSATION_STARTED",
         "CHATBOT_MESSAGE",
@@ -41,6 +43,8 @@ class DashboardMetrics:
     sessions: int
     visitors: int
     leads: int
+    lead_form_opens: int
+    lead_form_submissions: int
     form_leads: int
     chatbot_leads: int
     chatbot_conversations: int
@@ -112,6 +116,27 @@ class AnalyticsService:
             occurred_at=occurred_at or datetime.now(UTC),
         )
         self.session.add(event)
+        await self.session.flush()
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        lifecycle = ProductAnalyticsService(self.session)
+        if event_type == "PAGE_VIEW":
+            await lifecycle.mark_first_visitor(website, event.occurred_at)
+        elif event_type in {
+            "CHATBOT_CONVERSATION_STARTED",
+            "CHATBOT_MESSAGE",
+            "LEAD_FORM_OPENED",
+        }:
+            await lifecycle.record_event(
+                event_type=event_type,
+                idempotency_key=f"website-event:{website.id}:{idempotency_key}",
+                user_id=resolved_owner,
+                website_id=website.id,
+                properties=properties or {},
+                occurred_at=event.occurred_at,
+            )
+        elif event_type == "WEBSITE_PUBLISHED":
+            await lifecycle.mark_published(website, event.occurred_at)
         return EventRecordResult(event, False)
 
     async def refresh_website(
@@ -226,6 +251,8 @@ class AnalyticsService:
                 sessions=0,
                 visitors=0,
                 leads=0,
+                lead_form_opens=0,
+                lead_form_submissions=0,
                 form_leads=0,
                 chatbot_leads=0,
                 chatbot_conversations=0,
@@ -257,6 +284,8 @@ class AnalyticsService:
                 "sessions",
                 "visitors",
                 "leads",
+                "lead_form_opens",
+                "lead_form_submissions",
                 "form_leads",
                 "chatbot_leads",
                 "chatbot_conversations",
@@ -265,7 +294,7 @@ class AnalyticsService:
             )
         }
         return DashboardMetrics(
-            website_id=website_id,
+            website_id=website_id or website_ids[0],
             timezone=timezone,
             period_days=period_days,
             has_published_website=True,
@@ -339,6 +368,10 @@ class AnalyticsService:
             "sessions": len({event.session_hash for event in page_views if event.session_hash}),
             "visitors": len({event.visitor_hash for event in page_views if event.visitor_hash}),
             "leads": len(leads),
+            "lead_form_opens": sum(event.event_type == "LEAD_FORM_OPENED" for event in events),
+            "lead_form_submissions": sum(
+                event.event_type == "LEAD_FORM_SUBMITTED" for event in events
+            ),
             "form_leads": sum(event.properties.get("source") == "FORM" for event in leads),
             "chatbot_leads": sum(event.properties.get("source") == "CHATBOT" for event in leads),
             "chatbot_conversations": sum(

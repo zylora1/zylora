@@ -474,6 +474,15 @@ class DeploymentService:
             dedupe_key=f"deployment-failed:{deployment.id}",
             data={"website_id": str(website.id)},
         )
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        await ProductAnalyticsService(self.session).record_event(
+            event_type="SITE_PUBLISH_FAILED",
+            idempotency_key=f"site-publish-failed:{deployment.id}",
+            user_id=website.owner_user_id,
+            website_id=website.id,
+            properties={"error_code": code},
+        )
         return deployment
 
     async def process_publish(
@@ -587,6 +596,15 @@ class DeploymentService:
                 idempotency_key=f"website-published:{deployment.id}",
                 properties={"operation": deployment.operation},
             )
+            if domain.type == "CUSTOM":
+                from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+                await ProductAnalyticsService(self.session).record_event(
+                    event_type="CUSTOM_DOMAIN_CONNECTED",
+                    idempotency_key=f"custom-domain-connected:{domain.id}",
+                    user_id=website.owner_user_id,
+                    website_id=website.id,
+                )
             await NotificationService(self.session).create(
                 recipient_user_id=website.owner_user_id,
                 notification_type="WEBSITE_PUBLISHED",
@@ -644,6 +662,14 @@ class DeploymentService:
         website.live_owner_user_id = None
         website.publication_domain_type = None
         website.publish_request_idempotency_key = None
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        await ProductAnalyticsService(self.session).record_event(
+            event_type="SITE_UNPUBLISHED",
+            idempotency_key=f"site-unpublished:{deployment.id}",
+            user_id=website.owner_user_id,
+            website_id=website.id,
+        )
         return website
 
     async def process_outbox_event(

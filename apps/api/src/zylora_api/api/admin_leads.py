@@ -19,13 +19,13 @@ from zylora_api.modules.auth.http import (
     require_json_origin,
 )
 from zylora_api.modules.auth.security import AuthCrypto
-from zylora_api.modules.chatbot.schemas import (
+from zylora_api.modules.leads.credits import CreditLedgerService, LeadCreditPolicyService
+from zylora_api.modules.leads.schemas import (
     LeadCreditAdjustmentRequest,
     LeadCreditAdjustmentResponse,
     LeadCreditPolicyRequest,
     LeadCreditResponse,
 )
-from zylora_api.modules.leads.credits import CreditLedgerService, LeadCreditPolicyService
 from zylora_api.modules.templates.service import problem
 
 router = APIRouter(prefix="/api/v1", tags=["admin-leads"])

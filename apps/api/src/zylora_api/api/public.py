@@ -13,7 +13,11 @@ from zylora_api.db.auth_models import User
 from zylora_api.db.deployment_models import Domain
 from zylora_api.db.session import get_session
 from zylora_api.db.website_models import Website
-from zylora_api.modules.analytics.schemas import PublicPageViewRequest, PublicPageViewResponse
+from zylora_api.modules.analytics.schemas import (
+    PublicPageViewRequest,
+    PublicPageViewResponse,
+    PublicWebsiteEventRequest,
+)
 from zylora_api.modules.analytics.service import AnalyticsService
 from zylora_api.modules.auth.challenge import ChallengeService
 from zylora_api.modules.auth.http import (
@@ -28,11 +32,10 @@ from zylora_api.modules.chatbot.schemas import (
     ChatReplyResponse,
     ConversationResponse,
     ConversationStartRequest,
-    PublicLeadRequest,
-    PublicLeadResponse,
 )
 from zylora_api.modules.chatbot.service import ChatbotService
 from zylora_api.modules.commerce.quotas import LeadService
+from zylora_api.modules.leads.schemas import PublicLeadRequest, PublicLeadResponse
 from zylora_api.modules.publishing.runtime import publication_storage_for
 from zylora_api.modules.templates.service import problem
 
@@ -135,6 +138,31 @@ async def capture_page_view(
     return PublicPageViewResponse(accepted=True, duplicate=result.duplicate)
 
 
+@router.post(
+    "/analytics/events",
+    response_model=PublicPageViewResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def capture_public_event(
+    payload: PublicWebsiteEventRequest,
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> PublicPageViewResponse:
+    context = await resolve_public_website(request, session)
+    result = await AnalyticsService(session).record(
+        website_id=context.website.id,
+        event_type=payload.event_type,
+        idempotency_key=payload.event_id,
+        page_path=payload.page_path,
+        session_hash=crypto.digest(
+            payload.session_id, purpose=f"analytics-session:{context.website.id}"
+        ),
+    )
+    await session.commit()
+    return PublicPageViewResponse(accepted=True, duplicate=result.duplicate)
+
+
 @router.post("/leads", response_model=PublicLeadResponse, status_code=status.HTTP_201_CREATED)
 async def capture_form_lead(
     payload: PublicLeadRequest,
@@ -219,56 +247,4 @@ async def chat_message(
         conversation_id=reply.conversation.id,
         answer=reply.answer,
         source_paths=reply.source_paths,
-    )
-
-
-@router.post(
-    "/chatbot/conversations/{conversation_id}/leads",
-    response_model=PublicLeadResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-async def capture_chatbot_lead(
-    conversation_id: UUID,
-    payload: PublicLeadRequest,
-    request: Request,
-    response: Response,
-    session: Annotated[AsyncSession, Depends(get_session)],
-    settings: Annotated[Settings, Depends(get_settings)],
-    challenge: Annotated[ChallengeService, Depends(get_challenge_service)],
-    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
-) -> PublicLeadResponse:
-    context = await resolve_public_website(request, session)
-    await _enforce_public_challenge(
-        token=payload.turnstile_token,
-        context=context,
-        request=request,
-        settings=settings,
-        challenge=challenge,
-        action="lead_submission",
-    )
-    access_token = request.headers.get("X-Zylora-Conversation-Token", "")
-    result = await ChatbotService.from_settings(
-        session, publication_storage_for(settings), settings
-    ).capture_conversation_lead(
-        website_id=context.website.id,
-        conversation_id=conversation_id,
-        access_token=access_token,
-        idempotency_key=_idempotency_key(idempotency_key),
-        name=payload.name,
-        email=str(payload.email) if payload.email else None,
-        phone=payload.phone,
-        enquiry=payload.enquiry,
-        owner_country_code=context.owner_country_code,
-        correlation_id=correlation_id(request),
-        page_path=payload.page_path,
-        consent=payload.consent,
-    )
-    await session.commit()
-    if result.duplicate:
-        response.status_code = status.HTTP_200_OK
-    return PublicLeadResponse(
-        id=result.lead.id,
-        source=result.lead.source,
-        duplicate=result.duplicate,
-        whatsapp_notification_queued=result.lead.whatsapp_notification_queued,
     )

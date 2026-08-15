@@ -1908,6 +1908,13 @@ Knowledge may come from:
 Re-index when relevant published content changes.
 
 Never expose unpublished Draft content.
+The chatbot is the Website's AI information assistant. It answers visitor questions from
+Website-scoped published knowledge, acknowledges when the answer is unavailable, and may point to
+the normal enquiry form for human assistance.
+
+The chatbot must not collect or qualify Leads, solicit contact details for marketing, create CRM or
+Lead records, promise follow-up, trigger WhatsApp/email Lead notifications, or silently associate
+conversation content with a form submission.
 
 ---
 
@@ -1929,7 +1936,7 @@ Aggressively test cross-tenant retrieval.
 
 # 49. LEADS
 
-Chatbot and Website forms feed one centralized Lead service.
+Only explicit published-Website form submissions feed the centralized Lead service.
 
 Possible Lead fields:
 
@@ -1940,9 +1947,9 @@ Possible Lead fields:
 * Website
 * timestamp
 * page/source
-* conversation context where permitted
+* explicit form consent
 
-Do not create disconnected FormLead and ChatbotLead systems.
+Do not create a second Lead system or allow chatbot conversations to invoke Lead capture.
 
 Use source attribution on one normalized Lead model.
 
@@ -2042,7 +2049,7 @@ Closed
 Archived
 ```
 
-Lead detail may include relevant chatbot context where compliant.
+Lead detail contains only data explicitly submitted through the enquiry form; chatbot context is not attached.
 
 ---
 
@@ -2096,15 +2103,14 @@ When meaningful data exists, show real metrics.
 * total Leads
 * conversion rate
 * trend
-* chatbot Leads
 * form Leads
 
 ### Chatbot
 
 * conversations
 * engagement
-* Leads generated
-* conversion
+* questions asked
+* grounded-answer engagement
 
 ### Website status
 
@@ -2606,7 +2612,7 @@ Zylora Subdomain / Custom Domain
 ↓
 Publish / Transfer / Export
 ↓
-FAISS Chatbot + Lead Capture
+FAISS Chatbot Q&A + Form Lead Capture
 ↓
 Real Four-Plan Pricing
 ↓
@@ -3576,7 +3582,7 @@ Export Security
 Chatbot Provisioning
 Chatbot Query
 Cross-Tenant Retrieval Attack
-Chatbot Lead
+Chatbot Q&A
 Form Lead
 Exactly One Credit
 Duplicate Retry
@@ -3971,7 +3977,7 @@ Implement:
 * FAISS
 * index isolation
 * conversations
-* chatbot Lead capture
+* chatbot Q&A only
 * form Lead capture
 * unified Lead system
 * credit ledger
@@ -4144,7 +4150,7 @@ Manual QA as:
 * transfer sender
 * transfer recipient
 * exporter
-* chatbot/Lead User
+* chatbot visitor / form Lead submitter
 * Super Admin
 * mobile User
 * tablet User
@@ -4680,3 +4686,20 @@ are documented and internally consistent.
 Then proceed sequentially:
 
 # IMPLEMENT → TEST → VISUALLY INSPECT → FIX ROOT CAUSE → REGRESSION → PASS → NEXT PHASE.
+
+===============================================================================
+AUTHORITATIVE AMENDMENT — AI NEXT.JS BUILDER (2026-08-13)
+===============================================================================
+
+In addition to the existing Template-first Website aggregate, Zylora offers Build with AI for
+AI-generated production websites for real businesses. This path creates a separate Core-owned AI
+Site Project and an immutable Next.js artifact. It does not create a blank structured Website,
+mutate a Template, share the Template renderer, or weaken any Template Website invariant.
+
+The AI Builder is an isolated service responsible for requirements, planning, generation,
+validation, repair, sandbox build, browser/SEO/accessibility QA, and deployment artifact creation.
+Generated code is untrusted and never executes beside Zylora Core, PostgreSQL, Redis, billing,
+authentication, domains, workers, or secrets. Core remains authoritative for ownership, plans,
+payments, domains, publishing, usage, analytics, Leads, transfer, export, and the one-live-site rule
+across enabled project kinds. Exactly USER and SUPER_ADMIN account types remain; freelancers are a
+USER workflow and collaboration remains removed.

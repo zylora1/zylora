@@ -537,6 +537,15 @@ class EditorService:
                 completed_at=datetime.now(UTC),
             )
         )
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        await ProductAnalyticsService(self.session).record_event(
+            event_type="AI_EDIT_FAILED",
+            idempotency_key=f"ai-edit-failed:{request.operation_id}",
+            user_id=user_id,
+            website_id=website_id,
+            properties={"error_code": code},
+        )
         await self.session.commit()
 
     async def restore(

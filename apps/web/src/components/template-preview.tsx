@@ -21,12 +21,16 @@ export function TemplatePreview({
 }) {
   const [device, setDevice] = useState<keyof typeof devices>('desktop');
   const [source, setSource] = useState('');
+  const [displayName, setDisplayName] = useState(name);
   const [error, setError] = useState('');
   useEffect(() => {
     apiRequest<{ document: TemplateDocument }>(
       `/api/v1/templates/${slug}/versions/${version}/preview`,
     )
-      .then((value) => setSource(sandboxDocument(value.document)))
+      .then((value) => {
+        setDisplayName(value.document.metadata.name);
+        setSource(sandboxDocument(value.document));
+      })
       .catch((reason) =>
         setError(reason instanceof Error ? reason.message : 'Preview unavailable.'),
       );
@@ -35,7 +39,7 @@ export function TemplatePreview({
     <main className={styles.previewPage}>
       <div className={styles.previewToolbar}>
         <Link href={`/templates/${slug}`}>← Details</Link>
-        <strong>{name}</strong>
+        <strong>{displayName}</strong>
         {Object.keys(devices).map((value) => (
           <button
             type="button"
@@ -52,7 +56,7 @@ export function TemplatePreview({
           <p role="alert">{error}</p>
         ) : source ? (
           <iframe
-            title={`${name} responsive preview`}
+            title={`${displayName} responsive preview`}
             className={styles.previewFrame}
             style={{ width: devices[device] }}
             sandbox=""

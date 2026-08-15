@@ -1,0 +1,257 @@
+.page {
+  display: grid;
+  gap: 2rem;
+}
+.header {
+  max-width: 60rem;
+  padding: 1rem 0 2rem;
+}
+.header > p,
+.projects > div > p {
+  margin: 0 0 0.8rem;
+  color: var(--z-color-brand);
+  font-size: 0.67rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+.header h1 {
+  max-width: 58rem;
+  margin: 0;
+  font: 620 clamp(2.7rem, 5vw, 5rem)/0.95 var(--z-font-body);
+  letter-spacing: -0.065em;
+}
+.header > span {
+  display: block;
+  max-width: 43rem;
+  margin-top: 1.2rem;
+  color: var(--z-color-ink-muted);
+  line-height: 1.65;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.65fr);
+  gap: 1rem;
+}
+.composer,
+.boundary,
+.projects {
+  border: 1px solid var(--z-color-border);
+  border-radius: var(--z-radius-lg);
+  background: var(--z-color-surface);
+  padding: clamp(1.4rem, 3vw, 2.25rem);
+}
+.composer {
+  display: grid;
+  gap: 1rem;
+}
+.composer label {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.composer textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--z-color-border);
+  border-radius: var(--z-radius-md);
+  background: var(--z-color-surface-raised);
+  color: var(--z-color-ink);
+  padding: 1rem;
+  line-height: 1.6;
+}
+.composer textarea:focus {
+  border-color: var(--z-color-brand);
+  outline: 2px solid color-mix(in srgb, var(--z-color-brand) 25%, transparent);
+  outline-offset: 2px;
+}
+.promptMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--z-color-ink-muted);
+  font-size: 0.65rem;
+}
+.composer button {
+  display: inline-flex;
+  width: max-content;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: var(--z-radius-md);
+  background: var(--z-color-brand);
+  color: #07110d;
+  padding: 0.75rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.composer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.error,
+.notice {
+  margin: 0;
+  border-radius: var(--z-radius-md);
+  padding: 0.8rem;
+  font-size: 0.73rem;
+}
+.error {
+  background: var(--z-color-danger-surface);
+  color: var(--z-color-danger);
+}
+.notice {
+  background: var(--z-color-success-surface);
+  color: var(--z-color-success);
+}
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+.boundary {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+}
+.boundary > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.7rem;
+}
+.boundary svg {
+  grid-row: 1 / span 2;
+  color: var(--z-color-brand);
+}
+.boundary h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.boundary p {
+  margin: 0;
+  color: var(--z-color-ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+.boundary ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  border-top: 1px solid var(--z-color-border);
+  padding: 1.25rem 0 0;
+  list-style: none;
+}
+.boundary li {
+  display: flex;
+  gap: 0.45rem;
+  color: var(--z-color-ink-soft);
+  font-size: 0.7rem;
+}
+.boundary li svg {
+  color: var(--z-color-success);
+}
+.projects {
+  display: grid;
+  gap: 1.5rem;
+}
+.projects h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.projectList {
+  display: grid;
+  gap: 0.6rem;
+}
+.projectList article {
+  display: grid;
+  grid-template-columns: 1fr auto minmax(10rem, auto);
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--z-color-border);
+  border-radius: var(--z-radius-md);
+  background: var(--z-color-surface-raised);
+  padding: 0.9rem;
+}
+.projectList article > div {
+  display: grid;
+  gap: 0.2rem;
+}
+.projectList span {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.projectList small,
+.projectList code {
+  color: var(--z-color-ink-muted);
+  font-size: 0.62rem;
+}
+.projectList b {
+  border-radius: 999px;
+  background: var(--z-color-info-surface);
+  color: var(--z-color-info);
+  padding: 0.32rem 0.55rem;
+  font-size: 0.58rem;
+}
+.projectList b[data-status='FAILED'] {
+  background: var(--z-color-danger-surface);
+  color: var(--z-color-danger);
+}
+.projectList b[data-status='COMPLETED'] {
+  background: var(--z-color-success-surface);
+  color: var(--z-color-success);
+}
+.projectList b[data-status='CANCELLED'] {
+  background: var(--z-color-surface);
+  color: var(--z-color-ink-muted);
+}
+.actions {
+  justify-items: end;
+}
+.actions button {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--z-color-border);
+  border-radius: var(--z-radius-sm);
+  background: var(--z-color-surface);
+  color: var(--z-color-ink-soft);
+  padding: 0.35rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.empty {
+  margin: 0;
+  color: var(--z-color-ink-muted);
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 64rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 42rem) {
+  .promptMeta {
+    flex-direction: column;
+  }
+  .composer button {
+    width: 100%;
+    justify-content: center;
+  }
+  .projectList article {
+    grid-template-columns: 1fr auto;
+  }
+  .projectList code {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

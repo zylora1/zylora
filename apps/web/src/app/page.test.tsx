@@ -1,22 +1,25 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import HomePage from './page';
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('HomePage', () => {
-  it('presents the Phase 2 identity entry points', () => {
+  it('presents both production website creation paths', () => {
     render(<HomePage />);
 
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: 'Choose the shape. Make it unmistakably yours.',
+        name: 'Build a professional website your way.',
       }),
     ).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Explore Templates' })).toHaveAttribute(
+    expect(screen.getAllByRole('link', { name: 'Explore Templates' })[0]).toHaveAttribute(
       'href',
       '/templates',
     );
+    expect(screen.getByRole('button', { name: 'Build this website with AI' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
     expect(screen.queryByText(/trusted by/i)).not.toBeInTheDocument();
   });

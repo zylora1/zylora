@@ -12,6 +12,18 @@ one of three primary actions: **Publish**, **Transfer**, or **Export ZIP**. Publ
 a Zylora subdomain or verified custom domain and provide a Website-scoped FAISS chatbot, unified Lead
 capture, analytics, notifications, and credit accounting.
 
+## Approved AI builder amendment (2026-08-13)
+
+Zylora also offers **Build with AI** for production business websites. This path creates a separate
+Core-owned AI Site Project and immutable Next.js artifact; it does not create a blank structured
+`Website`, mutate a source Template, or bypass the Template renderer. The existing Template-first
+`Website` aggregate and its manual/AI revision editor remain unchanged.
+
+Generated code is untrusted. Planning, code generation, validation, repair, sandbox build, browser
+quality checks, and artifact creation occur behind the isolated AI Builder service boundary. Core
+remains authoritative for ownership, authentication, plans, payments, domains, publishing state,
+usage, analytics, Leads, transfer, export, and the one-live-site rule across enabled project kinds.
+The builder has no direct access to Core databases, Redis, billing credentials, or production secrets.
 ## Actors
 
 There are exactly two account types:
@@ -120,11 +132,13 @@ published version. Source extraction, chunks, embeddings, manifests, and FAISS i
 the Website and current owner. Queries must provide the authorized Website identity and can never
 search a global cross-Website index.
 
-Website forms and chatbot capture feed one `LeadService` and normalized `Lead` model with source
-attribution. A valid submission uses a caller-supplied idempotency key and one PostgreSQL transaction
-to create the Lead, append exactly one `-1` ledger entry, enqueue notifications, and record an
-analytics event. Retries return the original result. The centrally configured zero-credit policy
-never silently discards contact information already submitted.
+Chatbot Q&A and Lead capture are independently operable. The chatbot answers questions from
+Website-scoped knowledge and cannot collect contact details for marketing, create Leads, or enqueue
+Lead notifications. Only an explicit published-Website form submission crosses the Lead consent
+boundary and invokes `LeadService`. A valid form submission uses a caller-supplied idempotency key
+and one PostgreSQL transaction to create the Lead, append exactly one `-1` ledger entry, enqueue
+notifications, and record an analytics event. Retries return the original result. The centrally
+configured zero-credit policy never silently discards contact information already submitted.
 
 ## Authentication and security experience
 

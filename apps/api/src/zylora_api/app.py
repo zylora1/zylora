@@ -13,6 +13,7 @@ from zylora_api.api.published_sites import router as published_sites_router
 from zylora_api.api.router import api_router
 from zylora_api.core.config import get_settings
 from zylora_api.core.correlation import CorrelationIdMiddleware
+from zylora_api.core.http_security import ApiSecurityHeadersMiddleware
 from zylora_api.core.logging import configure_logging
 from zylora_api.core.problems import auth_problem_handler, validation_problem_handler
 from zylora_api.modules.auth.errors import AuthProblem
@@ -42,6 +43,9 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "X-CSRF-Token", "X-Correlation-ID", "Idempotency-Key"],
+    )
+    app.add_middleware(
+        ApiSecurityHeadersMiddleware, production=settings.environment == "production"
     )
     app.add_middleware(CorrelationIdMiddleware)
     app.include_router(api_router)

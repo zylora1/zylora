@@ -65,8 +65,8 @@ export function LeadsPanel() {
   if (websites.length === 0) {
     return (
       <Notice title="No Website selected">
-        Leads appear here after you publish a Website and visitors submit a form or chatbot contact
-        request.
+        Leads appear here after you publish a Website and visitors explicitly submit its enquiry
+        form.
       </Notice>
     );
   }

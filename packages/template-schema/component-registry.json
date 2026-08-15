@@ -65,7 +65,15 @@
       "requiredFeature": null
     },
     "HERO": {
-      "allowedProps": ["align", "body", "eyebrow", "heading", "primaryCta", "secondaryCta"],
+      "allowedProps": [
+        "align",
+        "body",
+        "eyebrow",
+        "heading",
+        "primaryCta",
+        "secondaryCta",
+        "treatment"
+      ],
       "requiredProps": ["body", "heading"],
       "minChildren": 0,
       "maxChildren": 0,
@@ -84,6 +92,13 @@
       "minChildren": 0,
       "maxChildren": 0,
       "requiredFeature": "LEAD_CAPTURE"
+    },
+    "MEDIA": {
+      "allowedProps": ["body", "heading", "mode"],
+      "requiredProps": ["heading", "mode"],
+      "minChildren": 0,
+      "maxChildren": 0,
+      "requiredFeature": null
     },
     "NAVIGATION": {
       "allowedProps": ["brand", "links"],

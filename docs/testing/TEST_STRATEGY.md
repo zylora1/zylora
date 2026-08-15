@@ -116,7 +116,7 @@ The release suite covers the full master-spec journeys:
    sees Website and follows domain/publish flow.
 7. Export current admin price → failed/unverified payment blocks ZIP → verified payment → secure expiring
    download; privacy export cannot yield Website package.
-8. Publish → chatbot provision/query → cross-Website retrieval attack rejected → chatbot/form Leads →
+8. Publish → chatbot provision/query → cross-Website retrieval attack rejected → verify no chatbot Lead, then form Lead →
    duplicate retry consumes exactly one credit → notification and analytics.
 9. Super Admin isolated login → plan/export price and entitlement catalog change → credit adjustment →
    Template validate/approve/publish/deprecate → manual email/campaign/Blog publish → audit/system health.

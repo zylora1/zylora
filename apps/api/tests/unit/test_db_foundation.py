@@ -8,11 +8,17 @@ from zylora_api.db.session import get_session, normalize_async_database_url
 
 def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
     assert set(Base.metadata.tables) == {
+        "acquisition_attributions",
         "ai_credit_accounts",
         "analytics_events",
         "analytics_daily_rollups",
         "ai_credit_ledger",
         "ai_operations",
+        "ai_generation_artifacts",
+        "ai_generation_events",
+        "ai_generation_jobs",
+        "ai_site_generations",
+        "ai_site_projects",
         "audit_logs",
         "auth_attempts",
         "blog_categories",
@@ -28,6 +34,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "chatbot_knowledge_chunks",
         "chatbot_knowledge_indexes",
         "chat_conversations",
+        "knowledge_sources",
         "chat_messages",
         "auth_identities",
         "email_suppressions",
@@ -54,9 +61,16 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "website_page_path_changes",
         "template_versions",
         "templates",
+        "product_events",
+        "website_digest_deliveries",
         "website_pages",
         "websites",
+        "website_value_states",
         "website_versions",
+        "zero_lead_checkpoints",
+        "whatsapp_callback_events",
+        "whatsapp_notification_settings",
+        "whatsapp_notifications",
         "invoices",
         "leads",
         "lead_credit_accounts",
@@ -98,3 +112,39 @@ async def test_session_dependency_yields_an_unconnected_session() -> None:
     session = await anext(dependency)
     assert session is not None
     await dependency.aclose()
+
+
+def test_engine_applies_bounded_pool_and_postgresql_session_timeouts(monkeypatch) -> None:
+    from zylora_api.core.config import Settings
+    from zylora_api.db import session as db_session
+
+    captured: dict[str, object] = {}
+
+    def create(url: str, **kwargs: object) -> object:
+        captured.update({"url": url, **kwargs})
+        return object()
+
+    settings = Settings(
+        _env_file=None,
+        database_pool_size=7,
+        database_max_overflow=9,
+        database_pool_timeout_seconds=11,
+        database_pool_recycle_seconds=700,
+        database_statement_timeout_ms=24000,
+        database_lock_timeout_ms=4000,
+    )
+    db_session.get_engine.cache_clear()
+    monkeypatch.setattr(db_session, "get_settings", lambda: settings)
+    monkeypatch.setattr(db_session, "create_async_engine", create)
+    try:
+        db_session.get_engine()
+    finally:
+        db_session.get_engine.cache_clear()
+
+    assert captured["pool_size"] == 7
+    assert captured["max_overflow"] == 9
+    assert captured["pool_timeout"] == 11
+    assert captured["pool_recycle"] == 700
+    assert captured["connect_args"] == {
+        "options": "-c statement_timeout=24000 -c lock_timeout=4000"
+    }

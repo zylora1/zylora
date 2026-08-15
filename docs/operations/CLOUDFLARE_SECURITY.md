@@ -5,7 +5,7 @@
 `infra/cloudflare` is the production source of truth. It provisions one managed Turnstile widget for
 the User/Admin hostnames plus approved public Website hostnames, Cloudflare Managed and OWASP WAF rules, invalid
 method/scanner blocks, and rate limits for authentication, verification, OAuth callback, public APIs,
-contact/Lead forms, and chatbot/Lead endpoints.
+contact/Lead forms, and chatbot endpoints.
 
 Phase 6 also rate-limits authenticated POST editor/ai-edits requests to ten plans per visitor IP per
 minute. It does not add Turnstile to normal authenticated editing interactions.

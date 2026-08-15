@@ -9,27 +9,43 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from zylora_api.core.config import Settings
 from zylora_api.db.auth_models import User
-from zylora_api.db.chatbot_models import Chatbot, ChatbotKnowledgeIndex, ChatMessage
-from zylora_api.db.lead_models import AnalyticsEvent, Lead, LeadCreditLedger, Notification
+from zylora_api.db.chatbot_models import (
+    Chatbot,
+    ChatbotKnowledgeChunk,
+    ChatbotKnowledgeIndex,
+    ChatMessage,
+)
+from zylora_api.db.knowledge_models import KnowledgeSource
+from zylora_api.db.lead_models import (
+    AnalyticsEvent,
+    Lead,
+    LeadCreditLedger,
+    Notification,
+    TransactionalEmail,
+)
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.session import get_engine
 from zylora_api.db.website_models import Website
+from zylora_api.db.whatsapp_models import WhatsAppNotificationSetting
 from zylora_api.modules.auth.errors import AuthProblem
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.chatbot.embeddings import (
     DeterministicEmbeddingProvider,
     EmbeddingProviderError,
 )
+from zylora_api.modules.chatbot.generation import INSUFFICIENT_KNOWLEDGE_FALLBACK
 from zylora_api.modules.chatbot.indexing import KnowledgeIndexService
 from zylora_api.modules.chatbot.service import ChatbotService
 from zylora_api.modules.commerce.ownership import OwnershipService
-from zylora_api.modules.commerce.quotas import LeadService
+from zylora_api.modules.commerce.quotas import LeadService, NotificationQuotaService
+from zylora_api.modules.knowledge.service import KnowledgeSourceService
 from zylora_api.modules.leads.credits import (
     ALLOW_DEBT,
     REJECT_NEW,
     CreditLedgerService,
     LeadCreditPolicyService,
 )
+from zylora_api.modules.notifications.lead import LeadOwnerNotificationService
 from zylora_api.modules.templates.schemas import TemplateCreateRequest
 from zylora_api.modules.templates.service import TemplateService
 from zylora_api.modules.websites.service import WebsiteService
@@ -118,13 +134,38 @@ async def published_site(session: AsyncSession, name: str, content: str) -> tupl
 
 
 @pytest.mark.integration
-async def test_lead_capture_is_atomic_idempotent_and_policy_driven() -> None:
+async def test_lead_capture_is_atomic_idempotent_and_policy_driven(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     factory = async_sessionmaker(get_engine(), expire_on_commit=False)
     async with factory() as session:
         owner, website = await published_site(
             session, "Lead Studio", "We answer enquiries quickly."
         )
         await LeadCreditPolicyService(session).configure(ALLOW_DEBT)
+        session.add(
+            WhatsAppNotificationSetting(
+                owner_user_id=owner.id,
+                phone_ciphertext=b"encrypted-test-phone",
+                phone_hash=uuid4().bytes + uuid4().bytes,
+                phone_last4="3210",
+                country_code="IN",
+                enabled=True,
+                status="READY",
+                consented_at=datetime.now(UTC),
+            )
+        )
+        await session.flush()
+
+        async def reserve_whatsapp(
+            _service: NotificationQuotaService,
+            _user_id: object,
+            _country_code: str,
+            _operation_id: object,
+        ) -> bool:
+            return True
+
+        monkeypatch.setattr(NotificationQuotaService, "reserve_whatsapp", reserve_whatsapp)
         first = await LeadService(session).capture(
             website_id=website.id,
             source="FORM",
@@ -179,6 +220,35 @@ async def test_lead_capture_is_atomic_idempotent_and_policy_driven() -> None:
             )
             == 1
         )
+        owner_email_event = await session.scalar(
+            select(OutboxEvent).where(
+                OutboxEvent.aggregate_id == first.lead.id,
+                OutboxEvent.event_type == "lead.owner_notification_requested",
+            )
+        )
+        whatsapp_event_count = await session.scalar(
+            select(func.count(OutboxEvent.id)).where(
+                OutboxEvent.aggregate_id == first.lead.id,
+                OutboxEvent.event_type == "lead.whatsapp_notification_requested",
+            )
+        )
+        assert owner_email_event is not None
+        assert whatsapp_event_count == 1
+        assert first.lead.whatsapp_notification_queued is True
+        processed_email = await LeadOwnerNotificationService(
+            session, AuthCrypto("phase10-lead-email-secret-long-enough")
+        ).process_outbox_event(owner_email_event.id)
+        assert processed_email.state == "PUBLISHED"
+        assert (
+            await session.scalar(
+                select(func.count(TransactionalEmail.id)).where(
+                    TransactionalEmail.resource_id == first.lead.id,
+                    TransactionalEmail.kind == "LEAD_OWNER_ALERT",
+                )
+            )
+            == 1
+        )
+
         assert await CreditLedgerService(session).balance_for(owner.id) == -1
         assert (await LeadCreditPolicyService(session).current()).policy == ALLOW_DEBT
         await LeadCreditPolicyService(session).configure(REJECT_NEW)
@@ -254,6 +324,7 @@ async def test_faiss_index_and_conversations_are_website_isolated() -> None:
         environment="test",
         storage_provider="memory",
         chatbot_embedding_dimension=64,
+        chatbot_embedding_model="deterministic-test-v1",
         _env_file=None,
     )
     embeddings = DeterministicEmbeddingProvider(64)
@@ -286,6 +357,19 @@ async def test_faiss_index_and_conversations_are_website_isolated() -> None:
         assert index_a and index_b and index_a.state == index_b.state == "ACTIVE"
         assert index_a.owner_user_id == owner_a.id and index_b.owner_user_id == owner_b.id
         chats = ChatbotService(session, storage, embeddings)
+        notification_count_before = int(
+            await session.scalar(
+                select(func.count(OutboxEvent.id)).where(
+                    OutboxEvent.event_type.in_(
+                        (
+                            "lead.owner_notification_requested",
+                            "lead.whatsapp_notification_requested",
+                        )
+                    )
+                )
+            )
+            or 0
+        )
         conversation = await chats.start_conversation(website_a.id)
         reply = await chats.reply(
             website_id=website_a.id,
@@ -295,6 +379,41 @@ async def test_faiss_index_and_conversations_are_website_isolated() -> None:
         )
         assert "zirconium implants" in reply.answer.casefold()
         assert all(path == "/" for path in reply.source_paths)
+        assert conversation.conversation.lead_id is None
+        assert (
+            await session.scalar(select(func.count(Lead.id)).where(Lead.website_id == website_a.id))
+            == 0
+        )
+        assert (
+            await session.scalar(
+                select(func.count(OutboxEvent.id)).where(
+                    OutboxEvent.event_type.in_(
+                        (
+                            "lead.owner_notification_requested",
+                            "lead.whatsapp_notification_requested",
+                        )
+                    )
+                )
+            )
+            == notification_count_before
+        )
+        fallback_settings = Settings(
+            _env_file=None,
+            environment="test",
+            storage_provider="memory",
+            chatbot_embedding_model=embeddings.model,
+            chatbot_embedding_dimension=64,
+            chatbot_relevance_threshold=1.0,
+        )
+        fallback_chats = ChatbotService(session, storage, embeddings, settings=fallback_settings)
+        fallback_conversation = await fallback_chats.start_conversation(website_a.id)
+        fallback = await fallback_chats.reply(
+            website_id=website_a.id,
+            conversation_id=fallback_conversation.conversation.id,
+            access_token=fallback_conversation.access_token,
+            message="Do you sell interplanetary spacecraft?",
+        )
+        assert fallback.answer == INSUFFICIENT_KNOWLEDGE_FALLBACK
         with pytest.raises(AuthProblem, match="Conversation not found"):
             await chats.reply(
                 website_id=website_b.id,
@@ -320,6 +439,7 @@ async def test_transfer_invalidates_and_deletes_the_previous_owner_faiss_index()
         environment="test",
         storage_provider="memory",
         chatbot_embedding_dimension=64,
+        chatbot_embedding_model="deterministic-test-v1",
         _env_file=None,
     )
     embeddings = DeterministicEmbeddingProvider(64)
@@ -450,6 +570,7 @@ async def test_failed_chatbot_jobs_and_corrupt_artifacts_never_create_partial_me
         environment="test",
         storage_provider="memory",
         chatbot_embedding_dimension=64,
+        chatbot_embedding_model="deterministic-test-v1",
         _env_file=None,
     )
     async with factory() as session:
@@ -562,4 +683,188 @@ async def test_failed_chatbot_jobs_and_corrupt_artifacts_never_create_partial_me
             )
             == 0
         )
+        await session.commit()
+
+
+@pytest.mark.integration
+async def test_uploaded_knowledge_is_tenant_isolated_and_rebuilds_atomically() -> None:
+    class FailingEmbeddings:
+        model = "deterministic-test-v1"
+
+        async def embed(self, _texts: list[str]) -> list[list[float]]:
+            raise EmbeddingProviderError
+
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    settings = Settings(
+        _env_file=None,
+        environment="test",
+        storage_provider="memory",
+        knowledge_ingestion_enabled=True,
+        ai_provider="openai",
+        document_scanner_provider="test",
+        openai_api_key="server-only-integration-test-key",
+        chatbot_embedding_model="deterministic-test-v1",
+        chatbot_embedding_dimension=64,
+        chatbot_relevance_threshold=0.0,
+    )
+    embeddings = DeterministicEmbeddingProvider(64)
+    storage = MemoryObjectStorage()
+    async with factory() as session:
+        owner_a, website_a = await published_site(
+            session, "Knowledge Alpha", "Alpha provides routine advisory services."
+        )
+        owner_b, website_b = await published_site(
+            session, "Knowledge Beta", "Beta provides unrelated bakery services."
+        )
+        indexer = KnowledgeIndexService(session, storage, settings, embeddings)
+        for website in (website_a, website_b):
+            initial = await indexer.request_for_published_website(
+                website,
+                website.published_version_id,
+                f"knowledge-initial-{website.id}",
+            )
+            initial_event = await session.scalar(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == initial.id,
+                    OutboxEvent.event_type == "chatbot.index_requested",
+                )
+            )
+            assert initial_event is not None
+            assert (await indexer.process_outbox_event(initial_event.id)).state == "PUBLISHED"
+
+        sources = KnowledgeSourceService(session, storage, settings)
+        source_a = await sources.create(
+            website_id=website_a.id,
+            owner_user_id=owner_a.id,
+            filename="../../alpha-policy.txt",
+            content_type="text/plain",
+            data=b"The alpha-only warranty lasts exactly seven years.",
+            correlation_id="knowledge-alpha-upload",
+        )
+        source_b = await sources.create(
+            website_id=website_b.id,
+            owner_user_id=owner_b.id,
+            filename="beta-guide.md",
+            content_type="text/markdown",
+            data=b"The beta-only wholesale minimum is ninety loaves.",
+            correlation_id="knowledge-beta-upload",
+        )
+        await session.flush()
+
+        for source in (source_a, source_b):
+            source_event = await session.scalar(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == source.id,
+                    OutboxEvent.event_type == "knowledge.source_ingest_requested",
+                )
+            )
+            assert source_event is not None
+            assert (await sources.process_outbox_event(source_event.id)).state == "PUBLISHED"
+            assert source.status == "READY"
+
+        active_indexes: dict[object, ChatbotKnowledgeIndex] = {}
+        for website in (website_a, website_b):
+            requested = await session.scalar(
+                select(ChatbotKnowledgeIndex).where(
+                    ChatbotKnowledgeIndex.website_id == website.id,
+                    ChatbotKnowledgeIndex.state == "REQUESTED",
+                )
+            )
+            assert requested is not None
+            index_event = await session.scalar(
+                select(OutboxEvent).where(
+                    OutboxEvent.aggregate_id == requested.id,
+                    OutboxEvent.event_type == "chatbot.index_requested",
+                )
+            )
+            assert index_event is not None
+            assert (await indexer.process_outbox_event(index_event.id)).state == "PUBLISHED"
+            active_indexes[website.id] = requested
+
+        chunks_a = list(
+            (
+                await session.scalars(
+                    select(ChatbotKnowledgeChunk).where(
+                        ChatbotKnowledgeChunk.knowledge_index_id == active_indexes[website_a.id].id
+                    )
+                )
+            ).all()
+        )
+        indexed_a = " ".join(chunk.content for chunk in chunks_a).casefold()
+        assert "alpha-only warranty" in indexed_a
+        assert "beta-only wholesale" not in indexed_a
+        assert all(chunk.source_id in {None, source_a.id} for chunk in chunks_a)
+        with pytest.raises(AuthProblem, match="Website not found"):
+            await sources.list_for_owner(website_a.id, owner_b.id)
+
+        chats = ChatbotService(session, storage, embeddings, settings=settings)
+        conversation = await chats.start_conversation(website_a.id)
+        reply = await chats.reply(
+            website_id=website_a.id,
+            conversation_id=conversation.conversation.id,
+            access_token=conversation.access_token,
+            message="How long is the alpha-only warranty?",
+        )
+        assert "seven years" in reply.answer.casefold()
+        assert "beta-only" not in reply.answer.casefold()
+
+        old_active_id = active_indexes[website_a.id].id
+        failing = KnowledgeIndexService(session, storage, settings, FailingEmbeddings())
+        failed_rebuild = await failing.request_rebuild(
+            website_a, website_a.published_version_id, "knowledge-failed-rebuild"
+        )
+        during_rebuild = await chats.start_conversation(website_a.id)
+        assert during_rebuild.conversation.website_id == website_a.id
+        failed_event = await session.scalar(
+            select(OutboxEvent).where(OutboxEvent.aggregate_id == failed_rebuild.id)
+        )
+        assert failed_event is not None
+        assert (await failing.process_outbox_event(failed_event.id)).state == "FAILED"
+        chatbot = await session.scalar(select(Chatbot).where(Chatbot.website_id == website_a.id))
+        assert chatbot is not None
+        assert chatbot.state == "ACTIVE" and chatbot.active_index_id == old_active_id
+
+        deleted = await sources.delete(
+            source_a.id,
+            website_a.id,
+            owner_a.id,
+            "knowledge-alpha-delete",
+        )
+        assert deleted.status == "DELETED"
+        delete_event = await session.scalar(
+            select(OutboxEvent).where(
+                OutboxEvent.aggregate_id == source_a.id,
+                OutboxEvent.event_type == "knowledge.source_delete_requested",
+            )
+        )
+        assert delete_event is not None
+        assert (await sources.process_outbox_event(delete_event.id)).state == "PUBLISHED"
+        replacement = await session.scalar(
+            select(ChatbotKnowledgeIndex)
+            .where(
+                ChatbotKnowledgeIndex.website_id == website_a.id,
+                ChatbotKnowledgeIndex.state == "REQUESTED",
+            )
+            .order_by(ChatbotKnowledgeIndex.knowledge_generation.desc())
+        )
+        assert replacement is not None
+        replacement_event = await session.scalar(
+            select(OutboxEvent).where(OutboxEvent.aggregate_id == replacement.id)
+        )
+        assert replacement_event is not None
+        assert (await indexer.process_outbox_event(replacement_event.id)).state == "PUBLISHED"
+        await session.flush()
+        await session.refresh(chatbot)
+        assert chatbot.active_index_id == replacement.id
+        assert chatbot.active_index_id != old_active_id
+        assert (
+            await session.scalar(
+                select(func.count(ChatbotKnowledgeChunk.id)).where(
+                    ChatbotKnowledgeChunk.knowledge_index_id == replacement.id,
+                    ChatbotKnowledgeChunk.source_id == source_a.id,
+                )
+            )
+            == 0
+        )
+        assert await session.get(KnowledgeSource, source_a.id) is not None
         await session.commit()

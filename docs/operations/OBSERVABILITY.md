@@ -89,3 +89,9 @@ Operations dashboards separate service health, customer publishing/domains, paym
 Leads/credits/chatbot, email/campaigns, storage/backups, and security. Release annotations connect
 regressions to code/config/migration versions. User-facing analytics is a separate privacy-aware
 product surface based only on real events.
+
+## AI Builder signals
+
+`AiGenerationEvent` is the durable, prompt-free transition evidence. Structured API/worker/builder logs attach bounded correlation, job, project, generation, worker, attempt, state, duration, provider/model identifier, artifact size, outcome, and stable error category fields. Prompt text, encrypted prompt bytes, service tokens, signed URLs, and provider response bodies are prohibited.
+
+The existing metrics/log pipeline should derive `ai_generation_requested_total`, `ai_generation_completed_total`, `ai_generation_failed_total`, `ai_generation_cancelled_total`, `ai_generation_retry_total`, `ai_generation_duration_seconds`, `ai_generation_queue_delay_seconds`, `ai_provider_error_total`, `ai_sandbox_build_failed_total`, and `ai_artifact_bytes`. IDs are trace fields, never unbounded metric labels. Alert on readiness loss, old ID-only outbox events, expired running leases, exhausted retries, and artifact checksum/storage failures. The recovery and kill-switch procedures are in `docs/operations/AI_BUILDER.md`.

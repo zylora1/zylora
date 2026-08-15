@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.core.config import Settings
 from zylora_api.db.auth_models import AuthIdentity, OAuthTransaction, User
+from zylora_api.modules.analytics.activation import AttributionInput, ProductAnalyticsService
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.errors import OAUTH_INVALID, OAUTH_UNAVAILABLE, AuthProblem
 from zylora_api.modules.auth.security import AuthCrypto
@@ -138,7 +139,14 @@ class GoogleOAuthService:
         self._audit = AuditService(session, crypto)
         self._abuse = AbuseService(session, crypto)
 
-    async def start(self, *, ip_address: str, correlation_id: str) -> str:
+    async def start(
+        self,
+        *,
+        ip_address: str,
+        correlation_id: str,
+        attribution: AttributionInput | None = None,
+        country_code: str = "ZZ",
+    ) -> str:
         await self._abuse.enforce(action="oauth_start", subject=None, ip_address=ip_address)
         state = self._crypto.token()
         nonce = self._crypto.token()
@@ -170,6 +178,12 @@ class GoogleOAuthService:
                 code_verifier_digest=self._crypto.digest(verifier, purpose="oauth-pkce"),
                 code_verifier_ciphertext=self._crypto.encrypt(verifier, purpose="oauth-pkce"),
                 redirect_uri=redirect_uri,
+                attribution={
+                    key: value
+                    for key, value in vars(attribution or AttributionInput()).items()
+                    if value is not None
+                },
+                country_code=country_code,
                 expires_at=datetime.now(UTC) + self.TRANSACTION_TTL,
             )
         )
@@ -298,6 +312,19 @@ class GoogleOAuthService:
                 )
                 self._session.add(user)
                 await self._session.flush()
+                product_analytics = ProductAnalyticsService(self._session)
+                await product_analytics.record_event(
+                    event_type="ACCOUNT_CREATED",
+                    idempotency_key=f"account-created:{user.id}",
+                    user_id=user.id,
+                    properties={"signup_source": "GOOGLE"},
+                )
+                await product_analytics.capture_attribution(
+                    user_id=user.id,
+                    attribution=AttributionInput(**transaction.attribution),
+                    country_code=transaction.country_code,
+                    signup_source="GOOGLE",
+                )
             elif user.status == "PENDING_VERIFICATION":
                 user.status = "ACTIVE"
                 user.verified_at = now

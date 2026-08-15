@@ -1,5 +1,6 @@
 'use client';
 
+import { Eye, EyeOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -7,6 +8,8 @@ import type { FormEvent } from 'react';
 import { TurnstileWidget } from '@/components/turnstile-widget';
 import type { TurnstileAction } from '@/components/turnstile-widget';
 import { apiRequest } from '@/lib/api';
+import { currentAttribution } from '@/lib/attribution';
+import { storedAiPrompt } from '@/lib/ai-builder';
 
 type Mode = 'login' | 'signup' | 'verify' | 'forgot' | 'reset' | 'admin-login';
 type AuthResult = { csrf_token: string; user: { email: string } };
@@ -46,6 +49,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const search = useSearchParams();
   const [email, setEmail] = useState(search.get('email') ?? '');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState(
     search.get('oauth_error') ? 'Google sign-in could not be completed. Please try again.' : '',
@@ -78,12 +82,17 @@ export function AuthForm({ mode }: { mode: Mode }) {
           ? { email, code, ...challenge }
           : mode === 'reset'
             ? { token: search.get('token') ?? '', new_password: password, ...challenge }
-            : { email, ...(asksPassword ? { password } : {}), ...challenge };
+            : {
+                email,
+                ...(asksPassword ? { password } : {}),
+                ...(mode === 'signup' ? { attribution: currentAttribution() } : {}),
+                ...challenge,
+              };
       const result = await apiRequest<AuthResult>(copy[mode].endpoint, {
         method: 'POST',
         body: JSON.stringify(body),
       });
-      if (mode === 'login') router.push('/app');
+      if (mode === 'login') router.push(storedAiPrompt() ? '/app/ai-builder' : '/app');
       else if (mode === 'admin-login') router.push('/admin');
       else if (mode === 'signup') router.push(`/verify-email?email=${encodeURIComponent(email)}`);
       else if (mode === 'verify' || mode === 'reset') router.push('/login');
@@ -103,7 +112,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
     try {
       const result = await apiRequest<{ authorization_url: string }>('/api/v1/auth/google/start', {
         method: 'POST',
-        body: JSON.stringify({ turnstile_token: turnstileToken ?? undefined }),
+        body: JSON.stringify({
+          turnstile_token: turnstileToken ?? undefined,
+          attribution: currentAttribution(),
+        }),
       });
       window.location.assign(result.authorization_url);
     } catch (caught) {
@@ -175,25 +187,38 @@ export function AuthForm({ mode }: { mode: Mode }) {
           </label>
         ) : null}
         {asksPassword ? (
-          <label>
-            {mode === 'reset' ? 'New password' : 'Password'}
-            <input
-              autoComplete={
-                mode === 'signup' || mode === 'reset' ? 'new-password' : 'current-password'
-              }
-              minLength={mode === 'signup' || mode === 'reset' ? 12 : 1}
-              name="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
+          <div className="auth-field">
+            <label htmlFor={`${mode}-password`}>
+              {mode === 'reset' ? 'New password' : 'Password'}
+            </label>
+            <span className="password-field">
+              <input
+                autoComplete={
+                  mode === 'signup' || mode === 'reset' ? 'new-password' : 'current-password'
+                }
+                id={`${mode}-password`}
+                minLength={mode === 'signup' || mode === 'reset' ? 12 : 1}
+                name="password"
+                type={passwordVisible ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+              <button
+                aria-label={passwordVisible ? 'Hide password' : 'Show password'}
+                className="password-toggle"
+                type="button"
+                onClick={() => setPasswordVisible((current) => !current)}
+              >
+                {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </span>
             {mode === 'signup' || mode === 'reset' ? (
               <span className="field-hint">
                 12+ characters with upper, lower, number, and symbol.
               </span>
             ) : null}
-          </label>
+          </div>
         ) : null}
         <TurnstileWidget
           action={challengeActions[mode]}

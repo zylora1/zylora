@@ -1,0 +1,50 @@
+.viewportProgress {
+  position: fixed;
+  z-index: calc(var(--z-layer-sticky) + 2);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  transform-origin: 0 50%;
+  background: #d9ff6b;
+  pointer-events: none;
+}
+
+.magnetic {
+  display: inline-flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.spotlight {
+  --spotlight-x: 50%;
+  --spotlight-y: 50%;
+  isolation: isolate;
+}
+
+.spotlight::before {
+  position: absolute;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    22rem circle at var(--spotlight-x) var(--spotlight-y),
+    rgb(217 255 107 / 9%),
+    transparent 52%
+  );
+  content: '';
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.spotlight:hover::before,
+.spotlight:focus-within::before {
+  opacity: 1;
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .spotlight::before {
+    display: none;
+  }
+}

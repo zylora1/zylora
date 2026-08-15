@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/admin/analytics/growth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Growth Analytics */
+        get: operations["growth_analytics_api_v1_admin_analytics_growth_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/auth/login": {
         parameters: {
             query?: never;
@@ -621,6 +638,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai-site-projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Ai Site Projects */
+        get: operations["list_ai_site_projects_api_v1_ai_site_projects_get"];
+        put?: never;
+        /** Create Ai Site Project */
+        post: operations["create_ai_site_project_api_v1_ai_site_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-site-projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ai Site Project */
+        get: operations["get_ai_site_project_api_v1_ai_site_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-site-projects/{project_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Ai Site Project */
+        post: operations["cancel_ai_site_project_api_v1_ai_site_projects__project_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-site-projects/{project_id}/generations/{generation_id}/artifact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Access Ai Generation Artifact */
+        get: operations["access_ai_generation_artifact_api_v1_ai_site_projects__project_id__generations__generation_id__artifact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-site-projects/{project_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Ai Site Project */
+        post: operations["retry_ai_site_project_api_v1_ai_site_projects__project_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/analytics": {
         parameters: {
             query?: never;
@@ -1046,6 +1149,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/analytics/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture Public Event */
+        post: operations["capture_public_event_api_v1_public_analytics_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/analytics/page-views": {
         parameters: {
             query?: never;
@@ -1074,23 +1194,6 @@ export interface paths {
         put?: never;
         /** Start Conversation */
         post: operations["start_conversation_api_v1_public_chatbot_conversations_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/chatbot/conversations/{conversation_id}/leads": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Capture Chatbot Lead */
-        post: operations["capture_chatbot_lead_api_v1_public_chatbot_conversations__conversation_id__leads_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1250,6 +1353,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/webhooks/twilio/whatsapp/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Whatsapp Status */
+        post: operations["whatsapp_status_api_v1_webhooks_twilio_whatsapp_status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/website-exports/{purchase_id}": {
         parameters: {
             query?: never;
@@ -1346,6 +1466,40 @@ export interface paths {
         get: operations["website_detail_api_v1_websites__website_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/chatbot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Chatbot */
+        patch: operations["update_chatbot_api_v1_websites__website_id__chatbot_patch"];
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/chatbot/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Chatbot */
+        post: operations["preview_chatbot_api_v1_websites__website_id__chatbot_preview_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1499,6 +1653,58 @@ export interface paths {
         put?: never;
         /** Create Export Purchase */
         post: operations["create_export_purchase_api_v1_websites__website_id__exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/knowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Knowledge Overview */
+        get: operations["knowledge_overview_api_v1_websites__website_id__knowledge_get"];
+        put?: never;
+        /** Upload Knowledge */
+        post: operations["upload_knowledge_api_v1_websites__website_id__knowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/knowledge/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Knowledge */
+        delete: operations["delete_knowledge_api_v1_websites__website_id__knowledge__source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/knowledge/{source_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Knowledge */
+        post: operations["retry_knowledge_api_v1_websites__website_id__knowledge__source_id__retry_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1693,6 +1899,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/websites/{website_id}/whatsapp-notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whatsapp Setting */
+        get: operations["whatsapp_setting_api_v1_websites__website_id__whatsapp_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Whatsapp Setting */
+        patch: operations["update_whatsapp_setting_api_v1_websites__website_id__whatsapp_notifications_patch"];
+        trace?: never;
+    };
+    "/api/v1/websites/{website_id}/whatsapp-notifications/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Whatsapp */
+        post: operations["test_whatsapp_api_v1_websites__website_id__whatsapp_notifications_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/liveness": {
         parameters: {
             query?: never;
@@ -1779,6 +2020,44 @@ export interface components {
             /** Slug */
             slug: string;
         };
+        /** AdminFunnelStep */
+        AdminFunnelStep: {
+            /** Conversion Percent */
+            conversion_percent: number | null;
+            /** Count */
+            count: number;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** AdminGrowthResponse */
+        AdminGrowthResponse: {
+            /** Active Value Sites 30D */
+            active_value_sites_30d: number;
+            /** Active Value Sites Change Percent */
+            active_value_sites_change_percent: number | null;
+            /** Funnel */
+            funnel: components["schemas"]["AdminFunnelStep"][];
+            /** Paid With First Lead */
+            paid_with_first_lead: number;
+            /** Paid With Zero Leads */
+            paid_with_zero_leads: number;
+            /** Previous Active Value Sites 30D */
+            previous_active_value_sites_30d: number;
+            /** Published With First Lead */
+            published_with_first_lead: number;
+            /** Published With Zero Leads */
+            published_with_zero_leads: number;
+            /** Range Days */
+            range_days: number | null;
+            /** Retention */
+            retention: components["schemas"]["AdminRetentionMetric"][];
+            /** Subscription State Counts */
+            subscription_state_counts: {
+                [key: string]: number;
+            };
+        };
         /** AdminHealthResponse */
         AdminHealthResponse: {
             /** Checks */
@@ -1862,6 +2141,17 @@ export interface components {
             occurred_at?: string | null;
             /** Status */
             status?: string | null;
+        };
+        /** AdminRetentionMetric */
+        AdminRetentionMetric: {
+            /** Days */
+            days: number;
+            /** Eligible Accounts */
+            eligible_accounts: number;
+            /** Retained Accounts */
+            retained_accounts: number;
+            /** Retention Percent */
+            retention_percent: number;
         };
         /** AdminTemplateListResponse */
         AdminTemplateListResponse: {
@@ -1984,6 +2274,24 @@ export interface components {
             /** Subject */
             subject: string;
         };
+        /** AiArtifactAccessResponse */
+        AiArtifactAccessResponse: {
+            /** Checksum Sha256 */
+            checksum_sha256: string;
+            /** Content Type */
+            content_type: string;
+            /** Download Url */
+            download_url: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+            /**
+             * Generation Id
+             * Format: uuid
+             */
+            generation_id: string;
+            /** Size Bytes */
+            size_bytes: number;
+        };
         /** AiEditRequest */
         AiEditRequest: {
             /** Base Revision */
@@ -2002,6 +2310,71 @@ export interface components {
             scope: "PAGE" | "WEBSITE";
             /** Selected Page Id */
             selected_page_id?: string | null;
+        };
+        /** AiSiteProjectCreate */
+        AiSiteProjectCreate: {
+            /** Prompt */
+            prompt: string;
+        };
+        /** AiSiteProjectListResponse */
+        AiSiteProjectListResponse: {
+            /** Items */
+            items: components["schemas"]["AiSiteProjectResponse"][];
+        };
+        /** AiSiteProjectResponse */
+        AiSiteProjectResponse: {
+            /** Artifact Digest */
+            artifact_digest: string | null;
+            /** Attempt */
+            attempt: number;
+            /** Can Cancel */
+            can_cancel: boolean;
+            /** Can Retry */
+            can_retry: boolean;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Completed At */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Failed At */
+            failed_at: string | null;
+            /**
+             * Generation Id
+             * Format: uuid
+             */
+            generation_id: string;
+            /** Generation Version */
+            generation_version: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Preview Ready */
+            preview_ready: boolean;
+            /** Queued At */
+            queued_at: string | null;
+            /** Retryable */
+            retryable: boolean;
+            /** Safe Error Code */
+            safe_error_code: string | null;
+            /** Safe Error Message */
+            safe_error_message: string | null;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** AiUsageListResponse */
         AiUsageListResponse: {
@@ -2045,28 +2418,52 @@ export interface components {
             chatbot_messages: number;
             /** Conversions */
             conversions: number;
+            /** First Lead At */
+            first_lead_at: string | null;
+            /** First Visitor At */
+            first_visitor_at: string | null;
             /** Form Leads */
             form_leads: number;
             /** Has Meaningful Data */
             has_meaningful_data: boolean;
             /** Has Published Website */
             has_published_website: boolean;
+            /** Lead Change Percent */
+            lead_change_percent: number | null;
+            /** Lead Conversion Rate */
+            lead_conversion_rate: number;
+            /** Lead Form Opens */
+            lead_form_opens: number;
+            /** Lead Form Submissions */
+            lead_form_submissions: number;
             /** Leads */
             leads: number;
+            /** Page View Change Percent */
+            page_view_change_percent: number | null;
             /** Page Views */
             page_views: number;
             /** Period Days */
             period_days: number;
             /** Points */
             points: components["schemas"]["AnalyticsPointResponse"][];
+            /** Previous Leads */
+            previous_leads: number;
+            /** Previous Page Views */
+            previous_page_views: number;
+            /** Published At */
+            published_at: string | null;
             /** Sessions */
             sessions: number;
+            /** Time To First Lead Seconds */
+            time_to_first_lead_seconds: number | null;
             /** Timezone */
             timezone: string;
             /** Visitors */
             visitors: number;
             /** Website Id */
             website_id: string | null;
+            /** Zero Lead Recommendations */
+            zero_lead_recommendations: string[];
         };
         /** AnalyticsPointResponse */
         AnalyticsPointResponse: {
@@ -2085,6 +2482,10 @@ export interface components {
             date: string;
             /** Form Leads */
             form_leads: number;
+            /** Lead Form Opens */
+            lead_form_opens: number;
+            /** Lead Form Submissions */
+            lead_form_submissions: number;
             /** Leads */
             leads: number;
             /** Page Views */
@@ -2104,6 +2505,23 @@ export interface components {
             mime_type: string;
             /** Provenance */
             provenance: string;
+        };
+        /** AttributionRequest */
+        AttributionRequest: {
+            /** Landing Page */
+            landing_page?: string | null;
+            /** Referrer */
+            referrer?: string | null;
+            /** Utm Campaign */
+            utm_campaign?: string | null;
+            /** Utm Content */
+            utm_content?: string | null;
+            /** Utm Medium */
+            utm_medium?: string | null;
+            /** Utm Source */
+            utm_source?: string | null;
+            /** Utm Term */
+            utm_term?: string | null;
         };
         /** AuthAcceptedResponse */
         AuthAcceptedResponse: {
@@ -2195,6 +2613,11 @@ export interface components {
             published_at: string;
             /** Slug */
             slug: string;
+        };
+        /** Body_upload_knowledge_api_v1_websites__website_id__knowledge_post */
+        Body_upload_knowledge_api_v1_websites__website_id__knowledge_post: {
+            /** File */
+            file: string;
         };
         /** CampaignReasonRequest */
         CampaignReasonRequest: {
@@ -2322,6 +2745,23 @@ export interface components {
             conversation_id: string;
             /** Source Paths */
             source_paths: string[];
+        };
+        /** ChatbotPreviewRequest */
+        ChatbotPreviewRequest: {
+            /** Message */
+            message: string;
+        };
+        /** ChatbotPreviewResponse */
+        ChatbotPreviewResponse: {
+            /** Answer */
+            answer: string;
+            /** Sources */
+            sources: string[];
+        };
+        /** ChatbotSettingRequest */
+        ChatbotSettingRequest: {
+            /** Enabled */
+            enabled: boolean;
         };
         /** CheckoutRequest */
         CheckoutRequest: {
@@ -2723,6 +3163,59 @@ export interface components {
         };
         /** InstantiateRequest */
         InstantiateRequest: Record<string, never>;
+        /** KnowledgeOverviewResponse */
+        KnowledgeOverviewResponse: {
+            /** Active Index Id */
+            active_index_id: string | null;
+            /** Chatbot Enabled */
+            chatbot_enabled: boolean;
+            /** Chatbot Status */
+            chatbot_status: string;
+            /** Knowledge Generation */
+            knowledge_generation: number | null;
+            /** Last Indexed At */
+            last_indexed_at: string | null;
+            /** Source Count */
+            source_count: number;
+            /** Source Limit */
+            source_limit: number;
+            /** Sources */
+            sources: components["schemas"]["KnowledgeSourceResponse"][];
+        };
+        /** KnowledgeSourceResponse */
+        KnowledgeSourceResponse: {
+            /** Byte Size */
+            byte_size: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Name */
+            display_name: string;
+            /** Failure Code */
+            failure_code: string | null;
+            /** Failure Message */
+            failure_message: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Indexed At */
+            indexed_at: string | null;
+            /** Mime Type */
+            mime_type: string;
+            /** Status */
+            status: string;
+            /** Type */
+            type: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** LeadCreditAdjustmentRequest */
         LeadCreditAdjustmentRequest: {
             /** Delta */
@@ -2918,6 +3411,7 @@ export interface components {
         };
         /** OAuthStartRequest */
         OAuthStartRequest: {
+            attribution?: components["schemas"]["AttributionRequest"] | null;
             /** Turnstile Token */
             turnstile_token?: string | null;
         };
@@ -3247,6 +3741,17 @@ export interface components {
             /** Duplicate */
             duplicate: boolean;
         };
+        /** PublicWebsiteEventRequest */
+        PublicWebsiteEventRequest: {
+            /** Event Id */
+            event_id: string;
+            /** Event Type */
+            event_type: string;
+            /** Page Path */
+            page_path: string;
+            /** Session Id */
+            session_id: string;
+        };
         /** PublicationStatusResponse */
         PublicationStatusResponse: {
             /** Active Deployment Id */
@@ -3499,6 +4004,7 @@ export interface components {
         };
         /** SignupRequest */
         SignupRequest: {
+            attribution?: components["schemas"]["AttributionRequest"] | null;
             /**
              * Email
              * Format: email
@@ -3809,6 +4315,44 @@ export interface components {
              */
             updated_at: string;
         };
+        /** WhatsAppSettingRequest */
+        WhatsAppSettingRequest: {
+            /** Consent */
+            consent: boolean;
+            /** Country Code */
+            country_code: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Phone Number */
+            phone_number?: string | null;
+        };
+        /** WhatsAppSettingResponse */
+        WhatsAppSettingResponse: {
+            /** Configured */
+            configured: boolean;
+            /** Consented At */
+            consented_at: string | null;
+            /** Country Code */
+            country_code: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /** Last Tested At */
+            last_tested_at: string | null;
+            /** Masked Number */
+            masked_number: string | null;
+            /** Status */
+            status: string;
+        };
+        /** WhatsAppTestResponse */
+        WhatsAppTestResponse: {
+            /**
+             * Notification Id
+             * Format: uuid
+             */
+            notification_id: string;
+            /** Status */
+            status: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -3818,6 +4362,37 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    growth_analytics_api_v1_admin_analytics_growth_get: {
+        parameters: {
+            query?: {
+                period_days?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminGrowthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_v1_admin_auth_login_post: {
         parameters: {
             query?: never;
@@ -5088,6 +5663,188 @@ export interface operations {
             };
         };
     };
+    list_ai_site_projects_api_v1_ai_site_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSiteProjectListResponse"];
+                };
+            };
+        };
+    };
+    create_ai_site_project_api_v1_ai_site_projects_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiSiteProjectCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSiteProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ai_site_project_api_v1_ai_site_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSiteProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_ai_site_project_api_v1_ai_site_projects__project_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSiteProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    access_ai_generation_artifact_api_v1_ai_site_projects__project_id__generations__generation_id__artifact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                generation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiArtifactAccessResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_ai_site_project_api_v1_ai_site_projects__project_id__retry_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSiteProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     analytics_dashboard_api_v1_analytics_get: {
         parameters: {
             query?: {
@@ -5775,6 +6532,39 @@ export interface operations {
             };
         };
     };
+    capture_public_event_api_v1_public_analytics_events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicWebsiteEventRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPageViewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     capture_page_view_api_v1_public_analytics_page_views_post: {
         parameters: {
             query?: never;
@@ -5828,43 +6618,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    capture_chatbot_lead_api_v1_public_chatbot_conversations__conversation_id__leads_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "Idempotency-Key"?: string | null;
-            };
-            path: {
-                conversation_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PublicLeadRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicLeadResponse"];
                 };
             };
             /** @description Validation Error */
@@ -6167,6 +6920,35 @@ export interface operations {
             };
         };
     };
+    whatsapp_status_api_v1_webhooks_twilio_whatsapp_status_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Twilio-Signature"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     export_status_api_v1_website_exports__purchase_id__get: {
         parameters: {
             query?: never;
@@ -6329,6 +7111,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_chatbot_api_v1_websites__website_id__chatbot_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatbotSettingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeOverviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_chatbot_api_v1_websites__website_id__chatbot_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatbotPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatbotPreviewResponse"];
                 };
             };
             /** @description Validation Error */
@@ -6630,6 +7482,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExportPurchaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    knowledge_overview_api_v1_websites__website_id__knowledge_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeOverviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_knowledge_api_v1_websites__website_id__knowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_knowledge_api_v1_websites__website_id__knowledge_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeSourceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_knowledge_api_v1_websites__website_id__knowledge__source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_knowledge_api_v1_websites__website_id__knowledge__source_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeSourceResponse"];
                 };
             };
             /** @description Validation Error */
@@ -7043,6 +8023,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UnpublishCommandResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    whatsapp_setting_api_v1_websites__website_id__whatsapp_notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhatsAppSettingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_whatsapp_setting_api_v1_websites__website_id__whatsapp_notifications_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhatsAppSettingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhatsAppSettingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_whatsapp_api_v1_websites__website_id__whatsapp_notifications_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhatsAppTestResponse"];
                 };
             };
             /** @description Validation Error */

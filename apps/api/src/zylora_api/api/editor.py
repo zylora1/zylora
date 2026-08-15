@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.session import get_session
 from zylora_api.db.website_models import AiOperation, Website
+from zylora_api.modules.analytics.activation import ProductAnalyticsService
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.http import (
     RequestIdentity,
@@ -132,6 +133,12 @@ async def editor_state(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> EditorStateResponse:
     website = await WebsiteService(session).get_for_owner(website_id, identity.user.id)
+    await ProductAnalyticsService(session).record_event(
+        event_type="EDITOR_OPENED",
+        idempotency_key=f"editor-opened:{website_id}",
+        user_id=identity.user.id,
+        website_id=website_id,
+    )
     result = await state_response(session, website, identity.user.id)
     await session.commit()
     return result
@@ -149,6 +156,13 @@ async def manual_edit(
 ) -> EditorMutationResponse:
     secure_mutation(request, identity, settings, crypto)
     applied = await EditorService(session).manual_edit(website_id, identity.user.id, payload)
+    await ProductAnalyticsService(session).record_event(
+        event_type="FIRST_EDIT",
+        idempotency_key=f"first-edit:{website_id}",
+        user_id=identity.user.id,
+        website_id=website_id,
+        properties={"source": "MANUAL"},
+    )
     record_edit_audit(
         session,
         crypto,
@@ -180,8 +194,27 @@ async def ai_edit(
 ) -> EditorMutationResponse:
     secure_mutation(request, identity, settings, crypto)
     safety_identifier = hashlib.sha256(f"zylora-ai:{identity.user.id}".encode()).hexdigest()
+    await ProductAnalyticsService(session).record_event(
+        event_type="AI_EDIT_REQUESTED",
+        idempotency_key=f"ai-edit-requested:{payload.operation_id}",
+        user_id=identity.user.id,
+        website_id=website_id,
+    )
     applied = await EditorService(session).ai_edit(
         website_id, identity.user.id, payload, planner, safety_identifier
+    )
+    await ProductAnalyticsService(session).record_event(
+        event_type="AI_EDIT_SUCCEEDED",
+        idempotency_key=f"ai-edit-succeeded:{payload.operation_id}",
+        user_id=identity.user.id,
+        website_id=website_id,
+    )
+    await ProductAnalyticsService(session).record_event(
+        event_type="FIRST_EDIT",
+        idempotency_key=f"first-edit:{website_id}",
+        user_id=identity.user.id,
+        website_id=website_id,
+        properties={"source": "AI"},
     )
     record_edit_audit(
         session,

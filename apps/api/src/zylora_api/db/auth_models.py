@@ -191,6 +191,8 @@ class OAuthTransaction(Base):
     code_verifier_digest: Mapped[bytes] = mapped_column(LargeBinary(32))
     code_verifier_ciphertext: Mapped[bytes] = mapped_column(LargeBinary)
     redirect_uri: Mapped[str] = mapped_column(String(500))
+    attribution: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default="{}")
+    country_code: Mapped[str] = mapped_column(String(2), nullable=False, server_default="ZZ")
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import secrets
+from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, ClassVar
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from zylora_api.core.config import Settings
 from zylora_api.db.chatbot_models import (
     Chatbot,
     ChatbotKnowledgeChunk,
@@ -19,10 +22,17 @@ from zylora_api.db.chatbot_models import (
 from zylora_api.db.website_models import Website
 from zylora_api.modules.analytics.service import AnalyticsService
 from zylora_api.modules.chatbot.embeddings import EmbeddingProvider, OpenAIEmbeddingProvider
+from zylora_api.modules.chatbot.generation import (
+    INSUFFICIENT_KNOWLEDGE_FALLBACK,
+    ChatGenerationError,
+    ChatGenerationProvider,
+    OpenAIChatGenerationProvider,
+)
 from zylora_api.modules.chatbot.indexing import FaissIndexCodec
-from zylora_api.modules.commerce.quotas import LeadCaptureResult, LeadService
 from zylora_api.modules.templates.service import problem
 from zylora_api.storage.base import ObjectStorage
+
+logger = logging.getLogger("zylora.chatbot.query")
 
 
 @dataclass(frozen=True)
@@ -39,21 +49,34 @@ class ChatReply:
 
 
 class ChatbotService:
+    _artifact_cache: ClassVar[OrderedDict[tuple[str, str, str], bytes]] = OrderedDict()
+    _artifact_cache_limit: ClassVar[int] = 32
+
     def __init__(
         self,
         session: AsyncSession,
         storage: ObjectStorage,
         embeddings: EmbeddingProvider,
+        generator: ChatGenerationProvider | None = None,
+        settings: Settings | None = None,
     ) -> None:
         self.session = session
         self.storage = storage
         self.embeddings = embeddings
+        self.generator = generator
+        self.settings = settings
 
     @classmethod
     def from_settings(
-        cls, session: AsyncSession, storage: ObjectStorage, settings: Any
+        cls, session: AsyncSession, storage: ObjectStorage, settings: Settings
     ) -> ChatbotService:
-        return cls(session, storage, OpenAIEmbeddingProvider(settings))
+        return cls(
+            session,
+            storage,
+            OpenAIEmbeddingProvider(settings),
+            OpenAIChatGenerationProvider(settings),
+            settings,
+        )
 
     async def start_conversation(
         self, website_id: UUID, consent: dict[str, Any] | None = None
@@ -98,23 +121,43 @@ class ChatbotService:
             raise problem(404, "chat_conversation_not_found", "Conversation not found.")
         if not index.artifact_key or not index.artifact_checksum:
             raise problem(503, "chatbot_unavailable", "The Website chatbot is not ready.")
-        try:
-            artifact = self.storage.get_bytes(index.artifact_key)
-        except (OSError, RuntimeError, KeyError, ValueError) as error:
-            raise problem(
-                503, "chatbot_unavailable", "The Website chatbot is not ready."
-            ) from error
+        cache_key = (str(index.website_id), str(index.id), index.artifact_checksum)
+        artifact = self._artifact_cache.get(cache_key)
+        if artifact is None:
+            try:
+                artifact = self.storage.get_bytes(index.artifact_key)
+            except (OSError, RuntimeError, KeyError, ValueError) as error:
+                raise problem(
+                    503, "chatbot_unavailable", "The Website chatbot is not ready."
+                ) from error
         if hashlib.sha256(artifact).hexdigest() != index.artifact_checksum:
             raise problem(503, "chatbot_index_invalid", "The Website chatbot is unavailable.")
+        self._artifact_cache[cache_key] = artifact
+        self._artifact_cache.move_to_end(cache_key)
+        while len(self._artifact_cache) > self._artifact_cache_limit:
+            self._artifact_cache.popitem(last=False)
         query_vectors = await self.embeddings.embed([normalized])
+        if self.settings and (
+            index.embedding_model != self.settings.chatbot_embedding_model
+            or index.embedding_dimension != self.settings.chatbot_embedding_dimension
+            or len(query_vectors[0]) != index.embedding_dimension
+        ):
+            raise problem(
+                503, "chatbot_index_incompatible", "The Website chatbot is being updated."
+            )
         if len(query_vectors) != 1:
             raise problem(503, "chatbot_unavailable", "The Website chatbot is unavailable.")
         try:
-            faiss_ids = FaissIndexCodec.search(artifact, query_vectors[0], 4)
+            scored = FaissIndexCodec.search_with_scores(
+                artifact,
+                query_vectors[0],
+                self.settings.chatbot_retrieval_limit if self.settings else 4,
+            )
         except ValueError as error:
             raise problem(
                 503, "chatbot_index_invalid", "The Website chatbot is unavailable."
             ) from error
+        faiss_ids = [identifier for identifier, _ in scored]
         chunks = list(
             (
                 await self.session.scalars(
@@ -126,17 +169,49 @@ class ChatbotService:
             ).all()
         )
         by_faiss_id = {chunk.faiss_id: chunk for chunk in chunks}
-        ordered = [by_faiss_id[item] for item in faiss_ids if item in by_faiss_id]
+        threshold = self.settings.chatbot_relevance_threshold if self.settings else -1.0
+        ordered = [
+            by_faiss_id[identifier]
+            for identifier, score in scored
+            if score >= threshold and identifier in by_faiss_id
+        ]
+        logger.info(
+            "chatbot_query",
+            extra={
+                "website_id": str(website_id),
+                "index_id": str(index.id),
+                "event_type": "chatbot.query" if ordered else "chatbot.no_context",
+                "outcome": "context" if ordered else "no_context",
+            },
+        )
         if not ordered:
-            answer = (
-                "I could not find that information on this Website yet. "
-                "Please contact the business directly."
-            )
+            answer = INSUFFICIENT_KNOWLEDGE_FALLBACK
             source_paths: list[str] = []
         else:
-            excerpts = [item.content for item in ordered[:2]]
-            answer = " ".join(excerpts)
-            source_paths = list(dict.fromkeys(item.source_page_path for item in ordered))
+            excerpts = [item.content for item in ordered]
+            if self.generator:
+                try:
+                    answer = await self.generator.answer(question=normalized, context=excerpts)
+                except ChatGenerationError as error:
+                    raise problem(
+                        503,
+                        "chatbot_generation_unavailable",
+                        "The chatbot is temporarily unavailable.",
+                    ) from error
+            else:
+                answer = " ".join(excerpts[:2])
+            references: list[str] = []
+            for item in ordered:
+                page_number = item.source_location.get("page_number")
+                if isinstance(page_number, int):
+                    reference = f"{item.source_title} - page {page_number}"
+                elif item.source_type == "WEBSITE":
+                    reference = item.source_page_path
+                else:
+                    reference = item.source_title
+                if reference not in references:
+                    references.append(reference)
+            source_paths = references
         next_sequence = int(
             (
                 await self.session.scalar(
@@ -177,40 +252,6 @@ class ChatbotService:
         )
         return ChatReply(conversation=conversation, answer=answer, source_paths=source_paths)
 
-    async def capture_conversation_lead(
-        self,
-        *,
-        website_id: UUID,
-        conversation_id: UUID,
-        access_token: str,
-        idempotency_key: str,
-        name: str,
-        email: str | None,
-        phone: str | None,
-        enquiry: str,
-        owner_country_code: str,
-        correlation_id: str,
-        page_path: str | None,
-        consent: dict[str, Any] | None,
-    ) -> LeadCaptureResult:
-        conversation = await self._conversation(website_id, conversation_id, access_token)
-        result = await LeadService(self.session).capture(
-            website_id=website_id,
-            source="CHATBOT",
-            source_reference_id=conversation.id,
-            idempotency_key=idempotency_key,
-            name=name,
-            email=email,
-            phone=phone,
-            enquiry=enquiry,
-            owner_country_code=owner_country_code,
-            correlation_id=correlation_id,
-            page_path=page_path,
-            consent=consent,
-        )
-        conversation.lead_id = result.lead.id
-        return result
-
     async def _active_chatbot(self, website_id: UUID) -> tuple[Chatbot, ChatbotKnowledgeIndex]:
         website = await self.session.scalar(
             select(Website).where(
@@ -225,7 +266,7 @@ class ChatbotService:
             select(Chatbot).where(
                 Chatbot.website_id == website_id,
                 Chatbot.owner_user_id == website.live_owner_user_id,
-                Chatbot.state == "ACTIVE",
+                Chatbot.state.in_(("ACTIVE", "INDEXING")),
                 Chatbot.active_index_id.is_not(None),
             )
         )

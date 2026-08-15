@@ -15,6 +15,9 @@ class DisabledPublicationStorage:
     def _raise() -> NoReturn:
         raise RuntimeError("Immutable publication artifact storage is not configured.")
 
+    def check(self) -> bool:
+        return False
+
     def put_bytes(self, key: str, data: bytes, content_type: str) -> ObjectMetadata:
         self._raise()
 

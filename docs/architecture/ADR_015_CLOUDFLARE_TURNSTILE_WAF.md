@@ -24,6 +24,10 @@ The product owner explicitly approved Cloudflare Turnstile and Cloudflare WAF fo
   log the response token or provider secret.
 - Treat missing, invalid, expired/replayed, wrong-host, and wrong-action responses as rejection.
   Provider/configuration failure fails closed with a generic 503 response.
+- Cloudflare's official success test secret returns the fixed action `test` or omits the action. Only
+  in `development` or `test`, and only when that exact documented test secret is configured, accept
+  those test-only response forms; hostname validation remains exact and every non-test action remains
+  strict. Production rejects every documented test key.
 - Preserve Google OAuth and email/password plus email verification. Do not add a Super Admin
   six-digit-code step; the only account types remain `USER` and `SUPER_ADMIN`.
 - Manage Cloudflare Managed Rules, OWASP Core Rules, method restrictions, and route-specific rate

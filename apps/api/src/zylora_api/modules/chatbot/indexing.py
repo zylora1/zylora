@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import logging
 import re
 import secrets
 from dataclasses import dataclass
@@ -10,7 +12,7 @@ from uuid import UUID
 
 import faiss
 import numpy as np
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.core.config import Settings
 from zylora_api.db.chatbot_models import (
@@ -18,6 +20,7 @@ from zylora_api.db.chatbot_models import (
     ChatbotKnowledgeChunk,
     ChatbotKnowledgeIndex,
 )
+from zylora_api.db.knowledge_models import KnowledgeSource
 from zylora_api.db.models import OutboxEvent
 from zylora_api.db.website_models import Website, WebsiteVersion
 from zylora_api.modules.chatbot.embeddings import (
@@ -29,7 +32,9 @@ from zylora_api.modules.publishing.service import DeploymentService
 from zylora_api.modules.templates.service import problem
 from zylora_api.storage.base import ObjectStorage
 
-CHUNKER_VERSION = "published-components-v1"
+logger = logging.getLogger("zylora.chatbot.index")
+
+CHUNKER_VERSION = "website-document-sections-v2"
 TOKEN_PATTERN = re.compile(r"\S+")
 
 
@@ -38,6 +43,10 @@ class ExtractedChunk:
     page_path: str
     component_path: str
     content: str
+    source_id: UUID | None = None
+    source_type: str = "WEBSITE"
+    source_title: str = "Website"
+    source_location: dict[str, Any] | None = None
 
 
 class FaissIndexCodec:
@@ -54,6 +63,24 @@ class FaissIndexCodec:
         index = faiss.IndexFlatIP(int(matrix.shape[1]))
         index.add(matrix)
         return bytes(faiss.serialize_index(index))
+
+    @staticmethod
+    def search_with_scores(data: bytes, vector: list[float], limit: int) -> list[tuple[int, float]]:
+        if not 1 <= limit <= 10:
+            raise ValueError("limit must be between 1 and 10")
+        index = faiss.deserialize_index(np.frombuffer(data, dtype=np.uint8))
+        query = np.asarray([vector], dtype=np.float32)
+        if query.ndim != 2 or query.shape[1] != index.d:
+            raise ValueError("query vector dimension does not match index")
+        if not np.isfinite(query).all():
+            raise ValueError("query vector must be finite")
+        faiss.normalize_L2(query)
+        scores, identifiers = index.search(query, min(limit, index.ntotal))
+        return [
+            (int(identifier), float(score))
+            for identifier, score in zip(identifiers[0], scores[0], strict=True)
+            if int(identifier) >= 0
+        ]
 
     @staticmethod
     def search(data: bytes, vector: list[float], limit: int) -> list[int]:
@@ -107,6 +134,7 @@ class KnowledgeIndexService:
             select(ChatbotKnowledgeIndex).where(
                 ChatbotKnowledgeIndex.website_id == website.id,
                 ChatbotKnowledgeIndex.website_version_id == version_id,
+                ChatbotKnowledgeIndex.knowledge_generation == 1,
             )
         )
         if existing:
@@ -116,6 +144,55 @@ class KnowledgeIndexService:
             website_id=website.id,
             owner_user_id=website.owner_user_id,
             website_version_id=version_id,
+            embedding_model=self.settings.chatbot_embedding_model,
+            knowledge_generation=1,
+            embedding_dimension=self.settings.chatbot_embedding_dimension,
+            chunker_version=CHUNKER_VERSION,
+            state="REQUESTED",
+        )
+        chatbot.state = "INDEXING"
+        chatbot.version += 1
+        self.session.add(knowledge_index)
+        await self.session.flush()
+        self.session.add(
+            OutboxEvent(
+                aggregate_type="CHATBOT_KNOWLEDGE_INDEX",
+                aggregate_id=knowledge_index.id,
+                event_type="chatbot.index_requested",
+                payload={"knowledge_index_id": str(knowledge_index.id)},
+                correlation_id=correlation_id,
+            )
+        )
+        return knowledge_index
+
+    async def request_rebuild(
+        self, website: Website, version_id: UUID, correlation_id: str
+    ) -> ChatbotKnowledgeIndex:
+        chatbot = await self.session.scalar(
+            select(Chatbot).where(Chatbot.website_id == website.id).with_for_update()
+        )
+        if not chatbot or chatbot.owner_user_id != website.owner_user_id:
+            raise problem(409, "chatbot_owner_mismatch", "Chatbot ownership is inconsistent.")
+        generation = (
+            int(
+                await self.session.scalar(
+                    select(
+                        func.coalesce(func.max(ChatbotKnowledgeIndex.knowledge_generation), 0)
+                    ).where(
+                        ChatbotKnowledgeIndex.website_id == website.id,
+                        ChatbotKnowledgeIndex.website_version_id == version_id,
+                    )
+                )
+                or 0
+            )
+            + 1
+        )
+        knowledge_index = ChatbotKnowledgeIndex(
+            chatbot_id=chatbot.id,
+            website_id=website.id,
+            owner_user_id=website.owner_user_id,
+            website_version_id=version_id,
+            knowledge_generation=generation,
             embedding_model=self.settings.chatbot_embedding_model,
             embedding_dimension=self.settings.chatbot_embedding_dimension,
             chunker_version=CHUNKER_VERSION,
@@ -165,13 +242,49 @@ class KnowledgeIndexService:
         ):
             index.state = "FAILED"
             index.failure_code = "published_source_unavailable"
-            if chatbot and chatbot.active_index_id is None:
-                chatbot.state = "FAILED"
+            if chatbot:
+                chatbot.state = "FAILED" if chatbot.active_index_id is None else "ACTIVE"
+                chatbot.version += 1
             return index
+        active = (
+            await self.session.get(ChatbotKnowledgeIndex, chatbot.active_index_id)
+            if chatbot.active_index_id
+            else None
+        )
+        if (
+            active
+            and active.id != index.id
+            and active.knowledge_generation > index.knowledge_generation
+        ):
+            index.state = "SUPERSEDED"
+            return index
+        logger.info(
+            "chatbot_index_started",
+            extra={
+                "website_id": str(index.website_id),
+                "index_id": str(index.id),
+                "event_type": "knowledge.index_started",
+                "outcome": "building",
+            },
+        )
         try:
             chatbot.state = "INDEXING"
             index.state = "EXTRACTING"
-            chunks = self._extract(version)
+            chunks = self._extract(version, self.settings.chatbot_chunk_characters)
+            sources = list(
+                (
+                    await self.session.scalars(
+                        select(KnowledgeSource).where(
+                            KnowledgeSource.website_id == index.website_id,
+                            KnowledgeSource.owner_user_id == index.owner_user_id,
+                            KnowledgeSource.status == "READY",
+                            KnowledgeSource.extracted_storage_key.is_not(None),
+                        )
+                    )
+                ).all()
+            )
+            for source in sources:
+                chunks.extend(self._extract_source(source))
             if not chunks:
                 raise ValueError("published source has no indexable text")
             index.state = "EMBEDDING"
@@ -181,6 +294,11 @@ class KnowledgeIndexService:
             dimension = len(vectors[0])
             if any(len(item) != dimension for item in vectors):
                 raise ValueError("embedding dimensions differ")
+            if (
+                self.embeddings.model != self.settings.chatbot_embedding_model
+                or dimension != self.settings.chatbot_embedding_dimension
+            ):
+                raise ValueError("embedding metadata is incompatible with configured index")
             index.embedding_model = self.embeddings.model
             index.embedding_dimension = dimension
             index.state = "BUILDING"
@@ -197,9 +315,13 @@ class KnowledgeIndexService:
                 "owner_user_id": str(index.owner_user_id),
                 "website_version_id": str(index.website_version_id),
                 "embedding_model": index.embedding_model,
+                "knowledge_generation": index.knowledge_generation,
                 "embedding_dimension": dimension,
                 "chunker_version": CHUNKER_VERSION,
                 "chunk_count": len(chunks),
+                "source_versions": [
+                    {"source_id": str(source.id), "version": source.version} for source in sources
+                ],
                 "artifact_checksum": checksum,
             }
             index.state = "VALIDATING"
@@ -214,6 +336,10 @@ class KnowledgeIndexService:
                         source_component_path=chunk.component_path,
                         content=chunk.content,
                         token_count=len(TOKEN_PATTERN.findall(chunk.content)),
+                        source_id=chunk.source_id,
+                        source_type=chunk.source_type,
+                        source_title=chunk.source_title,
+                        source_location=chunk.source_location or {},
                         checksum=hashlib.sha256(chunk.content.encode()).hexdigest(),
                         faiss_id=faiss_id,
                     )
@@ -234,13 +360,34 @@ class KnowledgeIndexService:
             chatbot.active_index_id = index.id
             chatbot.state = "ACTIVE"
             chatbot.version += 1
+            for source in sources:
+                source.indexed_at = index.activated_at
+            logger.info(
+                "chatbot_index_completed",
+                extra={
+                    "website_id": str(index.website_id),
+                    "index_id": str(index.id),
+                    "event_type": "knowledge.index_completed",
+                    "artifact_bytes": len(artifact),
+                    "outcome": "active",
+                },
+            )
             return index
         except (EmbeddingProviderError, OSError, RuntimeError, ValueError):
             index.state = "FAILED"
             index.failure_code = "knowledge_index_build_failed"
-            if chatbot.active_index_id is None:
-                chatbot.state = "FAILED"
-                chatbot.version += 1
+            chatbot.state = "FAILED" if chatbot.active_index_id is None else "ACTIVE"
+            chatbot.version += 1
+            logger.warning(
+                "chatbot_index_failed",
+                extra={
+                    "website_id": str(index.website_id),
+                    "index_id": str(index.id),
+                    "event_type": "knowledge.index_failed",
+                    "outcome": "failed",
+                    "safe_error_code": index.failure_code,
+                },
+            )
             return index
 
     async def process_outbox_event(self, event_id: UUID) -> OutboxEvent:
@@ -275,15 +422,61 @@ class KnowledgeIndexService:
             event.leased_until = None
         return event
 
+    def _extract_source(self, source: KnowledgeSource) -> list[ExtractedChunk]:
+        if not source.extracted_storage_key:
+            return []
+        payload = json.loads(self.storage.get_bytes(source.extracted_storage_key))
+        if (
+            not isinstance(payload, dict)
+            or payload.get("source_id") != str(source.id)
+            or payload.get("source_version") != source.version
+        ):
+            raise ValueError("extracted source metadata is invalid")
+        sections = payload.get("sections")
+        if not isinstance(sections, list):
+            raise ValueError("extracted source sections are invalid")
+        result: list[ExtractedChunk] = []
+        for position, section in enumerate(sections):
+            if not isinstance(section, dict) or not isinstance(section.get("text"), str):
+                raise ValueError("extracted source section is invalid")
+            location = {
+                key: value
+                for key, value in {
+                    "page_number": section.get("page_number"),
+                    "heading": section.get("heading"),
+                }.items()
+                if value is not None
+            }
+            result.extend(
+                self._split(
+                    f"document/{source.safe_display_name}",
+                    f"sections[{position}]",
+                    section["text"],
+                    source_id=source.id,
+                    source_type=source.source_type,
+                    source_title=source.safe_display_name,
+                    source_location=location,
+                )
+            )
+        return result
+
     @staticmethod
-    def _extract(version: WebsiteVersion) -> list[ExtractedChunk]:
+    def _extract(version: WebsiteVersion, chunk_characters: int = 900) -> list[ExtractedChunk]:
         pages = DeploymentService._snapshot_pages(version)
         extracted: list[ExtractedChunk] = []
         for page in pages:
             page_path = str(page.get("path") or "/")
             name = str(page.get("name") or page.get("label") or "")
             if name:
-                extracted.extend(KnowledgeIndexService._split(page_path, "page.name", name))
+                extracted.extend(
+                    KnowledgeIndexService._split(
+                        page_path,
+                        "page.name",
+                        name,
+                        source_title=name,
+                        limit=chunk_characters,
+                    )
+                )
             components = page.get("components")
             if isinstance(components, list):
                 for position, component in enumerate(components):
@@ -292,7 +485,11 @@ class KnowledgeIndexService:
                         if text:
                             extracted.extend(
                                 KnowledgeIndexService._split(
-                                    page_path, f"components[{position}]", text
+                                    page_path,
+                                    f"components[{position}]",
+                                    text,
+                                    source_title=name or "Website",
+                                    limit=chunk_characters,
                                 )
                             )
         return extracted
@@ -319,21 +516,42 @@ class KnowledgeIndexService:
         return " ".join(dict.fromkeys(values))
 
     @staticmethod
-    def _split(page_path: str, component_path: str, content: str) -> list[ExtractedChunk]:
+    def _split(
+        page_path: str,
+        component_path: str,
+        content: str,
+        *,
+        source_id: UUID | None = None,
+        source_type: str = "WEBSITE",
+        source_title: str = "Website",
+        source_location: dict[str, Any] | None = None,
+        limit: int = 900,
+    ) -> list[ExtractedChunk]:
         normalized = " ".join(content.split())
-        limit = 900
+
+        def chunk(value: str) -> ExtractedChunk:
+            return ExtractedChunk(
+                page_path=page_path,
+                component_path=component_path,
+                content=value,
+                source_id=source_id,
+                source_type=source_type,
+                source_title=source_title,
+                source_location=source_location,
+            )
+
         if len(normalized) <= limit:
-            return [ExtractedChunk(page_path, component_path, normalized)]
+            return [chunk(normalized)]
         chunks: list[ExtractedChunk] = []
         current: list[str] = []
         size = 0
         for word in normalized.split():
             if current and size + len(word) + 1 > limit:
-                chunks.append(ExtractedChunk(page_path, component_path, " ".join(current)))
+                chunks.append(chunk(" ".join(current)))
                 current = []
                 size = 0
             current.append(word)
             size += len(word) + (1 if size else 0)
         if current:
-            chunks.append(ExtractedChunk(page_path, component_path, " ".join(current)))
+            chunks.append(chunk(" ".join(current)))
         return chunks

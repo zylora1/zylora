@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Contact the Zylora team about the product, a purchase, or a Website workflow.',
-  alternates: { canonical: '/contact' },
-};
+import { createPageMetadata } from '@/lib/seo';
 
-export default function ContactLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export const metadata: Metadata = createPageMetadata({
+  title: 'Contact Zylora',
+  description:
+    'Contact the Zylora team about Website creation, publishing, a purchase, or a product workflow.',
+  path: '/contact',
+});
+
+export default function ContactLayout({ children }: Readonly<{ children: ReactNode }>) {
   return children;
 }

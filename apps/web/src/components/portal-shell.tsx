@@ -3,6 +3,7 @@
 import { ActionLink, ErrorState, Skeleton, StatusBadge } from '@zylora/ui';
 import {
   BadgeDollarSign,
+  Bot,
   Bell,
   ChartNoAxesCombined,
   CircleGauge,
@@ -17,6 +18,7 @@ import {
   Mail,
   Menu,
   PanelsTopLeft,
+  Plus,
   ReceiptText,
   ScrollText,
   Settings,
@@ -38,6 +40,7 @@ type NavigationItem = { href: string; label: string; icon: ComponentType<{ size?
 const userNavigation: NavigationItem[] = [
   { href: '/app', label: 'Home', icon: Home },
   { href: '/app/websites', label: 'Websites', icon: PanelsTopLeft },
+  { href: '/app/ai-builder', label: 'AI Builder', icon: Bot },
   { href: '/app/templates', label: 'Templates', icon: LayoutTemplate },
   { href: '/app/leads', label: 'Leads', icon: Contact },
   { href: '/app/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
@@ -211,9 +214,16 @@ export function PortalShell({ admin = false, children }: { admin?: boolean; chil
             <span>{admin ? 'Super Admin' : 'Zylora'}</span>
             <strong>{current?.label ?? 'Workspace'}</strong>
           </div>
-          <StatusBadge tone={failed ? 'danger' : identity ? 'success' : 'neutral'}>
-            {failed ? 'Session ended' : identity ? 'Secure session' : 'Checking session'}
-          </StatusBadge>
+          <div className="workspace-topbar__actions">
+            <StatusBadge tone={failed ? 'danger' : identity ? 'success' : 'neutral'}>
+              {failed ? 'Session ended' : identity ? 'Secure session' : 'Checking session'}
+            </StatusBadge>
+            {!admin ? (
+              <ActionLink className="workspace-topbar__create" href="/app/templates">
+                <Plus size={16} /> New Website
+              </ActionLink>
+            ) : null}
+          </div>
         </header>
         <main className="workspace-content" id="workspace-content">
           {failed ? (

@@ -1,0 +1,243 @@
+.lab {
+  width: min(88rem, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 5rem 0 8rem;
+}
+.hero {
+  max-width: 64rem;
+  padding-bottom: 4rem;
+}
+.hero p {
+  margin: 0 0 1rem;
+  color: #66e9b5;
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  margin: 0;
+  font: 600 clamp(4rem, 7vw, 7rem)/0.88 var(--z-font-display);
+  letter-spacing: -0.075em;
+}
+.hero span {
+  display: block;
+  max-width: 42rem;
+  margin-top: 1.4rem;
+  color: #8490a4;
+  line-height: 1.7;
+}
+.lab > section {
+  border-top: 1px solid #252d3a;
+  padding: 3rem 0;
+}
+.lab h2 {
+  margin: 0 0 1.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.7rem;
+}
+.swatches > div {
+  display: grid;
+  gap: 0.5rem;
+}
+.swatches i {
+  min-height: 7rem;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 0.8rem;
+  background: var(--swatch);
+}
+.swatches strong {
+  font-size: 0.72rem;
+}
+.swatches code {
+  color: #68758a;
+  font-size: 0.58rem;
+}
+.typeScale {
+  display: grid;
+  gap: 1.3rem;
+}
+.typeScale p {
+  margin: 0;
+}
+.typeScale p[data-size='display'] {
+  font: 600 clamp(3.6rem, 7vw, 7rem)/0.88 var(--z-font-display);
+  letter-spacing: -0.073em;
+}
+.typeScale p[data-size='title'] {
+  font: 600 clamp(2.7rem, 5vw, 4.8rem)/0.92 var(--z-font-display);
+  letter-spacing: -0.06em;
+}
+.typeScale p[data-size='heading'] {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.typeScale p[data-size='body'] {
+  color: #aab4c4;
+}
+.typeScale p[data-size='label'] {
+  color: #66e9b5;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+.controlGrid article {
+  border: 1px solid #252d3a;
+  border-radius: 1rem;
+  background: #101620;
+  padding: 1.25rem;
+}
+.controlGrid h3 {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.stack {
+  display: grid;
+  gap: 0.7rem;
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+.fields label {
+  display: grid;
+  gap: 0.4rem;
+  color: #aab4c4;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+.fields input,
+.fields select {
+  min-height: 2.7rem;
+  border: 1px solid #2a3341;
+  border-radius: 0.5rem;
+  background: #0b1018;
+  color: #edf2f9;
+  padding: 0.6rem;
+}
+.fields label > span {
+  display: flex;
+  align-items: center;
+  border: 1px solid #2a3341;
+  border-radius: 0.5rem;
+  background: #0b1018;
+}
+.fields label > span b {
+  padding-left: 0.6rem;
+  color: #667286;
+  font-size: 0.58rem;
+}
+.fields label > span input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+}
+.fields .check {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+.fields .check input {
+  min-height: auto;
+}
+.skeletonTitle {
+  width: 50%;
+  height: 2rem;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: #8490a4;
+  font-size: 0.7rem;
+}
+.motionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+.motionGrid > div {
+  display: grid;
+  gap: 0.7rem;
+  min-height: 12rem;
+  align-content: end;
+  border: 1px solid #252d3a;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 20% 10%, rgb(102 233 181 / 10%), transparent 45%), #101620;
+  padding: 1.25rem;
+}
+.motionGrid svg {
+  color: #66e9b5;
+}
+.motionGrid span {
+  color: #778398;
+  font-size: 0.7rem;
+}
+.states {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+.states > * {
+  height: 100%;
+}
+.disclosure details {
+  max-width: 55rem;
+  border-top: 1px solid #252d3a;
+  border-bottom: 1px solid #252d3a;
+  padding: 1rem 0;
+}
+.disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 750;
+  list-style: none;
+}
+.disclosure p {
+  color: #8490a4;
+  line-height: 1.7;
+}
+@media (max-width: 64rem) {
+  .swatches {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .controlGrid,
+  .states {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 42rem) {
+  .lab {
+    width: min(100% - 2rem, 88rem);
+  }
+  .swatches {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fields,
+  .motionGrid {
+    grid-template-columns: 1fr;
+  }
+  .hero h1 {
+    font-size: 3.7rem;
+  }
+}

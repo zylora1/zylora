@@ -10,8 +10,22 @@ const securityHeaders = [
 
 const privateHeaders = [
   { key: 'Cache-Control', value: 'private, no-store' },
-  { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+  { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
 ];
+
+const privateRoutes = [
+  '/health',
+  '/app/:path*',
+  '/admin/:path*',
+  '/login',
+  '/signup',
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+  '/unsubscribe',
+  '/dev/:path*',
+  '/templates/:slug/preview',
+] as const;
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['127.0.0.1'],
@@ -24,14 +38,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
-      { source: '/health', headers: privateHeaders },
-      { source: '/app/:path*', headers: privateHeaders },
-      { source: '/admin/:path*', headers: privateHeaders },
-      { source: '/login', headers: privateHeaders },
-      { source: '/signup', headers: privateHeaders },
-      { source: '/verify-email', headers: privateHeaders },
-      { source: '/forgot-password', headers: privateHeaders },
-      { source: '/reset-password', headers: privateHeaders },
+      ...privateRoutes.map((source) => ({ source, headers: privateHeaders })),
     ];
   },
 };

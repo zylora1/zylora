@@ -20,7 +20,7 @@ ZIP; live Websites can capture Leads.
    and publish evaluation states. Manual ↔ AI is shown as two inputs changing the same document.
 5. **Destination ledger:** a precise comparison of Zylora subdomain, custom domain, Transfer, and paid
    ZIP with ownership and payment facts.
-6. **Lead loop:** a Website page transitions into chatbot/form Lead, one credit record, notification,
+6. **Lead loop:** a Website page transitions into an explicit enquiry-form Lead, one credit record, notification,
    and real Portal row. This is a causal diagram/product sequence, not a fake dashboard collage.
 7. **Four-plan pricing:** read current backend catalog, show exact four plans and capability language;
    no hard-coded or invented price.

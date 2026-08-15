@@ -66,10 +66,16 @@ function itemList(value: unknown): Array<Record<string, unknown>> {
     : [];
 }
 
-function RenderComponent({ component }: { component: TemplateComponent }): ReactNode {
+function RenderComponent({
+  component,
+  assetAlts,
+}: {
+  component: TemplateComponent;
+  assetAlts: ReadonlyMap<string, string>;
+}): ReactNode {
   const p = component.props;
   const children = component.children.map((child) => (
-    <RenderComponent key={child.id} component={child} />
+    <RenderComponent key={child.id} component={child} assetAlts={assetAlts} />
   ));
   switch (component.type) {
     case 'NAVIGATION':
@@ -87,7 +93,10 @@ function RenderComponent({ component }: { component: TemplateComponent }): React
       );
     case 'HERO':
       return (
-        <section id={component.id} className={`zt-hero zt-hero--${text(p.align) || 'left'}`}>
+        <section
+          id={component.id}
+          className={`zt-hero zt-hero--${text(p.align) || 'left'} zt-hero-treatment--${text(p.treatment) || 'studio'}`}
+        >
           <p className="zt-eyebrow">{text(p.eyebrow)}</p>
           <h1>{text(p.heading)}</h1>
           <p>{text(p.body)}</p>
@@ -174,6 +183,64 @@ function RenderComponent({ component }: { component: TemplateComponent }): React
           ))}
         </section>
       );
+    case 'MEDIA': {
+      const mode = ['split', 'gallery', 'band', 'portrait'].includes(text(p.mode))
+        ? text(p.mode)
+        : 'split';
+      const panels = mode === 'gallery' ? 3 : mode === 'band' ? 2 : 1;
+      return (
+        <section className={`zt-media zt-media--native zt-media--${mode}`}>
+          <div className="zt-media-copy">
+            <h2>{text(p.heading)}</h2>
+            {p.body ? <p>{text(p.body)}</p> : null}
+          </div>
+          <div
+            className="zt-media-grid"
+            style={{ '--zt-media-columns': panels } as CSSProperties}
+            role="img"
+            aria-label={text(p.body) || text(p.heading)}
+          >
+            {Array.from({ length: panels }, (_, index) => (
+              <span className="zt-media-art" data-index={index} key={index} aria-hidden="true" />
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'IMAGE': {
+      const assetId = text(p.assetId);
+      const alt = assetAlts.get(assetId) ?? text(p.caption) ?? 'Template media';
+      return (
+        <figure className="zt-media zt-media--image">
+          <div className="zt-media-art" role="img" aria-label={alt} />
+          {p.caption ? <figcaption>{text(p.caption)}</figcaption> : null}
+        </figure>
+      );
+    }
+    case 'GALLERY': {
+      const assetIds = Array.isArray(p.assetIds)
+        ? p.assetIds.filter((assetId): assetId is string => typeof assetId === 'string')
+        : [];
+      return (
+        <section className="zt-media zt-media--gallery">
+          {p.heading ? <h2>{text(p.heading)}</h2> : null}
+          <div
+            className="zt-media-grid"
+            style={{ '--zt-media-columns': Number(p.columns) || 3 } as CSSProperties}
+          >
+            {assetIds.map((assetId, index) => (
+              <div
+                className="zt-media-art"
+                data-index={index}
+                key={assetId}
+                role="img"
+                aria-label={assetAlts.get(assetId) ?? `Template media ${index + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+      );
+    }
     case 'FAQ':
       return (
         <section className="zt-faq">
@@ -238,6 +305,7 @@ export function TemplateRenderer({
   page?: string;
 }) {
   const selected = document.pages.find((item) => item.slug === page) ?? document.pages[0];
+  const assetAlts = new Map(document.assets.map((asset) => [asset.id, asset.alt]));
   const style = {
     '--zt-primary': document.theme.primary,
     '--zt-accent': document.theme.accent,
@@ -247,7 +315,7 @@ export function TemplateRenderer({
   return (
     <div className="zt-site" style={style} lang={document.metadata.language}>
       {selected?.components.map((component) => (
-        <RenderComponent key={component.id} component={component} />
+        <RenderComponent key={component.id} component={component} assetAlts={assetAlts} />
       ))}
     </div>
   );

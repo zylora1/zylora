@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.lead_models import Lead
 from zylora_api.db.session import get_session
 from zylora_api.modules.auth.http import RequestIdentity, get_user_identity
-from zylora_api.modules.chatbot.schemas import LeadCreditResponse, LeadOwnerResponse
 from zylora_api.modules.leads.credits import CreditLedgerService, LeadCreditPolicyService
+from zylora_api.modules.leads.schemas import LeadCreditResponse, LeadOwnerResponse
 
 router = APIRouter(prefix="/api/v1", tags=["leads"])
 

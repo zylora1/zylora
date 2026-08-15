@@ -11,6 +11,8 @@ type AnalyticsPoint = {
   sessions: number;
   visitors: number;
   leads: number;
+  lead_form_opens: number;
+  lead_form_submissions: number;
   form_leads: number;
   chatbot_leads: number;
   chatbot_conversations: number;
@@ -25,44 +27,53 @@ type AnalyticsDashboard = {
   sessions: number;
   visitors: number;
   leads: number;
+  lead_form_opens: number;
+  lead_form_submissions: number;
   form_leads: number;
-  chatbot_leads: number;
   chatbot_conversations: number;
   chatbot_messages: number;
-  conversions: number;
+  lead_conversion_rate: number;
+  published_at: string | null;
+  first_visitor_at: string | null;
+  first_lead_at: string | null;
+  time_to_first_lead_seconds: number | null;
+  previous_page_views: number;
+  previous_leads: number;
+  page_view_change_percent: number | null;
+  lead_change_percent: number | null;
+  zero_lead_recommendations: string[];
   points: AnalyticsPoint[];
 };
 
-const metricLabels: Array<
-  [
-    keyof Pick<
-      AnalyticsDashboard,
-      | 'page_views'
-      | 'sessions'
-      | 'visitors'
-      | 'leads'
-      | 'form_leads'
-      | 'chatbot_leads'
-      | 'chatbot_conversations'
-    >,
-    string,
-  ]
-> = [
-  ['page_views', 'Page views'],
-  ['sessions', 'Sessions'],
+function formatDate(value: string | null): string {
+  return value
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value))
+    : 'Not yet';
+}
+
+function trend(value: number | null): string {
+  if (value === null) return 'No comparable prior period';
+  return `${value > 0 ? '+' : ''}${value}% vs previous 30 days`;
+}
+
+const outcomeMetrics: Array<[keyof AnalyticsDashboard, string]> = [
   ['visitors', 'Visitors'],
-  ['leads', 'Leads'],
-  ['form_leads', 'Form leads'],
-  ['chatbot_leads', 'Chatbot leads'],
+  ['leads', 'Enquiries'],
+  ['lead_conversion_rate', 'Visitor → enquiry'],
   ['chatbot_conversations', 'Chatbot conversations'],
+  ['lead_form_opens', 'Enquiry form opens'],
 ];
 
 export function AnalyticsPanel() {
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!csrfToken('zylora_user_csrf')) return;
+    if (!csrfToken('zylora_user_csrf')) {
+      void Promise.resolve().then(() => setLoading(false));
+      return;
+    }
     let active = true;
     void apiRequest<AnalyticsDashboard>('/api/v1/analytics?period_days=30')
       .then((result) => {
@@ -71,6 +82,9 @@ export function AnalyticsPanel() {
       .catch((reason: unknown) => {
         if (active)
           setError(reason instanceof Error ? reason.message : 'Analytics are unavailable.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -84,17 +98,8 @@ export function AnalyticsPanel() {
       </Notice>
     );
   }
-  if (!dashboard) {
-    return (
-      <EmptyState
-        eyebrow="Current state"
-        title="Analytics begins with real traffic"
-        description="There are no charts or zero-value metrics to show before a Website is published and receives activity."
-      />
-    );
-  }
-  if (!dashboard) return <p role="status">Loading verified analytics…</p>;
-  if (!dashboard.has_published_website) {
+  if (loading) return <p role="status">Loading verified analytics…</p>;
+  if (!dashboard?.has_published_website) {
     return (
       <EmptyState
         eyebrow="First Website"
@@ -106,33 +111,65 @@ export function AnalyticsPanel() {
   }
   if (!dashboard.has_meaningful_data) {
     return (
-      <Notice title="No analytics yet">
-        Your Website is published, but it has not received measurable visitor, Lead, or chatbot
-        activity in this period. Zylora does not invent charts or zero-value metrics.
-      </Notice>
+      <EmptyState
+        eyebrow="Website live"
+        title="Your Website is ready for its first visitor"
+        description="Share the published link. Zylora will show measured traffic, enquiries, and chatbot usage here—never synthetic data."
+        action={<ActionLink href="/app/websites">Open Website management</ActionLink>}
+      />
     );
   }
+
+  const zeroLead = dashboard.leads === 0;
   return (
     <div className="analytics-panel">
-      <section className="analytics-panel__summary" aria-label="Measured Website activity">
+      <section className="analytics-panel__summary" aria-label="Measured Website outcomes">
         <div>
           <p className="workspace-kicker">Last 30 days</p>
-          <h2>Measured Website activity</h2>
-          <p>Only recorded activity appears here. Metrics are refreshed in the account timezone.</p>
+          <h2>
+            {zeroLead ? 'Traffic is arriving. Let’s turn it into enquiries.' : 'Website outcomes'}
+          </h2>
+          <p>
+            {trend(dashboard.page_view_change_percent)} · First enquiry{' '}
+            {formatDate(dashboard.first_lead_at)}
+          </p>
         </div>
-        <StatusBadge tone="success">Verified rollups</StatusBadge>
+        <StatusBadge tone={zeroLead ? 'info' : 'success'}>
+          {zeroLead ? 'Opportunity detected' : 'Delivering value'}
+        </StatusBadge>
       </section>
+
       <dl className="analytics-panel__metrics">
-        {metricLabels.map(([key, label]) => (
+        {outcomeMetrics.map(([key, label]) => (
           <div key={key}>
             <dt>{label}</dt>
-            <dd>{dashboard[key]}</dd>
+            <dd>
+              {key === 'lead_conversion_rate'
+                ? `${dashboard.lead_conversion_rate.toFixed(2)}%`
+                : String(dashboard[key])}
+            </dd>
           </div>
         ))}
       </dl>
+
+      {zeroLead ? (
+        <section className="analytics-panel__intervention" aria-labelledby="zero-lead-title">
+          <p className="workspace-kicker">Practical next steps</p>
+          <h2 id="zero-lead-title">
+            Your Website is live, but it has not received an enquiry yet.
+          </h2>
+          <ol>
+            {dashboard.zero_lead_recommendations.map((recommendation) => (
+              <li key={recommendation}>{recommendation}</li>
+            ))}
+          </ol>
+          <ActionLink href="/app/websites">Review your Website</ActionLink>
+        </section>
+      ) : null}
+
       <section className="analytics-panel__daily" aria-labelledby="analytics-daily-title">
         <div>
-          <p className="workspace-kicker">Daily activity</p>
+          <p className="workspace-kicker">Performance trend</p>
           <h2 id="analytics-daily-title">Recorded days</h2>
         </div>
         <div className="analytics-panel__table-wrap">
@@ -140,9 +177,9 @@ export function AnalyticsPanel() {
             <thead>
               <tr>
                 <th scope="col">Date</th>
-                <th scope="col">Views</th>
-                <th scope="col">Sessions</th>
-                <th scope="col">Leads</th>
+                <th scope="col">Visitors</th>
+                <th scope="col">Form opens</th>
+                <th scope="col">Enquiries</th>
                 <th scope="col">Chatbot</th>
               </tr>
             </thead>
@@ -154,8 +191,8 @@ export function AnalyticsPanel() {
                       new Date(`${point.date}T00:00:00`),
                     )}
                   </td>
-                  <td>{point.page_views}</td>
-                  <td>{point.sessions}</td>
+                  <td>{point.visitors || point.sessions}</td>
+                  <td>{point.lead_form_opens}</td>
                   <td>{point.leads}</td>
                   <td>{point.chatbot_conversations}</td>
                 </tr>

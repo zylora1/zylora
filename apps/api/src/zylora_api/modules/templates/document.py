@@ -123,7 +123,7 @@ COMPONENT_REGISTRY: dict[str, RegistryEntry] = {
     ),
     "HERO": RegistryEntry(
         allowed_props=frozenset(
-            {"eyebrow", "heading", "body", "primaryCta", "secondaryCta", "align"}
+            {"eyebrow", "heading", "body", "primaryCta", "secondaryCta", "align", "treatment"}
         ),
         required_props=frozenset({"heading", "body"}),
     ),
@@ -135,6 +135,10 @@ COMPONENT_REGISTRY: dict[str, RegistryEntry] = {
     ),
     "RICH_TEXT": RegistryEntry(
         allowed_props=frozenset({"text"}), required_props=frozenset({"text"})
+    ),
+    "MEDIA": RegistryEntry(
+        allowed_props=frozenset({"mode", "heading", "body"}),
+        required_props=frozenset({"mode", "heading"}),
     ),
     "IMAGE": RegistryEntry(
         allowed_props=frozenset({"assetId", "caption", "fit"}),

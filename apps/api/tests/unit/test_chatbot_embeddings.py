@@ -6,11 +6,15 @@ from types import SimpleNamespace
 import httpx
 import pytest
 from zylora_api.core.config import Settings
-from zylora_api.modules.chatbot import embeddings
+from zylora_api.modules.chatbot import embeddings, generation
 from zylora_api.modules.chatbot.embeddings import (
     DeterministicEmbeddingProvider,
     EmbeddingProviderError,
     OpenAIEmbeddingProvider,
+)
+from zylora_api.modules.chatbot.generation import (
+    INSUFFICIENT_KNOWLEDGE_FALLBACK,
+    OpenAIChatGenerationProvider,
 )
 from zylora_api.modules.chatbot.indexing import FaissIndexCodec, KnowledgeIndexService
 from zylora_api.modules.chatbot.service import ChatbotService
@@ -87,6 +91,12 @@ async def test_deterministic_embeddings_and_faiss_codec_reject_invalid_artifacts
         FaissIndexCodec.search(artifact, [1.0, 0.0], 0)
     with pytest.raises(ValueError, match="dimension"):
         FaissIndexCodec.search(artifact, [1.0, 0.0, 0.0], 1)
+    with pytest.raises(ValueError, match="dimension"):
+        FaissIndexCodec.search_with_scores(artifact, [1.0, 0.0, 0.0], 1)
+
+    scored = FaissIndexCodec.search_with_scores(artifact, [1.0, 0.0], 2)
+    assert [identifier for identifier, _score in scored] == [0, 1]
+    assert scored[0][1] > scored[1][1]
 
 
 def test_published_text_extraction_discards_urls_and_chunks_long_content() -> None:
@@ -155,3 +165,38 @@ async def test_embedding_adapter_rejects_empty_credentials_and_malformed_provide
 
     chatbot = ChatbotService.from_settings(object(), MemoryObjectStorage(), settings)
     assert isinstance(chatbot.embeddings, OpenAIEmbeddingProvider)
+
+
+@pytest.mark.asyncio
+async def test_chat_generation_prompt_is_grounded_and_cannot_solicit_or_create_leads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(
+        _env_file=None,
+        environment="test",
+        ai_provider="openai",
+        openai_api_key="server-only-test-key",
+        chatbot_generation_model="chat-test",
+    )
+    client = FakeClient(
+        FakeResponse(
+            {
+                "output": [
+                    {"content": [{"type": "output_text", "text": "The clinic opens at 9 AM."}]}
+                ]
+            }
+        )
+    )
+    monkeypatch.setattr(generation.httpx, "AsyncClient", lambda **_: client)
+
+    answer = await OpenAIChatGenerationProvider(settings).answer(
+        question="When do you open?", context=["The clinic opens at 9 AM."]
+    )
+
+    assert answer == "The clinic opens at 9 AM."
+    assert client.request
+    instructions = str(client.request["json"]["instructions"])
+    assert "Do not collect leads" in instructions
+    assert "trigger notifications" in instructions
+    assert INSUFFICIENT_KNOWLEDGE_FALLBACK in instructions
+    assert "Would you like to leave your details" not in instructions

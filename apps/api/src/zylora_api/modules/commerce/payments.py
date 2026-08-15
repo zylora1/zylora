@@ -180,6 +180,14 @@ class PaymentService:
         )
         self.session.add(subscription)
         await self.session.flush()
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        await ProductAnalyticsService(self.session).record_event(
+            event_type="PLAN_UPGRADED",
+            idempotency_key=f"plan-upgraded:{payment.id}",
+            user_id=payment.user_id,
+            properties={"plan_code": plan.code},
+        )
         now = datetime.now(UTC)
         payment.provider = verified.provider
         payment.provider_payment_reference = verified.provider_payment_reference

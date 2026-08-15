@@ -40,7 +40,8 @@ channel delivery is not claimed unless a configured provider accepts it.
 
 ## Public security controls
 
-Public form Leads and chatbot-to-Lead conversion are server-side Turnstile-protected when enabled.
+Public form Leads are server-side Turnstile-protected when enabled. Chatbot conversations cannot
+create Leads and their messages are never submitted to the Lead service.
 Siteverify's hostname must equal the active Website hostname resolved from the incoming request, not a
 client-supplied Website ID. Configure each enabled public Website hostname in the Cloudflare Turnstile
 dashboard. Cloudflare Terraform rate-limits `/api/v1/public/leads` and

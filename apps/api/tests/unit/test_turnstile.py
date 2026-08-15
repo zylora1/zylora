@@ -76,6 +76,85 @@ async def test_valid_challenge_accepts_exact_action_and_hostname() -> None:
     assert session.commits == 0
 
 
+async def test_official_test_secret_accepts_only_cloudflare_test_action() -> None:
+    settings = Settings(
+        _env_file=None,
+        environment="development",
+        turnstile_enabled=True,
+        turnstile_site_key="1x00000000000000000000AA",
+        turnstile_secret_key="1x0000000000000000000000000000000AA",
+        turnstile_allowed_hostnames="testserver",
+    )
+    session = FakeSession()
+    verifier = FakeVerifier(TurnstileResponse(success=True, hostname="testserver", action="test"))
+    challenge = ChallengeService(
+        session,
+        settings,
+        AuthCrypto(settings.auth_secret),
+        verifier,  # type: ignore[arg-type]
+    )
+
+    decision = await challenge.enforce(
+        "test-token", expected_action="signup", remote_ip="203.0.113.7", correlation_id="cid"
+    )
+
+    assert decision is not None and decision.hostname == "testserver"
+    assert session.commits == 0
+
+
+async def test_official_test_secret_accepts_cloudflare_actionless_dummy_response() -> None:
+    settings = Settings(
+        _env_file=None,
+        environment="development",
+        turnstile_enabled=True,
+        turnstile_site_key="1x00000000000000000000AA",
+        turnstile_secret_key="1x0000000000000000000000000000000AA",
+        turnstile_allowed_hostnames="testserver",
+    )
+    session = FakeSession()
+    verifier = FakeVerifier(TurnstileResponse(success=True, hostname="testserver"))
+    challenge = ChallengeService(
+        session,
+        settings,
+        AuthCrypto(settings.auth_secret),
+        verifier,  # type: ignore[arg-type]
+    )
+
+    assert (
+        await challenge.enforce(
+            "test-token", expected_action="signup", remote_ip="203.0.113.7", correlation_id="cid"
+        )
+    ) is not None
+
+
+async def test_official_test_secret_keeps_non_test_action_strict() -> None:
+    settings = Settings(
+        _env_file=None,
+        environment="development",
+        turnstile_enabled=True,
+        turnstile_site_key="1x00000000000000000000AA",
+        turnstile_secret_key="1x0000000000000000000000000000000AA",
+        turnstile_allowed_hostnames="testserver",
+    )
+    session = FakeSession()
+    verifier = FakeVerifier(TurnstileResponse(success=True, hostname="testserver", action="login"))
+    challenge = ChallengeService(
+        session,
+        settings,
+        AuthCrypto(settings.auth_secret),
+        verifier,  # type: ignore[arg-type]
+    )
+
+    with pytest.raises(AuthProblem) as caught:
+        await challenge.enforce(
+            "test-token", expected_action="signup", remote_ip="203.0.113.7", correlation_id="cid"
+        )
+
+    assert caught.value.code == "challenge_failed"
+    audit = next(model for model in session.added if isinstance(model, AuditLog))
+    assert audit.reason == "action_mismatch"
+
+
 @pytest.mark.parametrize(
     ("response", "expected_code", "expected_reason"),
     [

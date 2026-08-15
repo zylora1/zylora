@@ -253,6 +253,22 @@ class WebsiteService:
             actor_user_id=owner_user_id,
             summary=f"Created from {template.name}",
         )
+        from zylora_api.modules.analytics.activation import ProductAnalyticsService
+
+        analytics = ProductAnalyticsService(self.session)
+        await analytics.record_event(
+            event_type="TEMPLATE_SELECTED",
+            idempotency_key=f"template-selected:{website.id}",
+            user_id=owner_user_id,
+            website_id=website.id,
+            properties={"template_slug": template.slug},
+        )
+        await analytics.record_event(
+            event_type="WEBSITE_CREATED",
+            idempotency_key=f"website-created:{website.id}",
+            user_id=owner_user_id,
+            website_id=website.id,
+        )
         return website
 
     async def list_for_owner(self, owner_user_id: UUID) -> list[Website]:

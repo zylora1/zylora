@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import pytest
 from zylora_api.modules.templates import scaling
+from zylora_api.modules.templates.families import TEMPLATE_FAMILIES
 from zylora_api.modules.templates.fixtures import CURATED_CATALOG, INITIAL_CATALOG
 from zylora_api.modules.templates.scaling import (
     SCALE_MILESTONES,
@@ -115,3 +116,46 @@ def test_component_walker_includes_nested_component_children() -> None:
     component_ids = {component["id"] for component in _all_components(document)}
 
     assert "nested" in component_ids
+
+
+def test_catalogue_uses_fifty_reusable_visual_families() -> None:
+    generated = build_scaled_catalogue()
+    families = {tag for item in generated for tag in item["tags"] if str(tag).startswith("family-")}
+
+    assert len(TEMPLATE_FAMILIES) == 50
+    assert len(families) == 50
+    assert all(40 <= len(families) <= 60 for _ in (0,))
+
+
+def test_each_visual_family_emits_its_media_treatment() -> None:
+    generated = build_scaled_catalogue()
+    by_family = {
+        next(tag for tag in item["tags"] if tag.startswith("family-")): item for item in generated
+    }
+
+    assert {family.media_mode for family in TEMPLATE_FAMILIES} == {
+        "split",
+        "gallery",
+        "band",
+        "portrait",
+        "minimal",
+    }
+    for family in TEMPLATE_FAMILIES:
+        document = by_family[f"family-{family.slug}"]["document"]
+        hero = next(
+            component
+            for component in document["pages"][0]["components"]
+            if component["type"] == "HERO"
+        )
+        assert hero["props"]["treatment"] == family.section_tone
+        media = [
+            component
+            for component in document["pages"][0]["components"]
+            if component["type"] == "MEDIA"
+        ]
+        assert document["assets"] == []
+        if family.media_mode == "minimal":
+            assert media == []
+            continue
+        assert len(media) == 1
+        assert media[0]["props"]["mode"] == family.media_mode

@@ -8,6 +8,19 @@ test.beforeEach(async ({ page }) => {
       body: JSON.stringify({ enabled: false, site_key: null }),
     });
   });
+  await page.route('**/api/v1/plans', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        region: 'INTERNATIONAL',
+        country_code: 'ZZ',
+        currency: 'USD',
+        interval: 'MONTHLY',
+        items: [],
+      }),
+    });
+  });
 });
 
 test('identity entry and health surfaces are responsive and hardened', async ({
@@ -21,9 +34,9 @@ test('identity entry and health surfaces are responsive and hardened', async ({
 
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Choose the shape. Make it unmistakably yours.' }),
+    page.getByRole('heading', { level: 1, name: 'Build a professional website your way.' }),
   ).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Explore Templates' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Explore Templates' }).first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
@@ -35,8 +48,9 @@ test('identity entry and health surfaces are responsive and hardened', async ({
     'cross-origin-opener-policy': 'same-origin',
     'x-content-type-options': 'nosniff',
     'x-frame-options': 'DENY',
-    'x-robots-tag': 'noindex, nofollow',
+    'x-robots-tag': 'noindex, nofollow, noarchive',
   });
+  expect(health.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
   expect(consoleErrors).toEqual([]);
 });
 
@@ -69,7 +83,7 @@ test('User auth exposes safe errors, recovery, and verification navigation', asy
   });
   await page.goto('/login');
   await page.getByLabel('Email address').fill('person@example.com');
-  await page.getByLabel('Password').fill('Wrong-Password-42!');
+  await page.getByLabel('Password', { exact: true }).fill('Wrong-Password-42!');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page.locator('.form-message--error')).toHaveText('Email or password is incorrect.');
 

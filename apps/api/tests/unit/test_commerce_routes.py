@@ -82,6 +82,12 @@ def setup(monkeypatch: pytest.MonkeyPatch) -> tuple[object, FakeSession, User]:
     app.dependency_overrides[get_user_identity] = lambda: identity
     app.dependency_overrides[get_session] = lambda: database
     app.dependency_overrides[get_crypto] = lambda: crypto
+
+    async def record_product_event(*args: object, **kwargs: object) -> tuple[object, bool]:
+        del args, kwargs
+        return SimpleNamespace(), True
+
+    monkeypatch.setattr(commerce_api.ProductAnalyticsService, "record_event", record_product_event)
     return app, database, user
 
 

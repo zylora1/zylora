@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { BlogArticle } from '@/components/public-blog';
 
@@ -15,13 +16,21 @@ type ArticleMetadata = {
 
 export const dynamic = 'force-dynamic';
 
-async function articleMetadata(slug: string): Promise<ArticleMetadata | null> {
+async function articleMetadata(
+  slug: string,
+): Promise<{ post: ArticleMetadata | null; missing: boolean }> {
   const api = process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:8000';
-  const response = await fetch(`${api}/api/v1/blog/posts/${encodeURIComponent(slug)}`, {
-    cache: 'no-store',
-  });
-  if (!response.ok) return null;
-  return (await response.json()) as ArticleMetadata;
+  try {
+    const response = await fetch(`${api}/api/v1/blog/posts/${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(2_500),
+    });
+    if (response.status === 404) return { post: null, missing: true };
+    if (!response.ok) return { post: null, missing: false };
+    return { post: (await response.json()) as ArticleMetadata, missing: false };
+  } catch {
+    return { post: null, missing: false };
+  }
 }
 
 export async function generateMetadata({
@@ -29,7 +38,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const post = await articleMetadata((await params).slug);
+  const { post } = await articleMetadata((await params).slug);
   if (!post) return { title: 'Article unavailable' };
   const title = post.seo_title ?? post.title;
   const description = post.meta_description ?? post.excerpt;
@@ -47,5 +56,8 @@ export async function generateMetadata({
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
-  return <BlogArticle slug={(await params).slug} />;
+  const { slug } = await params;
+  const result = await articleMetadata(slug);
+  if (result.missing) notFound();
+  return <BlogArticle slug={slug} />;
 }

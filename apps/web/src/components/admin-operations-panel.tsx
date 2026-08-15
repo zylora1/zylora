@@ -15,6 +15,25 @@ type Overview = {
   page_views_last_30_days: number;
   leads_last_30_days: number;
 };
+type Growth = {
+  range_days: number | null;
+  funnel: Array<{ key: string; label: string; count: number; conversion_percent: number | null }>;
+  active_value_sites_30d: number;
+  previous_active_value_sites_30d: number;
+  active_value_sites_change_percent: number | null;
+  retention: Array<{
+    days: number;
+    eligible_accounts: number;
+    retained_accounts: number;
+    retention_percent: number;
+  }>;
+  published_with_first_lead: number;
+  published_with_zero_leads: number;
+  paid_with_first_lead: number;
+  paid_with_zero_leads: number;
+  subscription_state_counts: Record<string, number>;
+};
+
 type RecordItem = {
   id: string;
   label: string;
@@ -117,11 +136,18 @@ function RecordTable({ items }: { items: RecordItem[] }) {
 
 export function AdminOverviewPanel() {
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [growth, setGrowth] = useState<Growth | null>(null);
   const [error, setError] = useState('');
   useEffect(() => {
     if (!csrfToken('zylora_admin_csrf')) return;
-    void apiRequest<Overview>('/api/v1/admin/overview')
-      .then(setOverview)
+    void Promise.all([
+      apiRequest<Overview>('/api/v1/admin/overview'),
+      apiRequest<Growth>('/api/v1/admin/analytics/growth?period_days=30'),
+    ])
+      .then(([nextOverview, nextGrowth]) => {
+        setOverview(nextOverview);
+        setGrowth(nextGrowth);
+      })
       .catch((reason: unknown) =>
         setError(reason instanceof Error ? reason.message : 'Overview is unavailable.'),
       );
@@ -132,7 +158,7 @@ export function AdminOverviewPanel() {
         {error}
       </Notice>
     );
-  if (!overview) return <p role="status">Loading measured operational state…</p>;
+  if (!overview || !growth) return <p role="status">Loading measured operational state…</p>;
   return (
     <div className="admin-operations">
       <section className="admin-operations__summary" aria-label="Measured platform summary">
@@ -145,6 +171,77 @@ export function AdminOverviewPanel() {
           </p>
         </div>
         <StatusBadge tone="info">No synthetic metrics</StatusBadge>
+      </section>
+      <section className="admin-operations__north-star" aria-labelledby="north-star-title">
+        <div>
+          <p className="workspace-kicker">North Star · last 30 days</p>
+          <h2 id="north-star-title">Published Websites delivering real enquiries</h2>
+        </div>
+        <strong>{growth.active_value_sites_30d}</strong>
+        <span>
+          {growth.active_value_sites_change_percent === null
+            ? 'No comparable prior period'
+            : `${growth.active_value_sites_change_percent > 0 ? '+' : ''}${growth.active_value_sites_change_percent}% vs prior 30 days`}
+        </span>
+      </section>
+      <section className="admin-operations__funnel" aria-labelledby="growth-funnel-title">
+        <p className="workspace-kicker">30-day product funnel</p>
+        <h2 id="growth-funnel-title">From account to demonstrated value</h2>
+        <ol>
+          {growth.funnel.map((step) => (
+            <li key={step.key}>
+              <span>{step.label}</span>
+              <strong>{step.count}</strong>
+              <small>
+                {step.conversion_percent === null
+                  ? '—'
+                  : `${step.conversion_percent}% from prior step`}
+              </small>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <dl className="admin-operations__metrics" aria-label="Published and paid value segments">
+        <div>
+          <dt>Published + first lead</dt>
+          <dd>{growth.published_with_first_lead}</dd>
+        </div>
+        <div>
+          <dt>Published + zero leads</dt>
+          <dd>{growth.published_with_zero_leads}</dd>
+        </div>
+        <div>
+          <dt>Paid + first lead</dt>
+          <dd>{growth.paid_with_first_lead}</dd>
+        </div>
+        <div>
+          <dt>Paid + zero leads</dt>
+          <dd>{growth.paid_with_zero_leads}</dd>
+        </div>
+      </dl>
+      <section className="admin-operations__retention" aria-labelledby="retention-title">
+        <div>
+          <p className="workspace-kicker">Account retention</p>
+          <h2 id="retention-title">Verified 30, 60 and 90-day cohorts</h2>
+        </div>
+        <dl>
+          {growth.retention.map((cohort) => (
+            <div key={cohort.days}>
+              <dt>{cohort.days} days</dt>
+              <dd>{cohort.retention_percent}%</dd>
+              <small>
+                {cohort.retained_accounts} of {cohort.eligible_accounts} eligible accounts
+              </small>
+            </div>
+          ))}
+        </dl>
+        <p>
+          Subscriptions: {growth.subscription_state_counts.ACTIVE ?? 0} active ·{' '}
+          {growth.subscription_state_counts.PAST_DUE ?? 0} payment-failed/past due ·{' '}
+          {growth.subscription_state_counts.CANCELLED ?? 0} cancelled ·{' '}
+          {growth.subscription_state_counts.EXPIRED ?? 0} expired ·{' '}
+          {growth.subscription_state_counts.FAILED ?? 0} failed setup
+        </p>
       </section>
       <dl className="admin-operations__metrics">
         {overview.metrics.map((metric) => (

@@ -1,6 +1,6 @@
 # ADR-021: Phase 10 FAISS chatbot, unified Leads, and credit ledger
 
-Status: Accepted
+Status: Superseded in part by ADR-029
 
 ## Decision
 
@@ -21,7 +21,7 @@ not Template-authored and inserts all user/assistant text with `textContent`. Pa
 uses the same renderer with the widget explicitly disabled, so no Zylora chatbot endpoint, secret,
 conversation data, or runtime dependency is included in an export.
 
-Form and chatbot contact capture use the same normalized `Lead` model and `LeadService`. In one
+Only explicit Website form submissions use the normalized `Lead` model and `LeadService`. In one
 PostgreSQL transaction, the service locks the Website and owner credit account, validates the
 idempotency fingerprint, records the Lead, appends exactly one `LEAD_CAPTURE` `-1` ledger entry,
 persists an in-app notification and lead analytics event, and enqueues notification intent. Retry with
@@ -41,7 +41,7 @@ a new index for that recipient's published version.
 - `faiss-cpu` and `numpy` are explicit API runtime dependencies; no Pinecone or Chroma adapter exists.
 - OpenAI's server-side embeddings endpoint is the production adapter. Tests use a deterministic local
   embedding adapter; it is not selectable in production.
-- Public form and chatbot-lead submission use Turnstile when enabled. The lightweight chat-message
+- Public form submission uses Turnstile when enabled; chatbot messages cannot submit Leads. The lightweight chat-message
   interaction relies on the existing Cloudflare WAF/rate limit to avoid interrupting normal visitor
   conversation; it remains Website-host scoped and capability-bound.
 - In-app Lead notifications are durable now. Provider delivery is deliberately not fabricated; later

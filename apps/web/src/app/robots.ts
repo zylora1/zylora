@@ -1,15 +1,35 @@
 import type { MetadataRoute } from 'next';
 
+import { siteOrigin } from '@/lib/seo';
+
+export const privateRobotPaths = [
+  '/app/',
+  '/admin/',
+  '/api/',
+  '/login',
+  '/signup',
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+  '/unsubscribe',
+  '/health',
+  '/dev/',
+  '/*/preview',
+] as const;
+
 export default function robots(): MetadataRoute.Robots {
-  const origin = process.env.NEXT_PUBLIC_WEB_ORIGIN ?? 'http://localhost:3000';
+  const origin = siteOrigin();
+  const indexingEnabled = process.env.NEXT_PUBLIC_SEARCH_INDEXING_ENABLED === 'true';
+
   return {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/blog/', '/templates/'],
-        disallow: ['/app/', '/admin/', '/api/'],
+        ...(indexingEnabled ? { allow: '/' } : {}),
+        disallow: indexingEnabled ? [...privateRobotPaths] : ['/', ...privateRobotPaths],
       },
     ],
     sitemap: `${origin}/sitemap.xml`,
+    ...(indexingEnabled ? { host: origin } : {}),
   };
 }

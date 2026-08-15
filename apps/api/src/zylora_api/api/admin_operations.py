@@ -12,12 +12,16 @@ from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.session import get_session
 from zylora_api.modules.admin.operations import AdminOperationsService, AdminSection
 from zylora_api.modules.admin.schemas import (
+    AdminFunnelStep,
+    AdminGrowthResponse,
     AdminHealthResponse,
     AdminOperationListResponse,
     AdminOverviewResponse,
+    AdminRetentionMetric,
     AdminUserDetail,
     AdminUserListResponse,
 )
+from zylora_api.modules.analytics.activation import ProductAnalyticsService
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.http import (
     RequestIdentity,
@@ -40,6 +44,29 @@ async def overview(
     result = await AdminOperationsService(session).overview()
     await session.commit()
     return result
+
+
+@router.get("/analytics/growth", response_model=AdminGrowthResponse)
+async def growth_analytics(
+    _: Annotated[RequestIdentity, Depends(get_admin_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    period_days: Annotated[int | None, Query()] = 30,
+) -> AdminGrowthResponse:
+    result = await ProductAnalyticsService(session).admin_growth(period_days)
+    await session.commit()
+    return AdminGrowthResponse(
+        range_days=result.range_days,
+        funnel=[AdminFunnelStep(**vars(item)) for item in result.funnel],
+        active_value_sites_30d=result.active_value_sites_30d,
+        previous_active_value_sites_30d=result.previous_active_value_sites_30d,
+        active_value_sites_change_percent=result.active_value_sites_change_percent,
+        retention=[AdminRetentionMetric(**vars(item)) for item in result.retention],
+        published_with_first_lead=result.published_with_first_lead,
+        published_with_zero_leads=result.published_with_zero_leads,
+        paid_with_first_lead=result.paid_with_first_lead,
+        paid_with_zero_leads=result.paid_with_zero_leads,
+        subscription_state_counts=result.subscription_state_counts,
+    )
 
 
 @router.get("/users", response_model=AdminUserListResponse)

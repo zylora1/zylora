@@ -1,28 +1,36 @@
 :root {
-  color-scheme: light;
-  --z-color-canvas: #f3f0e7;
-  --z-color-surface: #fffefa;
-  --z-color-surface-subtle: #eae6db;
-  --z-color-ink: #142a24;
-  --z-color-ink-muted: #52615c;
-  --z-color-border: #cfcbc0;
-  --z-color-border-strong: #8e9893;
-  --z-color-brand: #174a3d;
-  --z-color-brand-hover: #103a30;
-  --z-color-action: #a83f27;
-  --z-color-action-hover: #87321f;
-  --z-color-info: #286a67;
-  --z-color-success: #23613f;
-  --z-color-warning: #8a5b12;
-  --z-color-danger: #a33232;
-  --z-color-focus: #0b68c0;
-  --z-color-info-surface: #e3efed;
-  --z-color-success-surface: #e4efe6;
-  --z-color-warning-surface: #f4ead7;
-  --z-color-danger-surface: #f7e5e1;
-  --z-font-display: Newsreader, Georgia, serif;
-  --z-font-body: Manrope, Avenir, ui-sans-serif, system-ui, sans-serif;
-  --z-font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+  color-scheme: dark;
+  --z-color-canvas: #080b12;
+  --z-color-surface: #0c111a;
+  --z-color-surface-raised: #111722;
+  --z-color-surface-subtle: #171e2a;
+  --z-color-surface-inverse: #f2f5fa;
+  --z-color-ink: #f2f5fa;
+  --z-color-ink-soft: #c2cad7;
+  --z-color-ink-muted: #8490a4;
+  --z-color-border: #252d3a;
+  --z-color-border-strong: #3a4657;
+  --z-color-brand: #66e9b5;
+  --z-color-brand-hover: #8ff5cc;
+  --z-color-brand-soft: #142a24;
+  --z-color-action: #8c7dff;
+  --z-color-action-hover: #a297ff;
+  --z-color-info: #73c8f5;
+  --z-color-success: #69e0aa;
+  --z-color-warning: #f4bd67;
+  --z-color-danger: #ff817d;
+  --z-color-focus: #8cd8ff;
+  --z-color-info-surface: #112631;
+  --z-color-success-surface: #11271f;
+  --z-color-warning-surface: #2b2214;
+  --z-color-danger-surface: #2c171a;
+  --z-font-display: ui-serif, Iowan Old Style, Georgia, serif;
+  --z-font-body: Inter, Avenir Next, Avenir, Segoe UI, ui-sans-serif, system-ui, sans-serif;
+  --z-font-mono: ui-monospace, SFMono-Regular, Cascadia Code, Consolas, monospace;
+  --z-text-xs: 0.72rem;
+  --z-text-sm: 0.8125rem;
+  --z-text-base: 0.9375rem;
+  --z-text-lg: 1.125rem;
   --z-space-1: 0.25rem;
   --z-space-2: 0.5rem;
   --z-space-3: 0.75rem;
@@ -35,31 +43,34 @@
   --z-space-16: 4rem;
   --z-space-20: 5rem;
   --z-space-24: 6rem;
-  --z-radius-sm: 0.25rem;
-  --z-radius-md: 0.5rem;
-  --z-radius-lg: 0.75rem;
+  --z-radius-sm: 0.375rem;
+  --z-radius-md: 0.75rem;
+  --z-radius-lg: 1.125rem;
+  --z-radius-xl: 1.5rem;
   --z-radius-round: 999px;
-  --z-shadow-raised: 0 0.5rem 1.5rem rgb(20 42 36 / 10%);
-  --z-shadow-overlay: 0 1rem 3rem rgb(20 42 36 / 18%);
-  --z-motion-fast: 120ms;
-  --z-motion-standard: 180ms;
-  --z-motion-deliberate: 280ms;
-  --z-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
-  --z-content-narrow: 45rem;
-  --z-content: 70rem;
-  --z-content-wide: 82.5rem;
+  --z-shadow-raised: 0 0.75rem 2.4rem rgb(0 0 0 / 32%);
+  --z-shadow-overlay: 0 1.75rem 5rem rgb(0 0 0 / 56%);
+  --z-shadow-card: 0 1px 0 rgb(255 255 255 / 4%), 0 0.8rem 2.2rem rgb(0 0 0 / 24%);
+  --z-motion-fast: 140ms;
+  --z-motion-standard: 200ms;
+  --z-motion-deliberate: 360ms;
+  --z-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --z-content-narrow: 44rem;
+  --z-content: 72rem;
+  --z-content-wide: 88rem;
   --z-layer-sticky: 10;
   --z-layer-dropdown: 20;
   --z-layer-overlay: 40;
 
-  /* Backward-compatible aliases while Phase 2 surfaces adopt the system. */
   --canvas: var(--z-color-canvas);
   --surface: var(--z-color-surface);
+  --surface-raised: var(--z-color-surface-raised);
   --ink: var(--z-color-ink);
   --muted: var(--z-color-ink-muted);
   --border: var(--z-color-border);
   --brand: var(--z-color-brand);
   --brand-dark: var(--z-color-brand-hover);
+  --accent: var(--z-color-action);
   --error: var(--z-color-danger);
   --error-surface: var(--z-color-danger-surface);
   --success: var(--z-color-success);
@@ -73,38 +84,46 @@
   justify-content: center;
   gap: var(--z-space-2);
   border: 1px solid transparent;
-  border-radius: var(--z-radius-sm);
-  padding: 0.625rem var(--z-space-4);
-  font: 750 0.875rem/1 var(--z-font-body);
+  border-radius: var(--z-radius-md);
+  padding: 0.625rem 0.9rem;
+  font: 750 var(--z-text-sm)/1 var(--z-font-body);
+  letter-spacing: -0.01em;
   text-decoration: none;
   cursor: pointer;
   transition:
     background-color var(--z-motion-fast) var(--z-ease-standard),
     border-color var(--z-motion-fast) var(--z-ease-standard),
     color var(--z-motion-fast) var(--z-ease-standard),
+    box-shadow var(--z-motion-fast) var(--z-ease-standard),
     transform var(--z-motion-fast) var(--z-ease-standard);
 }
+.z-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
 .z-button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(0);
 }
 .z-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 .z-button--primary {
-  background: var(--z-color-action);
-  color: var(--z-color-surface);
+  background: var(--z-color-brand);
+  box-shadow: 0 0.2rem 0.75rem rgb(61 226 163 / 12%);
+  color: #06110d;
 }
 .z-button--primary:hover:not(:disabled) {
-  background: var(--z-color-action-hover);
+  background: var(--z-color-brand-hover);
+  box-shadow: 0 0.5rem 1.25rem rgb(61 226 163 / 18%);
 }
 .z-button--secondary {
-  border-color: var(--z-color-border-strong);
-  background: var(--z-color-surface);
+  border-color: var(--z-color-border);
+  background: var(--z-color-surface-raised);
   color: var(--z-color-ink);
 }
 .z-button--secondary:hover:not(:disabled) {
   border-color: var(--z-color-brand);
+  background: var(--z-color-brand-soft);
   color: var(--z-color-brand);
 }
 .z-button--quiet {
@@ -112,26 +131,31 @@
   color: var(--z-color-brand);
 }
 .z-button--quiet:hover:not(:disabled) {
-  background: var(--z-color-surface-subtle);
+  background: var(--z-color-brand-soft);
 }
 .z-button--danger {
   background: var(--z-color-danger);
-  color: var(--z-color-surface);
+  color: #fff;
+}
+.z-button--danger:hover:not(:disabled) {
+  background: #95362f;
 }
 
 .z-status {
   display: inline-flex;
   align-items: center;
-  gap: var(--z-space-2);
-  border: 1px solid var(--z-color-border);
+  gap: 0.38rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, var(--z-color-border));
   border-radius: var(--z-radius-round);
-  padding: 0.2rem 0.55rem;
+  padding: 0.25rem 0.55rem;
   color: var(--z-color-ink-muted);
-  font: 700 0.6875rem/1.4 var(--z-font-body);
+  font: 750 0.66rem/1.2 var(--z-font-body);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .z-status::before {
-  width: 0.4rem;
-  height: 0.4rem;
+  width: 0.38rem;
+  height: 0.38rem;
   border-radius: 50%;
   background: currentColor;
   content: '';
@@ -152,11 +176,13 @@
 .z-notice {
   display: grid;
   gap: var(--z-space-1);
-  border-left: 3px solid currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 26%, var(--z-color-border));
+  border-radius: var(--z-radius-md);
   background: var(--z-color-info-surface);
   color: var(--z-color-info);
   padding: var(--z-space-4);
-  font-size: 0.875rem;
+  font-size: var(--z-text-sm);
+  line-height: 1.55;
 }
 .z-notice--success {
   background: var(--z-color-success-surface);
@@ -171,13 +197,14 @@
   color: var(--z-color-danger);
 }
 .z-notice > div {
-  color: var(--z-color-ink);
+  color: var(--z-color-ink-soft);
 }
 
 .z-empty {
-  max-width: 48rem;
-  border: 1px solid var(--z-color-border);
-  background: var(--z-color-surface);
+  max-width: 50rem;
+  border: 1px dashed var(--z-color-border-strong);
+  border-radius: var(--z-radius-lg);
+  background: linear-gradient(135deg, var(--z-color-surface-raised), var(--z-color-surface));
   padding: clamp(var(--z-space-8), 6vw, var(--z-space-16));
 }
 .z-empty--compact {
@@ -186,17 +213,17 @@
 .z-empty__eyebrow,
 .z-page-header__eyebrow {
   margin: 0 0 var(--z-space-3);
-  color: var(--z-color-brand);
-  font-size: 0.6875rem;
-  font-weight: 800;
+  color: var(--z-color-action);
+  font-size: 0.67rem;
+  font-weight: 850;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .z-empty h2,
 .z-error h2 {
   margin: 0;
-  font: 650 clamp(1.5rem, 3vw, 2.25rem)/1.12 var(--z-font-body);
-  letter-spacing: -0.035em;
+  font: 600 clamp(1.55rem, 3vw, 2.35rem)/1.08 var(--z-font-display);
+  letter-spacing: -0.04em;
 }
 .z-empty > p:not(.z-empty__eyebrow),
 .z-error p {
@@ -212,10 +239,11 @@
 
 .z-error {
   display: grid;
-  max-width: 48rem;
+  max-width: 50rem;
   grid-template-columns: auto 1fr;
   gap: var(--z-space-4);
-  border: 1px solid var(--z-color-danger);
+  border: 1px solid color-mix(in srgb, var(--z-color-danger) 38%, var(--z-color-border));
+  border-radius: var(--z-radius-md);
   background: var(--z-color-danger-surface);
   padding: var(--z-space-6);
 }
@@ -224,18 +252,19 @@
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: 1px solid currentColor;
   border-radius: 50%;
-  color: var(--z-color-danger);
+  background: var(--z-color-danger);
+  color: #fff;
   font-weight: 900;
 }
 
 .z-skeleton {
   min-height: 1rem;
+  border-radius: var(--z-radius-sm);
   background: linear-gradient(
     90deg,
     var(--z-color-surface-subtle) 25%,
-    var(--z-color-surface) 50%,
+    #f7f8f4 50%,
     var(--z-color-surface-subtle) 75%
   );
   background-size: 200% 100%;
@@ -252,25 +281,26 @@
   align-items: end;
   justify-content: space-between;
   gap: var(--z-space-8);
-  border-bottom: 1px solid var(--z-color-border);
   padding-bottom: var(--z-space-6);
 }
 .z-page-header h1 {
   margin: 0;
-  font: 650 clamp(2rem, 4vw, 3.5rem)/1 var(--z-font-display);
-  letter-spacing: -0.045em;
+  font: 600 clamp(2.15rem, 4vw, 3.55rem)/0.98 var(--z-font-display);
+  letter-spacing: -0.052em;
 }
 .z-page-header > div > p:not(.z-page-header__eyebrow) {
   max-width: 42rem;
   margin: var(--z-space-3) 0 0;
   color: var(--z-color-ink-muted);
-  line-height: 1.6;
+  font-size: var(--z-text-base);
+  line-height: 1.65;
 }
 
 @media (max-width: 40rem) {
   .z-page-header {
     align-items: start;
     flex-direction: column;
+    gap: var(--z-space-5);
   }
   .z-page-header__action,
   .z-page-header__action .z-button {
@@ -280,8 +310,10 @@
     grid-template-columns: 1fr;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
+  .z-button {
+    transition: none;
+  }
   .z-skeleton {
     animation: none;
   }

@@ -112,7 +112,7 @@ resource "cloudflare_ruleset" "rate_limits" {
     },
     {
       action      = "block"
-      expression  = "starts_with(http.request.uri.path, \"/api/v1/public/contact\") or starts_with(http.request.uri.path, \"/api/v1/public/leads\") or starts_with(http.request.uri.path, \"/api/v1/chatbot\") or starts_with(http.request.uri.path, \"/api/v1/leads\")"
+      expression  = "starts_with(http.request.uri.path, \"/api/v1/public/contact\") or starts_with(http.request.uri.path, \"/api/v1/public/leads\") or starts_with(http.request.uri.path, \"/api/v1/public/chatbot\") or starts_with(http.request.uri.path, \"/api/v1/leads\")"
       description = "Public forms, chatbot, and lead capture: 20 requests per minute"
       enabled     = true
       ratelimit = {
@@ -132,6 +132,30 @@ resource "cloudflare_ruleset" "rate_limits" {
         period              = 60
         requests_per_period = 10
         mitigation_timeout  = 300
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"POST\" and starts_with(http.request.uri.path, \"/api/v1/ai-site-projects\")"
+      description = "AI Builder generation commands: 10 requests per minute per visitor IP"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 10
+        mitigation_timeout  = 300
+      }
+    },
+    {
+      action      = "block"
+      expression  = "http.request.method eq \"GET\" and starts_with(http.request.uri.path, \"/api/v1/ai-site-projects\")"
+      description = "AI Builder status and artifact access: 120 requests per minute per visitor IP"
+      enabled     = true
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = 60
+        requests_per_period = 120
+        mitigation_timeout  = 60
       }
     },
     {

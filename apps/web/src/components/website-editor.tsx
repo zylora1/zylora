@@ -4,6 +4,7 @@ import type { TemplateComponent, TemplateDocument } from '@zylora/template-schem
 import { TemplateRenderer } from '@zylora/template-schema';
 import {
   History,
+  BookOpenText,
   Laptop,
   Monitor,
   PanelsTopLeft,
@@ -16,6 +17,7 @@ import { Notice, StatusBadge } from '@zylora/ui';
 
 import { apiRequest, csrfToken } from '@/lib/api';
 import { PageManager } from './page-manager';
+import { ChatbotKnowledgePanel } from './chatbot-knowledge-panel';
 import styles from './website-editor.module.css';
 
 type Revision = {
@@ -404,7 +406,7 @@ function ContentEditor({ websiteId }: { websiteId: string }) {
 }
 
 export function WebsiteEditor({ websiteId }: { websiteId: string }) {
-  const [view, setView] = useState<'CONTENT' | 'STRUCTURE'>('STRUCTURE');
+  const [view, setView] = useState<'CONTENT' | 'STRUCTURE' | 'KNOWLEDGE'>('STRUCTURE');
   return (
     <div className={styles.root}>
       <nav className={styles.tabs} aria-label="Website editor views">
@@ -418,8 +420,17 @@ export function WebsiteEditor({ websiteId }: { websiteId: string }) {
         >
           <PanelsTopLeft size={16} /> Pages & navigation
         </button>
+        <button
+          aria-pressed={view === 'KNOWLEDGE'}
+          type="button"
+          onClick={() => setView('KNOWLEDGE')}
+        >
+          <BookOpenText size={16} /> Chatbot &amp; Knowledge
+        </button>
       </nav>
-      {view === 'CONTENT' ? (
+      {view === 'KNOWLEDGE' ? (
+        <ChatbotKnowledgePanel websiteId={websiteId} />
+      ) : view === 'CONTENT' ? (
         <ContentEditor websiteId={websiteId} />
       ) : (
         <PageManager websiteId={websiteId} />

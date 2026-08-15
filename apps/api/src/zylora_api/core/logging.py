@@ -17,8 +17,32 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
-            "correlation_id": correlation_id_context.get(),
+            "correlation_id": getattr(record, "correlation_id", None)
+            or correlation_id_context.get(),
         }
+        for field in (
+            "job_id",
+            "project_id",
+            "generation_id",
+            "worker_id",
+            "attempt",
+            "state_transition",
+            "website_id",
+            "source_id",
+            "index_id",
+            "notification_id",
+            "event_type",
+            "provider_message_sid",
+            "duration_ms",
+            "provider",
+            "model",
+            "artifact_bytes",
+            "outcome",
+            "safe_error_code",
+        ):
+            value = getattr(record, field, None)
+            if value is not None:
+                payload[field] = value
         if record.exc_info:
             payload["exception_type"] = record.exc_info[0].__name__ if record.exc_info[0] else None
         return json.dumps(payload, separators=(",", ":"), ensure_ascii=False)

@@ -1,38 +1,68 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+
+import { AttributionCapture } from '@/components/attribution-capture';
+import { MotionProvider } from '@/components/motion-provider';
+import { publicIndexingEnabled, siteIdentity, siteOrigin } from '@/lib/seo';
 
 import '@zylora/ui/tokens.css';
 import './globals.css';
 import './portal.css';
 
-const origin = process.env.NEXT_PUBLIC_WEB_ORIGIN ?? 'http://localhost:3000';
+// Per-request CSP nonces require dynamic rendering; static output cannot receive a nonce safely.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(origin),
-  title: { default: 'Zylora | Professional websites, thoughtfully made', template: '%s | Zylora' },
-  description:
-    'Choose an approved Template, customize it manually or with AI, then publish, transfer, or export a Website you control.',
-  robots: { index: true, follow: true },
-  alternates: { canonical: '/' },
+  metadataBase: new URL(siteOrigin()),
+  applicationName: siteIdentity.name,
+  title: {
+    default: 'Zylora — AI Website Builder for Small Businesses',
+    template: '%s | Zylora',
+  },
+  description: siteIdentity.description,
+  category: 'technology',
+  referrer: 'origin-when-cross-origin',
+  formatDetection: { email: false, address: false, telephone: false },
+  robots: publicIndexingEnabled()
+    ? { index: true, follow: true }
+    : { index: false, follow: false, nocache: true },
+  icons: { icon: '/icon.svg' },
+  manifest: '/manifest.webmanifest',
   openGraph: {
     type: 'website',
-    siteName: 'Zylora',
-    title: 'Zylora | Professional websites, thoughtfully made',
-    description:
-      'Choose an approved Template, customize it manually or with AI, then publish, transfer, or export.',
+    siteName: siteIdentity.name,
+    locale: siteIdentity.locale,
+    title: 'Zylora — AI Website Builder for Small Businesses',
+    description: siteIdentity.description,
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Zylora AI website builder and professional Template platform',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Zylora | Professional websites, thoughtfully made',
-    description:
-      'Choose an approved Template, customize it manually or with AI, then publish, transfer, or export.',
+    title: 'Zylora — AI Website Builder for Small Businesses',
+    description: siteIdentity.description,
+    images: ['/opengraph-image'],
   },
+};
+
+export const viewport: Viewport = {
+  colorScheme: 'dark',
+  themeColor: '#070808',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AttributionCapture />
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

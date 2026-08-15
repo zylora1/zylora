@@ -2,7 +2,16 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
-const widths = [390, 768, 1024, 1280, 1440] as const;
+const viewports = [
+  { width: 360, height: 800 },
+  { width: 390, height: 844 },
+  { width: 430, height: 932 },
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1280, height: 800 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+] as const;
 test.describe.configure({ timeout: 60_000 });
 
 function recordBrowserHealth(page: Page) {
@@ -39,7 +48,7 @@ async function assertViewportHealth(page: Page) {
   expect(accessibility.violations).toEqual([]);
 }
 
-test('User portal passes the five-viewport visual and interaction audit', async ({
+test('User portal passes the eight-viewport visual and interaction audit', async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -55,8 +64,8 @@ test('User portal passes the five-viewport visual and interaction audit', async 
     });
   });
 
-  for (const width of widths) {
-    await page.setViewportSize({ width, height: width <= 768 ? 900 : 860 });
+  for (const { width, height } of viewports) {
+    await page.setViewportSize({ width, height });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/app');
     await expect(
@@ -87,15 +96,15 @@ test('User portal passes the five-viewport visual and interaction audit', async 
 
   await page.goto('/app/analytics');
   await page.reload();
+  await expect(page.getByRole('heading', { name: 'Publish your first website' })).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Analytics begins with real traffic' }),
+    page.getByText(/Analytics becomes available after your published Website/i),
   ).toBeVisible();
-  await expect(page.getByText(/zero-value metrics/i)).toBeVisible();
   expect(health.consoleProblems).toEqual([]);
   expect(health.failedRequests).toEqual([]);
 });
 
-test('Super Admin passes the five-viewport visual and interaction audit', async ({
+test('Super Admin passes the eight-viewport visual and interaction audit', async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -114,8 +123,8 @@ test('Super Admin passes the five-viewport visual and interaction audit', async 
     });
   });
 
-  for (const width of widths) {
-    await page.setViewportSize({ width, height: width <= 768 ? 900 : 860 });
+  for (const { width, height } of viewports) {
+    await page.setViewportSize({ width, height });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('http://admin.localhost:3100/');
     await expect(page.getByRole('heading', { level: 1, name: 'Platform overview' })).toBeVisible();
@@ -149,14 +158,19 @@ test('Super Admin passes the five-viewport visual and interaction audit', async 
 
 test('Portal loading and session-expiry states fail closed', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'Covered once in the viewport audit.');
+  let releaseIdentityRequest: (() => void) | undefined;
+  const identityResponse = new Promise<void>((resolve) => {
+    releaseIdentityRequest = resolve;
+  });
   await page.route('**/api/v1/auth/me', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await identityResponse;
     await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
   });
 
   await page.goto('/app');
   await expect(page.getByRole('status', { name: 'Loading workspace' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('user-loading.png'), fullPage: true });
+  releaseIdentityRequest?.();
   await expect(page.getByRole('heading', { name: 'Your session has ended' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
   await page.screenshot({ path: testInfo.outputPath('user-session-ended.png'), fullPage: true });

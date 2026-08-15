@@ -5,6 +5,10 @@ Status: **Phase 3 complete design system and portal shells**
 Cloudflare Turnstile and WAF are the approved abuse boundary. `.env.example` uses Cloudflare's
 documented public test keys for local validation; production rejects those keys. Local email/password,
 Google adapter configuration, sessions, throttling, audit, and User/Admin surfaces are executable.
+Cloudflare's success test key returns the fixed hostname `example.com` and a test-only `test` or
+absent action; the development allowlist includes that hostname and the API accepts only those
+response forms when the official test secret is configured. This exception is unavailable in staging
+and production, where hostname and action must both exactly match the protected route.
 
 Phase 3 adds the shared `packages/ui` visual system plus the responsive `/app` and isolated Admin
 shells. `npm run test:e2e` now includes exact-width WCAG, keyboard, reduced-motion, overflow,
@@ -75,6 +79,15 @@ npm run dev:api
 npm run dev:worker
 ```
 
+> **Windows API launcher:** `npm run dev:api` selects `SelectorEventLoop`, which async psycopg
+> requires. Uvicorn reload is disabled by default on Windows because its spawned reload child can
+> fall back to an incompatible Proactor loop; restart the command after backend code changes. Set
+> `ZYLORA_API_RELOAD=1` only after verifying the local Uvicorn/Python combination.
+
+The Web development command caps the Node heap at 1,536 MB. This prevents Turbopack from exhausting
+the 8-GB Windows local-development host while retaining normal hot reload. Do not add a global
+`NODE_OPTIONS` override with a larger heap on that host.
+
 Web runs on `http://localhost:3000`, the isolated Admin host is
 `http://admin.localhost:3000`, and API runs on `http://127.0.0.1:8000`. The local Celery worker uses
 the cross-platform solo pool; that is a development choice, not a production worker topology.
@@ -103,6 +116,19 @@ Remove-Item Env:OPENAI_API_KEY
 Never prefix the key with NEXT_PUBLIC, expose it to the Web process, place it in repository files, or
 log prompts/credentials. Production validates the official OpenAI API base URL and requires the key.
 
+## AI Next.js Builder infrastructure
+
+AI website generation is independently fail-closed and remains disabled in the example environment. Core persists accepted work in PostgreSQL and dispatches only job IDs through the outbox/Celery path. The Builder is stateless; generated source is executed only by a separately deployed sandbox and completed archives are stored through the S3-compatible storage boundary.
+
+For structural tests that do not use provider credits:
+
+```powershell
+npm --prefix zylora-ai-builder run check
+uv run pytest apps/api/tests/unit/test_ai_builder_client.py apps/api/tests/unit/test_ai_generation_artifacts.py -q
+uv run pytest apps/api/tests/integration/test_ai_site_projects.py --run-integration -q
+```
+
+To start the isolated service itself, configure a non-production test provider and sandbox adapter in the current shell, then run `npm --prefix zylora-ai-builder start`. Do not point local tests at a paid production provider. Keep `AI_BUILDER_ENABLED=false` in Core unless PostgreSQL, Redis/Celery, S3-compatible storage, Builder, provider, and sandbox are all ready. See `docs/operations/AI_BUILDER.md` for the complete activation checklist.
 ## Quality and test commands
 
 ```powershell

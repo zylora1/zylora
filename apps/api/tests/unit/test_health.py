@@ -53,3 +53,46 @@ async def test_liveness_has_no_dependency_probe() -> None:
         "version": "0.1.0",
         "checks": None,
     }
+
+
+@pytest.mark.parametrize(
+    ("identity", "builder", "storage", "expected_check"),
+    [
+        (False, True, True, "identity"),
+        (True, False, True, "ai_builder"),
+        (True, True, False, "ai_artifact_storage"),
+    ],
+)
+async def test_optional_production_ai_dependencies_fail_readiness_closed(
+    identity: bool, builder: bool, storage: bool, expected_check: str
+) -> None:
+    service = ReadinessService(
+        StaticProbe(True),
+        StaticProbe(True),
+        identity=StaticProbe(identity),
+        ai_builder=StaticProbe(builder),
+        artifact_storage=StaticProbe(storage),
+    )
+    status, checks = await service.evaluate()
+    assert status == "not_ready"
+    assert checks[expected_check] == "not_ready"
+
+
+async def test_all_required_ai_dependencies_can_be_ready() -> None:
+    service = ReadinessService(
+        StaticProbe(True),
+        StaticProbe(True),
+        identity=StaticProbe(True),
+        ai_builder=StaticProbe(True),
+        artifact_storage=StaticProbe(True),
+    )
+    assert await service.evaluate() == (
+        "ready",
+        {
+            "database": "ready",
+            "redis": "ready",
+            "identity": "ready",
+            "ai_builder": "ready",
+            "ai_artifact_storage": "ready",
+        },
+    )

@@ -15,9 +15,20 @@ class ChallengedRequest(StrictModel):
     turnstile_token: str | None = Field(default=None, min_length=1, max_length=2048)
 
 
+class AttributionRequest(StrictModel):
+    utm_source: str | None = Field(default=None, max_length=160)
+    utm_medium: str | None = Field(default=None, max_length=160)
+    utm_campaign: str | None = Field(default=None, max_length=200)
+    utm_content: str | None = Field(default=None, max_length=200)
+    utm_term: str | None = Field(default=None, max_length=200)
+    referrer: str | None = Field(default=None, max_length=1000)
+    landing_page: str | None = Field(default=None, max_length=1000)
+
+
 class SignupRequest(ChallengedRequest):
     email: EmailStr
     password: str = Field(min_length=12, max_length=128)
+    attribution: AttributionRequest | None = None
 
 
 class VerifyEmailRequest(ChallengedRequest):
@@ -40,7 +51,7 @@ class PasswordResetConfirmRequest(ChallengedRequest):
 
 
 class OAuthStartRequest(ChallengedRequest):
-    pass
+    attribution: AttributionRequest | None = None
 
 
 class LogoutAllRequest(StrictModel):

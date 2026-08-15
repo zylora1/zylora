@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.lead_models import Notification
 from zylora_api.db.session import get_session
+from zylora_api.modules.analytics.activation import ProductAnalyticsService, WebsiteValueMetrics
 from zylora_api.modules.analytics.schemas import (
     AnalyticsDashboardResponse,
     AnalyticsPointResponse,
@@ -30,7 +31,9 @@ from zylora_api.modules.notifications.service import NotificationService
 router = APIRouter(prefix="/api/v1", tags=["analytics-and-notifications"])
 
 
-def dashboard_response(metrics: DashboardMetrics) -> AnalyticsDashboardResponse:
+def dashboard_response(
+    metrics: DashboardMetrics, value: WebsiteValueMetrics | None = None
+) -> AnalyticsDashboardResponse:
     return AnalyticsDashboardResponse(
         website_id=metrics.website_id,
         timezone=metrics.timezone,
@@ -41,11 +44,23 @@ def dashboard_response(metrics: DashboardMetrics) -> AnalyticsDashboardResponse:
         sessions=metrics.sessions,
         visitors=metrics.visitors,
         leads=metrics.leads,
+        lead_form_opens=metrics.lead_form_opens,
+        lead_form_submissions=metrics.lead_form_submissions,
         form_leads=metrics.form_leads,
         chatbot_leads=metrics.chatbot_leads,
         chatbot_conversations=metrics.chatbot_conversations,
         chatbot_messages=metrics.chatbot_messages,
         conversions=metrics.conversions,
+        lead_conversion_rate=value.conversion_rate if value else 0.0,
+        published_at=value.published_at if value else None,
+        first_visitor_at=value.first_visitor_at if value else None,
+        first_lead_at=value.first_lead_at if value else None,
+        time_to_first_lead_seconds=value.time_to_first_lead_seconds if value else None,
+        previous_page_views=value.previous_page_views if value else 0,
+        previous_leads=value.previous_leads if value else 0,
+        page_view_change_percent=value.page_view_change_percent if value else None,
+        lead_change_percent=value.lead_change_percent if value else None,
+        zero_lead_recommendations=value.zero_lead_recommendations if value else [],
         points=[
             AnalyticsPointResponse(
                 date=item.bucket_date,
@@ -53,6 +68,8 @@ def dashboard_response(metrics: DashboardMetrics) -> AnalyticsDashboardResponse:
                 sessions=item.sessions,
                 visitors=item.visitors,
                 leads=item.leads,
+                lead_form_opens=item.lead_form_opens,
+                lead_form_submissions=item.lead_form_submissions,
                 form_leads=item.form_leads,
                 chatbot_leads=item.chatbot_leads,
                 chatbot_conversations=item.chatbot_conversations,
@@ -90,8 +107,19 @@ async def analytics_dashboard(
         period_days=period_days,
         website_id=website_id,
     )
+    value = (
+        await ProductAnalyticsService(session).website_value_metrics(
+            owner_user_id=identity.user.id,
+            website_id=metrics.website_id,
+            period_days=period_days,
+            page_views=metrics.page_views,
+            leads=metrics.leads,
+        )
+        if metrics.website_id and metrics.has_published_website
+        else None
+    )
     await session.commit()
-    return dashboard_response(metrics)
+    return dashboard_response(metrics, value)
 
 
 @router.get("/notifications", response_model=NotificationPageResponse)

@@ -7,8 +7,10 @@ def production_settings(**overrides: object) -> dict[str, object]:
     values: dict[str, object] = {
         "_env_file": None,
         "environment": "production",
-        "database_url": "postgresql+psycopg://zylora:secret@db.example.com/zylora",
+        "database_url": "postgresql+psycopg://zylora:secret@db.example.com/zylora?sslmode=require",
         "redis_url": "rediss://cache.example.com/0",
+        "celery_broker_url": "rediss://broker.example.com/1",
+        "celery_result_backend": "rediss://broker.example.com/2",
         "web_origins": "https://app.example.com",
         "admin_origin": "https://admin.example.com",
         "trusted_hosts": "app.example.com,admin.example.com,api.example.com",
@@ -81,3 +83,16 @@ def test_production_rejects_non_official_openai_base_url() -> None:
 def test_production_requires_a_contact_delivery_recipient() -> None:
     with pytest.raises(ValidationError, match="contact delivery recipient"):
         Settings(**production_settings(contact_recipient_email=""))
+
+
+def test_production_requires_encrypted_data_transports() -> None:
+    with pytest.raises(ValidationError, match="PostgreSQL transport must require TLS"):
+        Settings(
+            **production_settings(
+                database_url="postgresql+psycopg://zylora:secret@db.example.com/zylora"
+            )
+        )
+    with pytest.raises(ValidationError, match="Redis and Celery transports must require TLS"):
+        Settings(**production_settings(redis_url="redis://cache.example.com/0"))
+    with pytest.raises(ValidationError, match="S3-compatible endpoint must use HTTPS"):
+        Settings(**production_settings(s3_endpoint_url="http://objects.example.com"))

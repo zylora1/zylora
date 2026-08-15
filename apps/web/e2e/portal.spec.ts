@@ -16,7 +16,7 @@ test('User portal presents the first-use path and stable responsive navigation',
   });
 
   const response = await page.goto('/app');
-  expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');
+  expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow, noarchive');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Publish your first website' }),
   ).toBeVisible();
@@ -29,10 +29,10 @@ test('User portal presents the first-use path and stable responsive navigation',
   await expect(navigation).toBeVisible();
   await navigation.getByRole('link', { name: 'Analytics' }).click();
   await expect(page).toHaveURL(/\/app\/analytics$/);
+  await expect(page.getByRole('heading', { name: 'Publish your first website' })).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Analytics begins with real traffic' }),
+    page.getByText(/Analytics becomes available after your published Website/i),
   ).toBeVisible();
-  await expect(page.getByText(/zero-value metrics/i)).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

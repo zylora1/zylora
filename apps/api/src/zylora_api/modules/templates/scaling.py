@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
+from zylora_api.modules.templates.families import TEMPLATE_FAMILIES, TemplateFamily
 from zylora_api.modules.templates.validation import document_checksum, validate_document
 
 SCALE_TARGET = 1_000
@@ -396,7 +397,12 @@ def _services(profile: CategoryProfile, archetype: Archetype, prefix: str) -> di
     )
 
 
-def _editorial(profile: CategoryProfile, archetype: Archetype, prefix: str) -> dict[str, Any]:
+def _editorial(
+    profile: CategoryProfile,
+    archetype: Archetype,
+    prefix: str,
+    family: TemplateFamily | None = None,
+) -> dict[str, Any]:
     cards = [
         _component(
             f"{prefix}-card-{index}", "CARD", {"eyebrow": eyebrow, "heading": heading, "body": body}
@@ -429,9 +435,15 @@ def _editorial(profile: CategoryProfile, archetype: Archetype, prefix: str) -> d
             "eyebrow": "A better starting point",
             "heading": "The details that shape a decision",
             "body": "Use a few precise ideas to build confidence and context.",
+            "tone": family.section_tone if family else "default",
         },
         children=[
-            _component(f"{prefix}-grid", "GRID", {"columns": 3, "gap": "medium"}, children=cards)
+            _component(
+                f"{prefix}-grid",
+                "GRID",
+                {"columns": family.grid_columns if family else 3, "gap": "medium"},
+                children=cards,
+            )
         ],
     )
 
@@ -504,10 +516,42 @@ def _footer(name: str, prefix: str) -> dict[str, Any]:
     )
 
 
+def _media_component(
+    profile: CategoryProfile, name: str, layout: TemplateFamily
+) -> dict[str, Any] | None:
+    if layout.media_mode == "minimal":
+        return None
+    return _component(
+        "home-family-media",
+        "MEDIA",
+        {
+            "mode": layout.media_mode,
+            "heading": "A closer look",
+            "body": f"A visual expression of {name} for {profile.audience}.",
+        },
+    )
+
+
 def _home_components(
-    profile: CategoryProfile, name: str, archetype: Archetype, layout: Layout
+    profile: CategoryProfile, name: str, archetype: Archetype, layout: TemplateFamily
 ) -> list[dict[str, Any]]:
     prefix = "home"
+    hero_props: dict[str, Any] = {
+        "eyebrow": profile.industry.upper(),
+        "heading": archetype.promise,
+        "body": f"{name} is a {profile.industry} for {profile.audience}.",
+        "primaryCta": {
+            "label": "Start a conversation",
+            "link": {"kind": "SECTION", "target": "contact"},
+        },
+        "align": layout.hero_align,
+        "treatment": layout.section_tone,
+    }
+    if layout.secondary_cta:
+        hero_props["secondaryCta"] = {
+            "label": "Explore the approach",
+            "link": {"kind": "SECTION", "target": "services"},
+        }
     components = [
         _component(
             f"{prefix}-navigation",
@@ -523,22 +567,16 @@ def _home_components(
         _component(
             f"{prefix}-hero",
             "HERO",
-            {
-                "eyebrow": profile.industry.upper(),
-                "heading": archetype.promise,
-                "body": f"{name} is a {profile.industry} for {profile.audience}.",
-                "primaryCta": {
-                    "label": "Start a conversation",
-                    "link": {"kind": "SECTION", "target": "contact"},
-                },
-                "align": "left" if layout.slug not in {"editorial-grid", "story-led"} else "center",
-            },
+            hero_props,
             interactions=[{"trigger": "CLICK", "action": "SCROLL", "target": "contact"}],
         ),
     ]
+    media = _media_component(profile, name, layout)
+    if media is not None:
+        components.append(media)
     fragments = {
         "services": _services(profile, archetype, prefix),
-        "editorial": _editorial(profile, archetype, prefix),
+        "editorial": _editorial(profile, archetype, prefix, layout),
         "story": _story(profile, archetype, prefix),
         "faq": _faq(prefix),
     }
@@ -628,7 +666,7 @@ def _supporting_pages(
 
 
 def _document(
-    profile: CategoryProfile, name: str, archetype: Archetype, layout: Layout
+    profile: CategoryProfile, name: str, archetype: Archetype, layout: TemplateFamily
 ) -> dict[str, Any]:
     primary, accent = layout.palette
     return {
@@ -644,8 +682,8 @@ def _document(
         "theme": {
             "primary": primary,
             "accent": accent,
-            "surface": "#FFFDF8",
-            "ink": "#17211D",
+            "surface": layout.surface,
+            "ink": layout.ink,
             "heading_font": layout.heading_font,
             "body_font": "INTER",
         },
@@ -684,9 +722,9 @@ def build_scaled_catalogue(limit: int = SCALE_TARGET) -> list[dict[str, Any]]:
     catalogue: list[dict[str, Any]] = []
     for group in range(10):
         for archetype_index, archetype in enumerate(ARCHETYPES):
-            layout_index = (archetype_index + group) % len(LAYOUTS)
-            layout = LAYOUTS[layout_index]
-            name_index = (layout_index + 2 * group) % len(LAYOUTS)
+            family_index = (10 * group + archetype_index) % len(TEMPLATE_FAMILIES)
+            layout = TEMPLATE_FAMILIES[family_index]
+            name_index = (family_index + group) % len(CATEGORY_PROFILES[0].stems)
             for profile in CATEGORY_PROFILES:
                 name = (
                     f"{profile.stems[archetype_index]} {profile.stems[name_index]} "
@@ -704,7 +742,12 @@ def build_scaled_catalogue(limit: int = SCALE_TARGET) -> list[dict[str, Any]]:
                         "category_slug": profile.slug,
                         "category_name": profile.name,
                         "category_description": profile.description,
-                        "tags": [profile.slug, f"voice-{archetype.slug}", f"layout-{layout.slug}"],
+                        "tags": [
+                            profile.slug,
+                            f"voice-{archetype.slug}",
+                            f"layout-{layout.layout_slug}",
+                            f"family-{layout.slug}",
+                        ],
                         "featured_order": 100 + len(catalogue),
                         "document": _document(profile, name, archetype, layout),
                     }
@@ -737,9 +780,9 @@ def assess_scale_quality(catalogue: list[dict[str, Any]]) -> ScaleQualityReport:
     archetypes = {
         tag for item in catalogue for tag in item["tags"] if str(tag).startswith("voice-")
     }
-    layouts = {tag for item in catalogue for tag in item["tags"] if str(tag).startswith("layout-")}
+    layouts = {tag for item in catalogue for tag in item["tags"] if str(tag).startswith("family-")}
     page_counts = tuple(sorted({len(document["pages"]) for document in documents}))
-    minimum_layouts = min(len(LAYOUTS), max(1, len(catalogue) // len(CATEGORY_PROFILES)))
+    minimum_layouts = min(len(TEMPLATE_FAMILIES), max(1, len(catalogue) // len(CATEGORY_PROFILES)))
     minimum_archetypes = min(len(ARCHETYPES), max(1, len(catalogue) // len(CATEGORY_PROFILES)))
     if len(set(slugs)) != len(slugs):
         errors.append("duplicate_slug")

@@ -20,6 +20,20 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
+from zylora_api.db.activation_models import (
+    AcquisitionAttribution,
+    ProductEvent,
+    WebsiteDigestDelivery,
+    WebsiteValueState,
+    ZeroLeadCheckpoint,
+)
+from zylora_api.db.ai_builder_models import (
+    AiGenerationArtifact,
+    AiGenerationEvent,
+    AiGenerationJob,
+    AiSiteGeneration,
+    AiSiteProject,
+)
 from zylora_api.db.auth_models import (
     AuditLog,
     AuthAttempt,
@@ -67,6 +81,7 @@ from zylora_api.db.commerce_models import (
     WebsiteExportArtifact,
 )
 from zylora_api.db.deployment_models import Deployment, DeploymentEvent, Domain
+from zylora_api.db.knowledge_models import KnowledgeSource
 from zylora_api.db.lead_models import (
     AnalyticsDailyRollup,
     AnalyticsEvent,
@@ -96,11 +111,22 @@ from zylora_api.db.website_models import (
     WebsitePagePathChange,
     WebsiteVersion,
 )
+from zylora_api.db.whatsapp_models import (
+    WhatsAppCallbackEvent,
+    WhatsAppNotification,
+    WhatsAppNotificationSetting,
+)
 
 __all__ = [
+    "AcquisitionAttribution",
     "AiCreditAccount",
     "AiCreditLedger",
+    "AiGenerationArtifact",
+    "AiGenerationEvent",
+    "AiGenerationJob",
     "AiOperation",
+    "AiSiteGeneration",
+    "AiSiteProject",
     "AnalyticsDailyRollup",
     "AnalyticsEvent",
     "AuditLog",
@@ -126,6 +152,7 @@ __all__ = [
     "ExportPrice",
     "ExportPurchase",
     "Invoice",
+    "KnowledgeSource",
     "Lead",
     "LeadCreditAccount",
     "LeadCreditLedger",
@@ -141,6 +168,7 @@ __all__ = [
     "PlanCatalog",
     "PlanEntitlement",
     "PlanPrice",
+    "ProductEvent",
     "Session",
     "Subscription",
     "SuperAdminProfile",
@@ -154,11 +182,17 @@ __all__ = [
     "TransactionalEmail",
     "User",
     "Website",
+    "WebsiteDigestDelivery",
     "WebsiteExportArtifact",
     "WebsiteOwnership",
     "WebsitePage",
     "WebsitePagePathChange",
+    "WebsiteValueState",
     "WebsiteVersion",
+    "WhatsAppCallbackEvent",
+    "WhatsAppNotification",
+    "WhatsAppNotificationSetting",
+    "ZeroLeadCheckpoint",
 ]
 
 

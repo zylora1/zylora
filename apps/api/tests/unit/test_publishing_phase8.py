@@ -336,7 +336,25 @@ def test_deployed_renderer_includes_a_real_chatbot_widget_but_export_mode_does_n
         "seo": {},
         "components": [],
     }
-    deployed = render_page(page, [("Home", "/")]).decode()
+    lead_form: dict[str, Any] = {
+        "id": "contact",
+        "type": "LEAD_FORM",
+        "props": {
+            "heading": "Send an enquiry",
+            "body": "Tell us how we can help.",
+            "fields": [
+                {"name": "name", "label": "Name", "type": "text"},
+                {"name": "email", "label": "Email", "type": "email"},
+                {"name": "message", "label": "Message", "type": "text"},
+            ],
+            "consentText": "I agree to be contacted.",
+            "submitLabel": "Send",
+        },
+        "children": [],
+    }
+    deployed = render_page(
+        page, [("Home", "/")], lead_form=lead_form, turnstile_site_key="site-key"
+    ).decode()
     exported = render_page(
         page, [("Home", "/")], include_chatbot=False, include_analytics=False
     ).decode()
@@ -345,6 +363,16 @@ def test_deployed_renderer_includes_a_real_chatbot_widget_but_export_mode_does_n
     assert "textContent" in deployed
     assert "/api/v1/public/analytics/page-views" in deployed
     assert "zylora.analytics.session" in deployed
+    assert "/api/v1/public/leads" in deployed
+    assert "/chatbot/conversations/${conversation.id}/messages" in deployed
+    assert "/chatbot/conversations/${conversation.id}/leads" not in deployed
+    assert 'data-auto-delay="10000"' in deployed
+    assert "data-zylora-lead-dialog" in deployed
+    assert "data-zylora-lead-open" in deployed
+    assert "zylora.lead-form.dismissed" in deployed
+    assert "zylora.lead-form.submitted" in deployed
+    assert 'data-action="lead_submission"' in deployed
+    assert "challenges.cloudflare.com/turnstile" in deployed
     assert "/api/v1/public/chatbot/conversations" not in exported
     assert "Ask this Website" not in exported
     assert "/api/v1/public/analytics/page-views" not in exported

@@ -25,6 +25,34 @@ class AdminOverviewResponse(Schema):
     leads_last_30_days: int
 
 
+class AdminFunnelStep(Schema):
+    key: str
+    label: str
+    count: int
+    conversion_percent: float | None
+
+
+class AdminRetentionMetric(Schema):
+    days: int
+    eligible_accounts: int
+    retained_accounts: int
+    retention_percent: float
+
+
+class AdminGrowthResponse(Schema):
+    range_days: int | None
+    funnel: list[AdminFunnelStep]
+    active_value_sites_30d: int
+    previous_active_value_sites_30d: int
+    active_value_sites_change_percent: float | None
+    retention: list[AdminRetentionMetric]
+    published_with_first_lead: int
+    published_with_zero_leads: int
+    paid_with_first_lead: int
+    paid_with_zero_leads: int
+    subscription_state_counts: dict[str, int]
+
+
 class AdminRecord(Schema):
     id: UUID | str
     label: str

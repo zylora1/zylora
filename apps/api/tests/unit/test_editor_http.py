@@ -180,6 +180,12 @@ def setup(monkeypatch: pytest.MonkeyPatch) -> tuple[Website, WebsiteVersion, obj
     monkeypatch.setattr(api, "RevisionService", FakeRevisionService)
     monkeypatch.setattr(api, "AiCreditService", FakeCreditService)
     monkeypatch.setattr(api, "EditorService", FakeEditorService)
+
+    async def record_product_event(*args: object, **kwargs: object) -> tuple[object, bool]:
+        del args, kwargs
+        return SimpleNamespace(), True
+
+    monkeypatch.setattr(api.ProductAnalyticsService, "record_event", record_product_event)
     return site, site_version, SimpleNamespace(user=SimpleNamespace(id=owner_id)), FakeSession()
 
 

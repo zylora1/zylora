@@ -242,6 +242,10 @@ RECEIVED -> VALIDATED -> IDEMPOTENCY_CHECKED -> COMMITTED
 committed together. A duplicate key with the same fingerprint returns the prior result; a different
 fingerprint is rejected. Notification delivery is asynchronous and cannot roll back a valid Lead.
 
+Only an explicit published-Website form submission can enter this operation. Chatbot conversations
+and messages remain in the Q&A state model and cannot transition into Lead persistence, credit
+deduction, analytics conversion, or Lead notification delivery.
+
 ## Knowledge index lifecycle
 
 ```text
@@ -346,3 +350,55 @@ In-app notifications transition `UNREAD -> READ -> ARCHIVED` only for their reci
 email jobs use `QUEUED -> SENDING -> SENT`, or `SENDING -> RETRY_WAIT -> SENDING` with bounded retry;
 permanent failure reaches `FAILED`. The durable outbox event is terminal only after provider acceptance
 or a safe exhausted failure state.
+## AI website generation lifecycle
+
+```text
+CREATED -> QUEUED -> CLAIMED -> GENERATING -> VALIDATING -> SCANNING
+        -> SANDBOXING -> BUILDING -> STORING -> COMPLETED
+any nonterminal state -> FAILED | CANCELLED
+CLAIMED/GENERATING/VALIDATING/SCANNING/SANDBOXING/BUILDING/STORING
+        -> QUEUED (expired lease or retryable failure within attempt bound)
+```
+
+The companion execution row moves `PENDING -> RUNNING -> SUCCEEDED`, or `RUNNING -> RETRY_WAIT -> PENDING` for bounded retry, with terminal `FAILED`/`CANCELLED`. A PostgreSQL lease token and row lock authorize every completion. A late or duplicate worker cannot commit after losing its lease. User retry creates a new linked immutable generation version. Completed artifact metadata is immutable and owner-scoped. Generation completion means authenticated preview readiness only; it cannot transition directly into the Website publishing state machine.
+
+## Knowledge source lifecycle
+
+```text
+UPLOAD -> UPLOADED -> SCANNING -> PROCESSING -> READY
+SCANNING -> PENDING (retryable scanner outage within attempt bound)
+UPLOADED/SCANNING/PROCESSING -> FAILED (terminal validation, scan, extraction, or storage error)
+FAILED -> UPLOADED (authorized manual retry and source version increment)
+UPLOADED/SCANNING/PROCESSING/READY/FAILED -> DELETED (authorized owner deletion)
+```
+
+`READY` means the private extracted representation is valid and a rebuild intent was committed; it
+does not itself mean that generation is active. `indexed_at` is set only when a generation
+containing that source atomically activates. Deletion hides the source before asynchronous object
+cleanup and replacement-index construction.
+
+## WhatsApp owner-notification lifecycle
+
+```text
+QUEUED -> SENDING -> SENT -> DELIVERED -> READ
+SENDING -> RETRY_WAIT -> SENDING (retryable provider failure within attempt bound)
+SENDING/RETRY_WAIT -> FAILED (permanent provider failure or exhausted attempts)
+QUEUED/SENDING -> SUPPRESSED (owner disabled the setting before send)
+```
+
+The unique notification idempotency key prevents duplicate sends for one Lead or test intent.
+Twilio callbacks are signature-verified, digest-deduplicated, and monotonic: a lower-ranked callback
+cannot move a notification backward. Provider delivery state never determines whether a Lead
+exists; the Lead transaction is already committed.
+
+
+## Activation value and digest projections
+
+website_value_states transitions monotonically from PUBLISHED to FIRST_VISITOR to FIRST_LEAD. The
+latter transition occurs only inside the successful form-only Lead transaction and is locked and
+idempotent. Republish does not generate another first-value event. Ownership transfer creates a new
+private owner projection while preserving the Website-level event history.
+
+Monthly digest delivery uses PENDING to SENT, FAILED, or SKIPPED; its unique Website/month/channel key
+prevents duplicate sends. Zero-Lead checkpoints use PENDING to NOTIFIED or SKIPPED with unique
+Website/publication/checkpoint keys for day 14 and day 30.

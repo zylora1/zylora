@@ -513,3 +513,166 @@ async def test_transactional_email_terminal_and_invalid_paths_are_safe() -> None
         with pytest.raises(ValueError, match="payload is invalid"):
             service._decrypt(invalid_payload)
         await session.rollback()
+
+
+@pytest.mark.integration
+async def test_first_visitor_and_first_lead_are_transactional_and_exactly_once() -> None:
+    from zylora_api.db.activation_models import ProductEvent, WebsiteValueState
+    from zylora_api.modules.analytics.activation import ProductAnalyticsService
+    from zylora_api.modules.commerce.quotas import LeadService
+
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await published_site(session)
+        product = ProductAnalyticsService(session)
+        published_at = datetime.now(UTC)
+        await product.mark_published(website, published_at)
+        analytics = AnalyticsService(session)
+        await analytics.record(
+            website_id=website.id,
+            owner_user_id=owner.id,
+            event_type="PAGE_VIEW",
+            idempotency_key=f"activation-page-{uuid4().hex}",
+            session_hash=b"a" * 32,
+        )
+        first_state = await session.scalar(
+            select(WebsiteValueState).where(WebsiteValueState.website_id == website.id)
+        )
+        assert first_state is not None and first_state.first_visitor_at is not None
+        first_visitor_at = first_state.first_visitor_at
+        await analytics.record(
+            website_id=website.id,
+            owner_user_id=owner.id,
+            event_type="PAGE_VIEW",
+            idempotency_key=f"activation-page-{uuid4().hex}",
+            session_hash=b"b" * 32,
+        )
+        assert first_state.first_visitor_at == first_visitor_at
+
+        key = f"activation-lead-{uuid4().hex}"
+        first = await LeadService(session).capture(
+            website_id=website.id,
+            source="FORM",
+            idempotency_key=key,
+            name="Ada",
+            email="ada@example.com",
+            phone=None,
+            enquiry="Please send details.",
+            owner_country_code="ZZ",
+            correlation_id="activation-first-lead",
+            consent={"contact": True},
+        )
+        duplicate = await LeadService(session).capture(
+            website_id=website.id,
+            source="FORM",
+            idempotency_key=key,
+            name="Ada",
+            email="ada@example.com",
+            phone=None,
+            enquiry="Please send details.",
+            owner_country_code="ZZ",
+            correlation_id="activation-first-lead-duplicate",
+            consent={"contact": True},
+        )
+        assert duplicate.duplicate is True
+        assert duplicate.lead.id == first.lead.id
+        assert (
+            await session.scalar(
+                select(func.count(ProductEvent.id)).where(
+                    ProductEvent.website_id == website.id,
+                    ProductEvent.event_type == "FIRST_VISITOR",
+                )
+            )
+            == 1
+        )
+        assert (
+            await session.scalar(
+                select(func.count(ProductEvent.id)).where(
+                    ProductEvent.website_id == website.id,
+                    ProductEvent.event_type == "FIRST_LEAD",
+                )
+            )
+            == 1
+        )
+        assert first_state.first_lead_at is not None
+        await session.commit()
+
+
+@pytest.mark.integration
+async def test_attribution_digest_zero_lead_and_north_star_are_idempotent_and_isolated() -> None:
+    from datetime import timedelta
+
+    from zylora_api.db.activation_models import (
+        AcquisitionAttribution,
+        WebsiteDigestDelivery,
+        WebsiteValueState,
+        ZeroLeadCheckpoint,
+    )
+    from zylora_api.modules.analytics.activation import AttributionInput, ProductAnalyticsService
+
+    factory = async_sessionmaker(get_engine(), expire_on_commit=False)
+    async with factory() as session:
+        owner, website = await published_site(session)
+        service = ProductAnalyticsService(session)
+        await service.capture_attribution(
+            user_id=owner.id,
+            attribution=AttributionInput(
+                utm_source="instagram",
+                utm_campaign="launch",
+                landing_page="/signup?utm_source=instagram",
+            ),
+            country_code="in",
+            signup_source="EMAIL",
+        )
+        await service.capture_attribution(
+            user_id=owner.id,
+            attribution=AttributionInput(utm_source="other"),
+            country_code="US",
+            signup_source="EMAIL",
+        )
+        attribution = await session.scalar(
+            select(AcquisitionAttribution).where(AcquisitionAttribution.user_id == owner.id)
+        )
+        assert attribution is not None
+        assert attribution.normalized_source == "INSTAGRAM"
+        assert attribution.country_code == "IN"
+        assert attribution.utm_campaign == "launch"
+
+        published_at = datetime.now(UTC) - timedelta(days=31)
+        await service.mark_published(website, published_at)
+        queued = await service.queue_monthly_digests(
+            AuthCrypto("activation-digest-secret-long-enough"), limit=100
+        )
+        assert queued >= 1
+        assert (
+            await service.queue_monthly_digests(
+                AuthCrypto("activation-digest-secret-long-enough"), limit=100
+            )
+            == 0
+        )
+        assert (
+            await session.scalar(
+                select(func.count(WebsiteDigestDelivery.id)).where(
+                    WebsiteDigestDelivery.website_id == website.id
+                )
+            )
+            == 1
+        )
+        assert await service.process_zero_lead_checkpoints(limit=100) >= 2
+        assert await service.process_zero_lead_checkpoints(limit=100) == 0
+        assert (
+            await session.scalar(
+                select(func.count(ZeroLeadCheckpoint.id)).where(
+                    ZeroLeadCheckpoint.website_id == website.id
+                )
+            )
+            == 2
+        )
+        state = await session.scalar(
+            select(WebsiteValueState).where(WebsiteValueState.website_id == website.id)
+        )
+        assert state is not None and state.first_lead_at is None
+        growth = await service.admin_growth(30)
+        assert growth.active_value_sites_30d >= 0
+        assert [item.days for item in growth.retention] == [30, 60, 90]
+        await session.commit()

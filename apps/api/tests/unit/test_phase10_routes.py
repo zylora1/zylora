@@ -68,6 +68,25 @@ def user_identity(account_type: str = "USER") -> tuple[RequestIdentity, AuthCryp
     return RequestIdentity(session, user, "phase10-token"), crypto
 
 
+async def test_lead_service_rejects_chatbot_sources_before_any_persistence() -> None:
+    from zylora_api.modules.commerce.quotas import LeadService
+
+    database = FakeSession()
+    with pytest.raises(AuthProblem, match="Lead source is invalid"):
+        await LeadService(database).capture(  # type: ignore[arg-type]
+            website_id=uuid4(),
+            source="CHATBOT",
+            idempotency_key="chatbot-source-must-be-rejected",
+            name="Ada",
+            email="ada@example.com",
+            phone=None,
+            enquiry="Please contact me",
+            owner_country_code="ZZ",
+            correlation_id="chatbot-source-rejection",
+        )
+    assert database.added == [] and database.commits == 0
+
+
 async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_identity(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -84,12 +103,10 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
         def __init__(self, _: object) -> None: ...
 
         async def capture(self, **values: object) -> SimpleNamespace:
-            source = str(values["source"])
+            assert values["source"] == "FORM"
             return SimpleNamespace(
-                lead=SimpleNamespace(
-                    id=uuid4(), source=source, whatsapp_notification_queued=source == "FORM"
-                ),
-                duplicate=source == "CHATBOT",
+                lead=SimpleNamespace(id=uuid4(), source="FORM", whatsapp_notification_queued=True),
+                duplicate=False,
             )
 
     class Analytics:
@@ -116,14 +133,6 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
                 source_paths=["/"],
             )
 
-        async def capture_conversation_lead(self, **_: object) -> SimpleNamespace:
-            return SimpleNamespace(
-                lead=SimpleNamespace(
-                    id=uuid4(), source="CHATBOT", whatsapp_notification_queued=False
-                ),
-                duplicate=True,
-            )
-
     async def context(*_: object) -> public_api.PublicWebsite:
         return public_api.PublicWebsite(
             website=SimpleNamespace(id=website_id), hostname="site.example", owner_country_code="ZZ"
@@ -140,6 +149,9 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
     monkeypatch.setattr(public_api, "AnalyticsService", Analytics)
     monkeypatch.setattr(public_api, "ChatbotService", Chats)
     app.dependency_overrides[get_crypto] = lambda: AuthCrypto("phase11-public-analytics-secret")
+    assert "/api/v1/public/chatbot/conversations/{conversation_id}/leads" not in {
+        route.path for route in app.routes if hasattr(route, "path")
+    }
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://testserver"
@@ -171,14 +183,6 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
             f"/api/v1/public/chatbot/conversations/{uuid4()}/messages",
             json={"access_token": "a" * 32, "message": "Hello"},
         )
-        chatbot_lead = await client.post(
-            f"/api/v1/public/chatbot/conversations/{uuid4()}/leads",
-            json={"name": "Ada", "enquiry": "Please call"},
-            headers={
-                "Idempotency-Key": "phase10-public-chat-lead-0001",
-                "X-Zylora-Conversation-Token": "a" * 32,
-            },
-        )
         rejected_tenant = await client.post(
             "/api/v1/public/leads",
             json={"name": "Ada", "enquiry": "Please call", "website_id": str(uuid4())},
@@ -195,11 +199,10 @@ async def test_public_routes_are_host_scoped_and_never_accept_client_tenant_iden
     assert form.status_code == 201 and form.json()["source"] == "FORM"
     assert start.status_code == 201 and start.json()["access_token"] == "opaque-capability"
     assert message.json()["answer"] == "Grounded answer"
-    assert chatbot_lead.status_code == 200 and chatbot_lead.json()["duplicate"] is True
     assert rejected_tenant.status_code == 422
-    assert len(challenge_calls) == 2
+    assert len(challenge_calls) == 1
     assert all(call["expected_hostname"] == "site.example" for call in challenge_calls)
-    assert database.commits == 5
+    assert database.commits == 4
 
 
 async def test_owner_lead_and_credit_routes_filter_through_the_user_identity(
@@ -374,6 +377,8 @@ async def test_phase11_analytics_and_notification_routes_are_identity_scoped(
                 sessions=3,
                 visitors=2,
                 leads=1,
+                lead_form_opens=2,
+                lead_form_submissions=1,
                 form_leads=1,
                 chatbot_leads=0,
                 chatbot_conversations=1,

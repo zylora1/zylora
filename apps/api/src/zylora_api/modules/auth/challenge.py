@@ -155,7 +155,10 @@ class ChallengeService:
                 reason="hostname_mismatch",
                 problem=CHALLENGE_FAILED,
             )
-        if result.action != expected_action:
+        action_matches = result.action == expected_action or (
+            self._settings.uses_official_turnstile_test_secret and result.action in {None, "test"}
+        )
+        if not action_matches:
             await self._reject(
                 expected_action,
                 remote_ip,

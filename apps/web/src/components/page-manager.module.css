@@ -461,3 +461,127 @@
     width: 100%;
   }
 }
+
+/* Page Manager: dense tree first, visual clarity second. */
+.editor {
+  gap: 1.25rem;
+}
+.editorHeader {
+  padding-bottom: 1.25rem;
+}
+.editorHeader a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: var(--z-radius-sm);
+  background: var(--z-color-brand-soft);
+  padding: 0.5rem 0.65rem;
+}
+.editorHeader h1,
+.panelHeading h2,
+.settingsHeading h2,
+.navigationPanel h2,
+.noSelection h2 {
+  font-family: var(--z-font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.editorGrid {
+  gap: 1rem;
+}
+.treePanel,
+.settingsPanel,
+.navigationPanel {
+  border-radius: var(--z-radius-md);
+  box-shadow: var(--z-shadow-card);
+  overflow: hidden;
+}
+.treePanel {
+  background: var(--z-color-surface-raised);
+}
+.panelHeading {
+  background: #fbfcf8;
+}
+.addButton,
+.primaryButton {
+  border-radius: var(--z-radius-sm);
+  box-shadow: 0 0.25rem 0.7rem rgb(23 58 54 / 14%);
+}
+.search {
+  border-radius: var(--z-radius-sm);
+}
+.treeScroll {
+  background: #fcfdf9;
+}
+.treeRow,
+.treeRowActive {
+  min-height: 3.05rem;
+}
+.treeRow:hover {
+  background: var(--z-color-surface-subtle);
+}
+.treeRowActive {
+  background: var(--z-color-brand-soft);
+  box-shadow: inset 3px 0 0 var(--z-color-action);
+}
+.expandButton {
+  border-radius: var(--z-radius-sm);
+}
+.pageButton {
+  border-radius: 0;
+}
+.pageButton:hover {
+  color: var(--z-color-brand);
+}
+.pageButton strong {
+  font-size: 0.76rem;
+}
+.settingsPanel {
+  background: var(--z-color-surface-raised);
+}
+.settingsForm {
+  padding: 1.35rem;
+}
+.settingsForm fieldset {
+  border-radius: var(--z-radius-sm);
+  background: #fbfcf8;
+}
+.slugField,
+.checkRow {
+  border-radius: var(--z-radius-sm);
+}
+.pathReadout {
+  border-radius: 0 var(--z-radius-sm) var(--z-radius-sm) 0;
+  background: var(--z-color-brand-soft);
+}
+.orderButtons button,
+.quietButton,
+.deleteButton {
+  border-radius: var(--z-radius-sm);
+}
+.quietButton:hover {
+  border-color: var(--z-color-brand);
+  background: var(--z-color-brand-soft);
+  color: var(--z-color-brand);
+}
+.deleteButton:hover {
+  background: var(--z-color-danger-surface);
+}
+.navigationPanel {
+  background: #203a35;
+  color: #f5f7f3;
+}
+.navigationPanel > p:first-child,
+.navigationHelp,
+.navigationPanel li small {
+  color: rgb(255 255 255 / 62%);
+}
+.navigationPanel ul {
+  border-color: rgb(255 255 255 / 20%);
+}
+.navigationPanel li {
+  color: rgb(255 255 255 / 88%);
+}
+.noSelection {
+  background: var(--z-color-surface-raised);
+}

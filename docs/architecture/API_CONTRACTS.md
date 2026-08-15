@@ -340,11 +340,11 @@ CI must fail on:
 
 ## Phase 10 public chatbot, Leads, and credit contracts
 
-`/api/v1/public/*` is a separate anonymous trust boundary. Form Leads and chatbot conversion resolve
+`/api/v1/public/*` is a separate anonymous trust boundary. Form Leads and chatbot conversations resolve
 the Website from the active request hostname, not client Website/owner/index identifiers. Public Lead
 writes require `Idempotency-Key`; same payload retry returns the original result and a changed payload
 is rejected. Conversation messages require the per-conversation opaque capability and can only operate
-under their original active Website host.
+under their original active Website host. No chatbot route invokes Lead capture.
 
 `/api/v1/websites/{website_id}/leads` and `/api/v1/lead-credits` use the User session and current owner
 filter. Super Admin uses isolated, CSRF-protected `/api/v1/admin/lead-credit-policy` and
@@ -384,3 +384,17 @@ requires the server-side `contact` Turnstile action and sends no contact fields 
 Validation failures return `422`; missing production delivery configuration returns
 `contact_unavailable`; challenge failures retain the existing safe challenge error contract.
 No contact submission, recipient, visitor IP, or raw message has a public read endpoint.
+
+## Activation and value analytics
+
+POST /api/v1/public/analytics/events accepts only LEAD_FORM_OPENED with opaque event/session
+identifiers and a relative page path. The published host resolves the Website; the payload cannot
+select a tenant and cannot contain form or chatbot content.
+
+GET /api/v1/analytics?period_days=7|30|90&website_id= extends the existing owner-scoped projection
+with form opens/submissions, visitor-to-Lead conversion, first visitor/Lead timestamps, time to first
+Lead, previous-period comparison, and deterministic zero-Lead recommendations.
+
+GET /api/v1/admin/analytics/growth?period_days=7|30|90 is available only through the isolated Super
+Admin identity and returns the persisted activation funnel, trailing-30-day North Star, and
+30/60/90-day deterministic retention projections.

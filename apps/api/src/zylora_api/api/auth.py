@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.core.config import Settings, get_settings
 from zylora_api.db.auth_models import User
 from zylora_api.db.session import get_session
+from zylora_api.modules.analytics.activation import AttributionInput
 from zylora_api.modules.audit.service import AuditService
 from zylora_api.modules.auth.challenge import ChallengeService
 from zylora_api.modules.auth.http import (
@@ -49,6 +50,20 @@ from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.auth.service import AuthenticationService, SessionService
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
+
+
+def _attribution(payload: object) -> AttributionInput:
+    value = getattr(payload, "attribution", None)
+    return AttributionInput(**value.model_dump()) if value is not None else AttributionInput()
+
+
+def _signup_country(request: Request, settings: Settings) -> str:
+    # Cloudflare strips and supplies this header at the production edge; local/client
+    # values are ignored.
+    if settings.environment != "production":
+        return "ZZ"
+    candidate = (request.headers.get("cf-ipcountry") or "").strip().upper()
+    return candidate if len(candidate) == 2 and candidate.isalpha() else "ZZ"
 
 
 async def enforce_challenge(
@@ -116,6 +131,8 @@ async def signup(
         payload.password,
         ip_address=request_ip(request, settings),
         correlation_id=correlation_id(request),
+        attribution=_attribution(payload),
+        country_code=_signup_country(request, settings),
     )
     return VerificationRequiredResponse(expires_in_seconds=settings.verification_minutes * 60)
 
@@ -244,7 +261,10 @@ async def google_start(
     await enforce_challenge(payload, request, settings, challenge, action="login")
     return OAuthStartResponse(
         authorization_url=await service.start(
-            ip_address=request_ip(request, settings), correlation_id=correlation_id(request)
+            ip_address=request_ip(request, settings),
+            correlation_id=correlation_id(request),
+            attribution=_attribution(payload),
+            country_code=_signup_country(request, settings),
         )
     )
 

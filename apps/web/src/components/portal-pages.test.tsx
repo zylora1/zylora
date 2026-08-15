@@ -36,7 +36,7 @@ describe('portal pages', () => {
       }),
     );
     render(<UserSectionPage section={userSections.find(({ slug }) => slug === 'analytics')!} />);
-    expect(await screen.findByText('No analytics yet')).toBeVisible();
+    expect(await screen.findByText('Your Website is ready for its first visitor')).toBeVisible();
 
     render(<AdminSectionPage section={adminSections.find(({ slug }) => slug === 'health')!} />);
     expect(screen.getByText('Checking live operational dependencies…')).toBeVisible();
