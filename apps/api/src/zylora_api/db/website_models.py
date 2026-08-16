@@ -50,6 +50,10 @@ class Website(Base):
             unique=True,
             postgresql_where=text("live_owner_user_id IS NOT NULL"),
         ),
+        CheckConstraint(
+            "site_origin IN ('TEMPLATE','AI')",
+            name="ck_websites_site_origin",
+        ),
     )
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
@@ -64,6 +68,9 @@ class Website(Base):
         PGUUID(as_uuid=True),
         ForeignKey("template_versions.id", ondelete="RESTRICT"),
         nullable=False,
+    )
+    site_origin: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="TEMPLATE", server_default="TEMPLATE"
     )
     display_name: Mapped[str] = mapped_column(String(160))
     status: Mapped[str] = mapped_column(String(24), default="DRAFT", server_default="DRAFT")

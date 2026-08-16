@@ -365,6 +365,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/pro-leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Admin Pro Leads */
+        get: operations["list_admin_pro_leads_api_v1_admin_pro_leads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pro-leads/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Admin Pro Lead Summary */
+        get: operations["get_admin_pro_lead_summary_api_v1_admin_pro_leads_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pro-leads/{pro_lead_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Pro Lead Status */
+        patch: operations["update_pro_lead_status_api_v1_admin_pro_leads__pro_lead_id__status_patch"];
+        trace?: never;
+    };
     "/api/v1/admin/sessions": {
         parameters: {
             query?: never;
@@ -1268,6 +1319,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/pro-enquiry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Pro Enquiry */
+        post: operations["submit_pro_enquiry_api_v1_public_pro_enquiry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/templates": {
         parameters: {
             query?: never;
@@ -1466,7 +1534,8 @@ export interface paths {
         get: operations["website_detail_api_v1_websites__website_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Website */
+        delete: operations["delete_website_api_v1_websites__website_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2931,6 +3000,23 @@ export interface components {
              */
             website_id: string;
         };
+        /** DraftRemovalSuggestion */
+        DraftRemovalSuggestion: {
+            /** Display Name */
+            display_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Last Modified At
+             * Format: date-time
+             */
+            last_modified_at: string;
+            /** Site Origin */
+            site_origin: string;
+        };
         /** EditorMutationResponse */
         EditorMutationResponse: {
             credits: components["schemas"]["CreditResponse"];
@@ -3652,6 +3738,100 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** ProLeadCreateRequest */
+        ProLeadCreateRequest: {
+            /** Company Website Url */
+            company_website_url?: string | null;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Name */
+            name: string;
+            /** Preferred Contact Time */
+            preferred_contact_time: string;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+            /** Website Type */
+            website_type: string;
+        };
+        /** ProLeadListResponse */
+        ProLeadListResponse: {
+            /** Items */
+            items: components["schemas"]["ProLeadResponse"][];
+            summary: components["schemas"]["ProLeadSummaryResponse"];
+        };
+        /** ProLeadResponse */
+        ProLeadResponse: {
+            /** Amount Received */
+            amount_received?: number | null;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Preferred Contact Time */
+            preferred_contact_time: string;
+            /** Reference Id */
+            reference_id: string;
+            /** Resolved At */
+            resolved_at?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PENDING" | "CLOSED" | "NOT_CLOSED";
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Website Type */
+            website_type: string;
+        };
+        /** ProLeadStatusUpdateRequest */
+        ProLeadStatusUpdateRequest: {
+            /** Amount Received */
+            amount_received?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "CLOSED" | "NOT_CLOSED";
+        };
+        /** ProLeadSummaryResponse */
+        ProLeadSummaryResponse: {
+            /**
+             * Amount Received
+             * @default 0
+             */
+            amount_received: number;
+            /**
+             * Closed
+             * @default 0
+             */
+            closed: number;
+            /**
+             * Not Closed
+             * @default 0
+             */
+            not_closed: number;
+            /**
+             * Pending
+             * @default 0
+             */
+            pending: number;
+            /**
+             * Total Pro Leads
+             * @default 0
+             */
+            total_pro_leads: number;
+        };
         /** PublicBlogPostResponse */
         PublicBlogPostResponse: {
             /** Canonical Path */
@@ -4234,8 +4414,21 @@ export interface components {
         };
         /** WebsiteListResponse */
         WebsiteListResponse: {
+            /**
+             * Draft Limit
+             * @default 10
+             */
+            draft_limit: number;
             /** Items */
             items: components["schemas"]["WebsiteResponse"][];
+            suggested_removal?: components["schemas"]["DraftRemovalSuggestion"] | null;
+            /**
+             * Total Drafts
+             * @default 0
+             */
+            total_drafts: number;
+            /** Warning */
+            warning?: string | null;
         };
         /** WebsitePageResponse */
         WebsitePageResponse: {
@@ -4302,6 +4495,11 @@ export interface components {
             path_changes?: components["schemas"]["PagePathChangeResponse"][];
             /** Revision */
             revision: number;
+            /**
+             * Site Origin
+             * @default TEMPLATE
+             */
+            site_origin: string;
             /**
              * Source Template Version Id
              * Format: uuid
@@ -5095,6 +5293,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOverviewResponse"];
+                };
+            };
+        };
+    };
+    list_admin_pro_leads_api_v1_admin_pro_leads_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProLeadListResponse"];
+                };
+            };
+        };
+    };
+    get_admin_pro_lead_summary_api_v1_admin_pro_leads_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProLeadSummaryResponse"];
+                };
+            };
+        };
+    };
+    update_pro_lead_status_api_v1_admin_pro_leads__pro_lead_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pro_lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProLeadStatusUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProLeadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -6765,6 +7038,39 @@ export interface operations {
             };
         };
     };
+    submit_pro_enquiry_api_v1_public_pro_enquiry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProLeadCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProLeadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     catalog_api_v1_templates_get: {
         parameters: {
             query?: {
@@ -7094,6 +7400,37 @@ export interface operations {
         };
     };
     website_detail_api_v1_websites__website_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                website_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_website_api_v1_websites__website_id__delete: {
         parameters: {
             query?: never;
             header?: never;

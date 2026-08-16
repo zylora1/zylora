@@ -272,3 +272,44 @@ class TransactionalEmail(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class ProLead(Base):
+    __tablename__ = "pro_leads"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('PENDING','CLOSED','NOT_CLOSED')",
+            name="ck_pro_leads_status",
+        ),
+        UniqueConstraint("reference_id", name="uq_pro_leads_reference_id"),
+        UniqueConstraint("idempotency_key", name="uq_pro_leads_idempotency_key"),
+        Index("ix_pro_leads_status_submitted", "status", "submitted_at"),
+        Index("ix_pro_leads_fingerprint", "request_fingerprint", "submitted_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    reference_id: Mapped[str] = mapped_column(String(32), nullable=False)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    email: Mapped[str] = mapped_column(String(320), nullable=False)
+    website_type: Mapped[str] = mapped_column(String(150), nullable=False)
+    preferred_contact_time: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="PENDING", server_default="PENDING"
+    )
+    amount_received: Mapped[int | None] = mapped_column(BigInteger)
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    request_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    is_spam: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    spam_score: Mapped[int | None] = mapped_column(Integer)
+    spam_reason_code: Mapped[str | None] = mapped_column(String(64))
+    submitted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

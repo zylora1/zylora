@@ -21,6 +21,7 @@ from zylora_api.modules.auth.http import (
 )
 from zylora_api.modules.auth.security import AuthCrypto
 from zylora_api.modules.websites.schemas import (
+    DraftRemovalSuggestion,
     InstantiateRequest,
     PageCreateRequest,
     PageDeleteRequest,
@@ -51,6 +52,7 @@ async def response(
         id=website.id,
         owner_user_id=website.owner_user_id,
         source_template_version_id=website.source_template_version_id,
+        site_origin=getattr(website, "site_origin", "TEMPLATE"),
         display_name=website.display_name,
         status=website.status,
         revision=website.revision or 0,
@@ -91,12 +93,25 @@ async def list_websites(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> WebsiteListResponse:
     service = WebsiteService(session)
-    items = [
-        await response(service, website)
-        for website in await service.list_for_owner(identity.user.id)
-    ]
+    websites = await service.list_for_owner(identity.user.id)
+    items = [await response(service, website) for website in websites]
+    total_drafts, warning, suggested_removal_site = await service.get_draft_status(identity.user.id)
+    suggested_removal = None
+    if suggested_removal_site:
+        suggested_removal = DraftRemovalSuggestion(
+            id=suggested_removal_site.id,
+            display_name=suggested_removal_site.display_name,
+            last_modified_at=suggested_removal_site.updated_at,
+            site_origin=getattr(suggested_removal_site, "site_origin", "TEMPLATE"),
+        )
     await session.commit()
-    return WebsiteListResponse(items=items)
+    return WebsiteListResponse(
+        items=items,
+        total_drafts=total_drafts,
+        draft_limit=10,
+        warning=warning,
+        suggested_removal=suggested_removal,
+    )
 
 
 @router.get("/websites/{website_id}", response_model=WebsiteResponse)
@@ -107,6 +122,33 @@ async def website_detail(
 ) -> WebsiteResponse:
     service = WebsiteService(session)
     result = await response(service, await service.get_for_owner(website_id, identity.user.id))
+    await session.commit()
+    return result
+
+
+@router.delete("/websites/{website_id}", response_model=WebsiteResponse)
+async def delete_website(
+    website_id: UUID,
+    request: Request,
+    identity: Annotated[RequestIdentity, Depends(get_user_identity)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    crypto: Annotated[AuthCrypto, Depends(get_crypto)],
+) -> WebsiteResponse:
+    require_json_origin(request, settings)
+    require_csrf(request, identity, crypto)
+    service = WebsiteService(session)
+    website = await service.delete_website(website_id, identity.user.id)
+    AuditService(session, crypto).record(
+        "website.deleted",
+        correlation_id=correlation_id(request),
+        actor_user_id=identity.user.id,
+        target_type="website",
+        target_id=str(website_id),
+        reason="USER_DELETE_DRAFT",
+        ip_address=request_ip(request, settings),
+    )
+    result = await response(service, website)
     await session.commit()
     return result
 

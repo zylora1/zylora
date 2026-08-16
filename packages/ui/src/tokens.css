@@ -1,33 +1,33 @@
 :root {
   color-scheme: dark;
-  --z-color-canvas: #080b12;
-  --z-color-surface: #0c111a;
-  --z-color-surface-raised: #111722;
-  --z-color-surface-subtle: #171e2a;
-  --z-color-surface-inverse: #f2f5fa;
-  --z-color-ink: #f2f5fa;
-  --z-color-ink-soft: #c2cad7;
-  --z-color-ink-muted: #8490a4;
-  --z-color-border: #252d3a;
-  --z-color-border-strong: #3a4657;
-  --z-color-brand: #66e9b5;
-  --z-color-brand-hover: #8ff5cc;
-  --z-color-brand-soft: #142a24;
-  --z-color-action: #8c7dff;
-  --z-color-action-hover: #a297ff;
-  --z-color-info: #73c8f5;
-  --z-color-success: #69e0aa;
-  --z-color-warning: #f4bd67;
-  --z-color-danger: #ff817d;
-  --z-color-focus: #8cd8ff;
-  --z-color-info-surface: #112631;
-  --z-color-success-surface: #11271f;
-  --z-color-warning-surface: #2b2214;
-  --z-color-danger-surface: #2c171a;
-  --z-font-display: ui-serif, Iowan Old Style, Georgia, serif;
-  --z-font-body: Inter, Avenir Next, Avenir, Segoe UI, ui-sans-serif, system-ui, sans-serif;
+  --z-color-canvas: #08090b;
+  --z-color-surface: #0f1117;
+  --z-color-surface-raised: #161922;
+  --z-color-surface-subtle: #1c212e;
+  --z-color-surface-inverse: #f8fafc;
+  --z-color-ink: #f8fafc;
+  --z-color-ink-soft: #cbd5e1;
+  --z-color-ink-muted: #8494a7;
+  --z-color-border: #212634;
+  --z-color-border-strong: #31394d;
+  --z-color-brand: #10b981;
+  --z-color-brand-hover: #34d399;
+  --z-color-brand-soft: rgba(16, 185, 129, 0.12);
+  --z-color-action: #10b981;
+  --z-color-action-hover: #34d399;
+  --z-color-info: #38bdf8;
+  --z-color-success: #10b981;
+  --z-color-warning: #fbbf24;
+  --z-color-danger: #f87171;
+  --z-color-focus: #10b981;
+  --z-color-info-surface: rgba(56, 189, 248, 0.1);
+  --z-color-success-surface: rgba(16, 185, 129, 0.1);
+  --z-color-warning-surface: rgba(251, 191, 36, 0.1);
+  --z-color-danger-surface: rgba(248, 113, 113, 0.1);
+  --z-font-display: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --z-font-body: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --z-font-mono: ui-monospace, SFMono-Regular, Cascadia Code, Consolas, monospace;
-  --z-text-xs: 0.72rem;
+  --z-text-xs: 0.75rem;
   --z-text-sm: 0.8125rem;
   --z-text-base: 0.9375rem;
   --z-text-lg: 1.125rem;
@@ -43,18 +43,18 @@
   --z-space-16: 4rem;
   --z-space-20: 5rem;
   --z-space-24: 6rem;
-  --z-radius-sm: 0.375rem;
+  --z-radius-sm: 0.5rem;
   --z-radius-md: 0.75rem;
-  --z-radius-lg: 1.125rem;
+  --z-radius-lg: 1rem;
   --z-radius-xl: 1.5rem;
   --z-radius-round: 999px;
-  --z-shadow-raised: 0 0.75rem 2.4rem rgb(0 0 0 / 32%);
-  --z-shadow-overlay: 0 1.75rem 5rem rgb(0 0 0 / 56%);
-  --z-shadow-card: 0 1px 0 rgb(255 255 255 / 4%), 0 0.8rem 2.2rem rgb(0 0 0 / 24%);
+  --z-shadow-raised: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --z-shadow-overlay: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
+  --z-shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 4px 16px -4px rgba(0, 0, 0, 0.5);
   --z-motion-fast: 140ms;
   --z-motion-standard: 200ms;
   --z-motion-deliberate: 360ms;
-  --z-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --z-ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
   --z-content-narrow: 44rem;
   --z-content: 72rem;
   --z-content-wide: 88rem;
@@ -264,7 +264,7 @@
   background: linear-gradient(
     90deg,
     var(--z-color-surface-subtle) 25%,
-    #f7f8f4 50%,
+    #2a3040 50%,
     var(--z-color-surface-subtle) 75%
   );
   background-size: 200% 100%;

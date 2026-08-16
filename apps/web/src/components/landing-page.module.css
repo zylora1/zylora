@@ -1857,6 +1857,38 @@
   }
 }
 
+.pricingSection {
+  width: min(88rem, calc(100% - 3rem));
+  margin: 6rem auto;
+  padding: 4rem 0;
+  border-top: 1px solid var(--z-color-border);
+}
+
+.pricingHeader {
+  max-width: 44rem;
+  margin-bottom: 3.5rem;
+}
+
+.pricingHeader h2 {
+  font: 600 clamp(2.2rem, 4.5vw, 3.8rem)/0.98 var(--z-font-display);
+  letter-spacing: -0.05em;
+  margin: 0.5rem 0 1rem;
+  color: #fff;
+}
+
+.pricingHeader p {
+  color: var(--z-color-ink-muted);
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .generationStep,
   .canvasSkeleton i,

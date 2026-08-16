@@ -32,7 +32,7 @@
     "test:python": "uv run pytest apps/api/tests apps/worker/tests --run-integration --cov=zylora_api --cov=zylora_worker --cov-report=term-missing",
     "test:integration": "npm run migrate && uv run pytest apps/api/tests/integration --run-integration",
     "test:e2e": "npm --workspace @zylora/web run test:e2e",
-    "contracts:generate": "uv run python scripts/generate_openapi.py && openapi-typescript packages/contracts/openapi.json --output packages/contracts/src/api.generated.ts",
+    "contracts:generate": "uv run python scripts/generate_openapi.py && openapi-typescript packages/contracts/openapi.json --output packages/contracts/src/api.generated.ts && prettier --write packages/contracts/openapi.json packages/contracts/src/api.generated.ts",
     "contracts:check": "npm run contracts:generate && git diff --exit-code -- packages/contracts/openapi.json packages/contracts/src/api.generated.ts",
     "templates:validate-scale": "uv run python scripts/validate_template_scale.py",
     "templates:capture-visual": "node scripts/capture_template_catalog.mjs",

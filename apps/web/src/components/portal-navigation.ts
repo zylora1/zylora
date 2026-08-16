@@ -153,6 +153,14 @@ export const adminSections: PortalSection[] = [
       'Filtered audit records will appear here with actor, target, reason, time, and correlation evidence.',
   },
   {
+    slug: 'pro-leads',
+    label: 'Pro Leads',
+    description: 'Managed Zylora Pro sales enquiries, resolution, and revenue tracking.',
+    emptyTitle: 'No Pro sales enquiries',
+    emptyDescription:
+      'Submitted Zylora Pro sales requests will appear here for review and status updates.',
+  },
+  {
     slug: 'configuration',
     label: 'Configuration',
     description: 'Versioned platform policy and safe provider settings.',

@@ -78,6 +78,7 @@ class WebsiteResponse(Schema):
     id: UUID
     owner_user_id: UUID
     source_template_version_id: UUID
+    site_origin: str = "TEMPLATE"
     display_name: str
     status: str
     revision: int
@@ -88,5 +89,16 @@ class WebsiteResponse(Schema):
     updated_at: datetime
 
 
+class DraftRemovalSuggestion(Schema):
+    id: UUID
+    display_name: str
+    last_modified_at: datetime
+    site_origin: str
+
+
 class WebsiteListResponse(Schema):
     items: list[WebsiteResponse]
+    total_drafts: int = 0
+    draft_limit: int = 10
+    warning: str | None = None
+    suggested_removal: DraftRemovalSuggestion | None = None

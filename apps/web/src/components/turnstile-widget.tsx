@@ -6,7 +6,13 @@ import { useEffect, useRef, useState } from 'react';
 import { apiRequest } from '@/lib/api';
 
 export type TurnstileAction =
-  'signup' | 'login' | 'verify_email' | 'password_recovery' | 'admin_login' | 'contact';
+  | 'signup'
+  | 'login'
+  | 'verify_email'
+  | 'password_recovery'
+  | 'admin_login'
+  | 'contact'
+  | 'pro_enquiry';
 
 type ChallengeConfig = { enabled: boolean; site_key: string | null };
 type WidgetId = string;

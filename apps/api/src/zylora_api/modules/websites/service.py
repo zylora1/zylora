@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from zylora_api.db.template_models import Template, TemplateVersion
 from zylora_api.db.website_models import (
@@ -169,6 +169,19 @@ class WebsiteService:
         self.session = session
 
     async def instantiate(self, template_slug: str, owner_user_id: UUID) -> Website:
+        active_count = await self.session.scalar(
+            select(func.count(Website.id)).where(
+                Website.owner_user_id == owner_user_id,
+                Website.status != "ARCHIVED",
+            )
+        )
+        if active_count is not None and active_count >= 10:
+            raise problem(
+                409,
+                "draft_limit_reached",
+                "You have reached your limit of 10 website drafts. "
+                "Please remove an unused draft before creating a new project.",
+            )
         row = (
             await self.session.execute(
                 select(Template, TemplateVersion)
@@ -186,6 +199,7 @@ class WebsiteService:
         website = Website(
             owner_user_id=owner_user_id,
             source_template_version_id=version.id,
+            site_origin="TEMPLATE",
             display_name=f"{template.name} Draft",
             status="DRAFT",
             theme=deepcopy(version.document["theme"]),
@@ -281,6 +295,66 @@ class WebsiteService:
                 )
             ).all()
         )
+
+    async def suggest_draft_for_removal(self, owner_user_id: UUID) -> Website | None:
+        statement = (
+            select(Website)
+            .where(
+                Website.owner_user_id == owner_user_id,
+                Website.status.not_in(
+                    ["ARCHIVED", "PUBLISHED", "PUBLISHING", "UNPUBLISHING", "TRANSFER_PENDING"]
+                ),
+                Website.live_owner_user_id.is_(None),
+            )
+            .order_by(Website.updated_at.asc())
+            .limit(1)
+        )
+        result: Website | None = await self.session.scalar(statement)
+        return result
+
+    async def get_draft_status(self, owner_user_id: UUID) -> tuple[int, str | None, Website | None]:
+        websites = await self.list_for_owner(owner_user_id)
+        active = [w for w in websites if w.status != "ARCHIVED"]
+        total_drafts = len(active)
+        warning = None
+        if total_drafts == 8:
+            warning = (
+                "You're using 8 of your 10 draft slots. "
+                "Remove projects you no longer need to keep space available."
+            )
+        elif total_drafts == 9:
+            warning = (
+                "You have 1 draft slot remaining. "
+                "Remove an unused draft before creating more projects."
+            )
+        elif total_drafts >= 10:
+            warning = (
+                "You've reached your 10-draft limit. "
+                "Remove an unused draft to create another website."
+            )
+        suggested = (
+            await self.suggest_draft_for_removal(owner_user_id) if total_drafts >= 8 else None
+        )
+        return total_drafts, warning, suggested
+
+    async def delete_website(self, website_id: UUID, owner_user_id: UUID) -> Website:
+        website = await self.get_for_owner(website_id, owner_user_id)
+        if website.live_owner_user_id is not None or website.status in (
+            "PUBLISHED",
+            "PUBLISHING",
+            "UNPUBLISHING",
+        ):
+            raise problem(
+                409,
+                "live_website_delete_forbidden",
+                "Cannot delete an active live website. Switch or unpublish it first.",
+            )
+        if website.status == "ARCHIVED":
+            return website
+        website.status = "ARCHIVED"
+        website.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return website
 
     async def get_for_owner(self, website_id: UUID, owner_user_id: UUID) -> Website:
         website = await self.session.scalar(

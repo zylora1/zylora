@@ -2734,6 +2734,37 @@
         "title": "DomainResponse",
         "type": "object"
       },
+      "DraftRemovalSuggestion": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_modified_at": {
+            "format": "date-time",
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "site_origin": {
+            "title": "Site Origin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "last_modified_at",
+          "site_origin"
+        ],
+        "title": "DraftRemovalSuggestion",
+        "type": "object"
+      },
       "EditorMutationResponse": {
         "additionalProperties": false,
         "properties": {
@@ -4608,6 +4639,229 @@
         "title": "PreviewResponse",
         "type": "object"
       },
+      "ProLeadCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "company_website_url": {
+            "anyOf": [
+              {
+                "maxLength": 1024,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Website Url"
+          },
+          "email": {
+            "format": "email",
+            "maxLength": 320,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "preferred_contact_time": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Preferred Contact Time",
+            "type": "string"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
+          },
+          "website_type": {
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Website Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "website_type",
+          "preferred_contact_time"
+        ],
+        "title": "ProLeadCreateRequest",
+        "type": "object"
+      },
+      "ProLeadListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProLeadResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ProLeadSummaryResponse"
+          }
+        },
+        "required": [
+          "items",
+          "summary"
+        ],
+        "title": "ProLeadListResponse",
+        "type": "object"
+      },
+      "ProLeadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_received": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Received"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "preferred_contact_time": {
+            "title": "Preferred Contact Time",
+            "type": "string"
+          },
+          "reference_id": {
+            "title": "Reference Id",
+            "type": "string"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "CLOSED",
+              "NOT_CLOSED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "title": "Submitted At",
+            "type": "string"
+          },
+          "website_type": {
+            "title": "Website Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference_id",
+          "name",
+          "email",
+          "website_type",
+          "preferred_contact_time",
+          "status",
+          "submitted_at"
+        ],
+        "title": "ProLeadResponse",
+        "type": "object"
+      },
+      "ProLeadStatusUpdateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_received": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Received"
+          },
+          "status": {
+            "enum": [
+              "CLOSED",
+              "NOT_CLOSED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "ProLeadStatusUpdateRequest",
+        "type": "object"
+      },
+      "ProLeadSummaryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_received": {
+            "default": 0,
+            "title": "Amount Received",
+            "type": "integer"
+          },
+          "closed": {
+            "default": 0,
+            "title": "Closed",
+            "type": "integer"
+          },
+          "not_closed": {
+            "default": 0,
+            "title": "Not Closed",
+            "type": "integer"
+          },
+          "pending": {
+            "default": 0,
+            "title": "Pending",
+            "type": "integer"
+          },
+          "total_pro_leads": {
+            "default": 0,
+            "title": "Total Pro Leads",
+            "type": "integer"
+          }
+        },
+        "title": "ProLeadSummaryResponse",
+        "type": "object"
+      },
       "PublicBlogPostResponse": {
         "additionalProperties": false,
         "properties": {
@@ -6159,12 +6413,43 @@
       "WebsiteListResponse": {
         "additionalProperties": false,
         "properties": {
+          "draft_limit": {
+            "default": 10,
+            "title": "Draft Limit",
+            "type": "integer"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/WebsiteResponse"
             },
             "title": "Items",
             "type": "array"
+          },
+          "suggested_removal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DraftRemovalSuggestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_drafts": {
+            "default": 0,
+            "title": "Total Drafts",
+            "type": "integer"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
           }
         },
         "required": [
@@ -6302,6 +6587,11 @@
           "revision": {
             "title": "Revision",
             "type": "integer"
+          },
+          "site_origin": {
+            "default": "TEMPLATE",
+            "title": "Site Origin",
+            "type": "string"
           },
           "source_template_version_id": {
             "format": "uuid",
@@ -7482,6 +7772,101 @@
         "summary": "Overview",
         "tags": [
           "super-admin-operations"
+        ]
+      }
+    },
+    "/api/v1/admin/pro-leads": {
+      "get": {
+        "operationId": "list_admin_pro_leads_api_v1_admin_pro_leads_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProLeadListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Admin Pro Leads",
+        "tags": [
+          "pro-leads"
+        ]
+      }
+    },
+    "/api/v1/admin/pro-leads/summary": {
+      "get": {
+        "operationId": "get_admin_pro_lead_summary_api_v1_admin_pro_leads_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProLeadSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Pro Lead Summary",
+        "tags": [
+          "pro-leads"
+        ]
+      }
+    },
+    "/api/v1/admin/pro-leads/{pro_lead_id}/status": {
+      "patch": {
+        "operationId": "update_pro_lead_status_api_v1_admin_pro_leads__pro_lead_id__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pro_lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Pro Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProLeadStatusUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProLeadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Pro Lead Status",
+        "tags": [
+          "pro-leads"
         ]
       }
     },
@@ -9861,6 +10246,47 @@
         ]
       }
     },
+    "/api/v1/public/pro-enquiry": {
+      "post": {
+        "operationId": "submit_pro_enquiry_api_v1_public_pro_enquiry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProLeadCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProLeadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Pro Enquiry",
+        "tags": [
+          "pro-leads"
+        ]
+      }
+    },
     "/api/v1/templates": {
       "get": {
         "operationId": "catalog_api_v1_templates_get",
@@ -10406,6 +10832,47 @@
       }
     },
     "/api/v1/websites/{website_id}": {
+      "delete": {
+        "operationId": "delete_website_api_v1_websites__website_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "website_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Website Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebsiteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Website",
+        "tags": [
+          "websites"
+        ]
+      },
       "get": {
         "operationId": "website_detail_api_v1_websites__website_id__get",
         "parameters": [

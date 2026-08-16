@@ -3,7 +3,6 @@
 import { ActionLink, ErrorState, Skeleton, StatusBadge } from '@zylora/ui';
 import {
   BadgeDollarSign,
-  Bot,
   Bell,
   ChartNoAxesCombined,
   CircleGauge,
@@ -38,9 +37,8 @@ type Identity = { email: string; account_type: 'USER' | 'SUPER_ADMIN' };
 type NavigationItem = { href: string; label: string; icon: ComponentType<{ size?: number }> };
 
 const userNavigation: NavigationItem[] = [
-  { href: '/app', label: 'Home', icon: Home },
+  { href: '/app', label: 'Overview', icon: Home },
   { href: '/app/websites', label: 'Websites', icon: PanelsTopLeft },
-  { href: '/app/ai-builder', label: 'AI Builder', icon: Bot },
   { href: '/app/templates', label: 'Templates', icon: LayoutTemplate },
   { href: '/app/leads', label: 'Leads', icon: Contact },
   { href: '/app/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
@@ -219,7 +217,7 @@ export function PortalShell({ admin = false, children }: { admin?: boolean; chil
               {failed ? 'Session ended' : identity ? 'Secure session' : 'Checking session'}
             </StatusBadge>
             {!admin ? (
-              <ActionLink className="workspace-topbar__create" href="/app/templates">
+              <ActionLink className="workspace-topbar__create" href="/app/websites">
                 <Plus size={16} /> New Website
               </ActionLink>
             ) : null}

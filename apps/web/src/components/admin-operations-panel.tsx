@@ -547,10 +547,13 @@ function AdminOperationalRecords({ section }: { section: PortalSection }) {
   );
 }
 
+import { AdminProLeadsPanel } from './admin-pro-leads-panel';
+
 export function AdminSectionPanel({ section }: { section: PortalSection }) {
   if (section.slug === 'users') return <AdminUsersPanel />;
   if (section.slug === 'health') return <AdminHealthPanel />;
   if (section.slug === 'configuration') return <AdminConfigurationPanel />;
   if (section.slug === 'communications') return <ContentOperations />;
+  if (section.slug === 'pro-leads') return <AdminProLeadsPanel />;
   return <AdminOperationalRecords section={section} />;
 }

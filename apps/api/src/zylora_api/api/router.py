@@ -15,6 +15,7 @@ from zylora_api.api.editor import router as editor_router
 from zylora_api.api.health import router as health_router
 from zylora_api.api.knowledge import router as knowledge_router
 from zylora_api.api.leads import router as leads_router
+from zylora_api.api.pro_leads import router as pro_leads_router
 from zylora_api.api.public import router as public_router
 from zylora_api.api.publishing import router as publishing_router
 from zylora_api.api.templates import router as templates_router
@@ -33,6 +34,7 @@ api_router.include_router(ai_builder_router)
 api_router.include_router(editor_router)
 api_router.include_router(leads_router)
 api_router.include_router(knowledge_router)
+api_router.include_router(pro_leads_router)
 api_router.include_router(publishing_router)
 api_router.include_router(public_router)
 api_router.include_router(admin_auth_router)

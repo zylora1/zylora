@@ -12,7 +12,7 @@ def main() -> None:
     config = Config(str(ROOT / "apps" / "api" / "alembic.ini"))
     scripts = ScriptDirectory.from_config(config)
     heads = scripts.get_heads()
-    if heads != ["20260823_0018"]:
+    if heads != ["20260824_0019"]:
         raise SystemExit(f"expected one current migration head, found: {heads}")
 
 

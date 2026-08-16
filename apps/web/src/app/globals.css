@@ -90,7 +90,7 @@ summary {
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(22rem, 0.95fr) minmax(28rem, 1.05fr);
-  background: var(--z-color-surface);
+  background: var(--z-color-canvas);
 }
 .auth-story {
   position: relative;
@@ -99,8 +99,9 @@ summary {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  background: var(--z-color-surface-inverse);
-  color: #f7f7f1;
+  background: #0b0d12;
+  border-right: 1px solid var(--z-color-border);
+  color: #f8fafc;
   padding: clamp(1.5rem, 4vw, 3.5rem);
 }
 .auth-story::before,
@@ -114,28 +115,29 @@ summary {
   bottom: clamp(-14rem, -11vw, -7rem);
   width: min(44vw, 34rem);
   aspect-ratio: 1;
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   box-shadow:
-    0 0 0 3.5rem rgb(255 255 255 / 3%),
-    0 0 0 7rem rgb(255 255 255 / 2%);
+    0 0 0 3.5rem rgba(255, 255, 255, 0.02),
+    0 0 0 7rem rgba(255, 255, 255, 0.01);
 }
 .auth-story::after {
   top: 7.5rem;
   left: clamp(1.5rem, 4vw, 3.5rem);
-  width: 5.5rem;
-  height: 0.5rem;
-  background: var(--z-color-action);
+  width: 4rem;
+  height: 0.25rem;
+  border-radius: var(--z-radius-round);
+  background: var(--z-color-brand);
 }
 .auth-story .brand-mark {
   position: relative;
   z-index: 1;
 }
 .auth-story .brand-glyph__accent {
-  stroke: #e89a76;
+  stroke: #10b981;
 }
 .auth-story .eyebrow {
-  color: #d6b6a8;
+  color: var(--z-color-brand);
 }
 .auth-story__copy {
   position: relative;
@@ -146,38 +148,40 @@ summary {
 }
 .display-quote {
   margin: 0;
-  font: 500 clamp(2.7rem, 5.5vw, 5.8rem)/0.94 var(--z-font-display);
-  letter-spacing: -0.055em;
+  font: 600 clamp(2.5rem, 5vw, 4.8rem)/0.96 var(--z-font-display);
+  letter-spacing: -0.04em;
+  color: #f8fafc;
 }
 .auth-story__foot {
   position: relative;
   z-index: 1;
   margin: 0;
-  color: rgb(255 255 255 / 64%);
+  color: rgba(248, 250, 252, 0.5);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .auth-shell--admin .auth-story {
-  background: #1e2725;
+  background: #090a0d;
 }
 .auth-shell--admin .auth-story::after {
-  background: #91b0a9;
+  background: var(--z-color-action);
 }
 .auth-workspace {
   display: grid;
   place-items: center;
   padding: clamp(2rem, 7vw, 7rem);
-  background: linear-gradient(135deg, #fbfbf7 0%, var(--z-color-canvas) 100%);
+  background: var(--z-color-canvas);
 }
 .auth-workspace__inner {
   width: min(28rem, 100%);
 }
 .auth-workspace h1 {
   margin: 0;
-  font: 600 clamp(2.5rem, 5vw, 4.5rem)/0.94 var(--z-font-display);
-  letter-spacing: -0.06em;
+  font: 600 clamp(2.2rem, 4.5vw, 3.8rem)/0.96 var(--z-font-display);
+  letter-spacing: -0.05em;
+  color: #f8fafc;
 }
 .auth-description {
   margin: 1rem 0 2rem;
@@ -202,7 +206,7 @@ summary {
   min-height: 3.2rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-md);
-  background: var(--z-color-surface-raised);
+  background: var(--z-color-surface);
   color: var(--z-color-ink);
   padding: 0 0.9rem;
   transition:
@@ -214,7 +218,7 @@ summary {
 }
 .auth-form input:focus {
   border-color: var(--z-color-brand);
-  box-shadow: 0 0 0 4px rgb(23 58 54 / 10%);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
   outline: none;
 }
 .code-input {
@@ -786,4 +790,61 @@ button:disabled {
   color: var(--z-color-brand);
   font-size: var(--z-text-sm);
   font-weight: 800;
+}
+
+/* Modal and UI overlays */
+.z-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-layer-overlay);
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  animation: z-fade-in 150ms ease-out;
+}
+.z-modal-card {
+  width: min(34rem, 100%);
+  border: 1px solid var(--z-color-border-strong);
+  border-radius: var(--z-radius-lg);
+  background: var(--z-color-surface);
+  box-shadow: var(--z-shadow-overlay);
+  padding: 1.5rem;
+}
+.z-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.z-modal-close {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--z-color-border);
+  border-radius: var(--z-radius-sm);
+  background: transparent;
+  color: var(--z-color-ink-muted);
+  cursor: pointer;
+}
+.z-modal-close:hover {
+  background: var(--z-color-surface-subtle);
+  color: var(--z-color-ink);
+}
+.creation-path-card:hover {
+  border-color: var(--z-color-brand) !important;
+  background: var(--z-color-surface-raised) !important;
+  transform: translateY(-2px);
+}
+@keyframes z-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

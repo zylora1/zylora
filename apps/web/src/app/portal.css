@@ -642,34 +642,23 @@
   }
 }
 
-/* Zylora product shell — presentation layer rebuilt around calm, task-led operations. */
+/* Zylora product shell — presentation layer rebuilt around high-end dark command center operations. */
 .workspace-shell {
-  /* The public landing is dark-first. Portal surfaces are intentionally light,
-     so their semantic tokens must be scoped at this trust/UI boundary. */
-  --z-color-canvas: #f5f6f2;
-  --z-color-surface: #ffffff;
-  --z-color-surface-raised: #ffffff;
-  --z-color-surface-subtle: #e9eeea;
-  --z-color-surface-inverse: #16211d;
-  --z-color-ink: #17211e;
-  --z-color-ink-soft: #35453f;
-  --z-color-ink-muted: #586861;
-  --z-color-border: #ced7d1;
-  --z-color-border-strong: #9aa9a0;
-  --z-color-brand: #1f5b4a;
-  --z-color-brand-hover: #174638;
-  --z-color-brand-soft: #e0eee7;
-  --z-color-action: #5b3da5;
-  --z-color-action-hover: #472c87;
-  --z-color-info: #176b8d;
-  --z-color-success: #1f6849;
-  --z-color-warning: #7c560c;
-  --z-color-danger: #a03835;
-  --z-color-focus: #176b8d;
-  --z-color-info-surface: #e5f1f5;
-  --z-color-success-surface: #e6f3eb;
-  --z-color-warning-surface: #f8eed9;
-  --z-color-danger-surface: #f8e9e7;
+  --z-color-canvas: #08090b;
+  --z-color-surface: #0f1117;
+  --z-color-surface-raised: #161922;
+  --z-color-surface-subtle: #1c212e;
+  --z-color-surface-inverse: #f8fafc;
+  --z-color-ink: #f8fafc;
+  --z-color-ink-soft: #cbd5e1;
+  --z-color-ink-muted: #8494a7;
+  --z-color-border: #212634;
+  --z-color-border-strong: #31394d;
+  --z-color-brand: #10b981;
+  --z-color-brand-hover: #34d399;
+  --z-color-brand-soft: rgba(16, 185, 129, 0.12);
+  --z-color-action: #10b981;
+  --z-color-action-hover: #34d399;
 
   display: grid;
   min-height: 100vh;
@@ -682,10 +671,10 @@
   color: #fff;
 }
 .workspace-topbar > div .z-status--success {
-  color: #155337;
+  color: #34d399;
 }
 .workspace-shell--admin {
-  background: #f1f3f0;
+  background: #08090b;
 }
 .workspace-sidebar {
   position: sticky;
@@ -693,13 +682,13 @@
   display: grid;
   height: 100vh;
   grid-template-rows: auto 1fr auto;
-  border-right: 1px solid rgb(255 255 255 / 10%);
-  background: #19342f;
-  color: #edf2ed;
+  border-right: 1px solid var(--z-color-border);
+  background: #0b0d12;
+  color: #f8fafc;
   padding: 1.1rem 0.85rem 0.9rem;
 }
 .workspace-shell--admin .workspace-sidebar {
-  background: #232a2b;
+  background: #0a0c10;
 }
 .workspace-sidebar__brand {
   display: flex;
@@ -709,10 +698,10 @@
   padding: 0 0.55rem;
 }
 .workspace-sidebar__brand .brand-glyph__accent {
-  stroke: #e89a76;
+  stroke: #10b981;
 }
 .workspace-sidebar__brand .brand-mark small {
-  color: rgb(255 255 255 / 62%);
+  color: rgba(248, 250, 252, 0.6);
   opacity: 1;
 }
 .workspace-sidebar__close,
@@ -732,7 +721,7 @@
 }
 .workspace-navigation__label {
   margin: 0.2rem 0.65rem 0.55rem;
-  color: rgb(255 255 255 / 56%);
+  color: rgba(248, 250, 252, 0.45);
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -745,7 +734,7 @@
   align-items: center;
   gap: 0.7rem;
   border-radius: var(--z-radius-sm);
-  color: rgb(255 255 255 / 72%);
+  color: rgba(248, 250, 252, 0.7);
   padding: 0.5rem 0.65rem;
   font-size: var(--z-text-sm);
   font-weight: 700;
@@ -755,13 +744,14 @@
     color var(--z-motion-fast) var(--z-ease-standard);
 }
 .workspace-navigation__link:hover {
-  background: rgb(255 255 255 / 8%);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
 }
 .workspace-navigation__link--active {
-  background: #f0f3ed;
-  color: #153630;
-  box-shadow: 0 0.35rem 1rem rgb(0 0 0 / 12%);
+  background: #161922;
+  color: #fff;
+  border: 1px solid var(--z-color-border-strong);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .workspace-navigation__link--active::before {
   position: absolute;
@@ -769,7 +759,7 @@
   width: 0.22rem;
   height: 1.15rem;
   border-radius: var(--z-radius-round);
-  background: var(--z-color-action);
+  background: var(--z-color-brand);
   content: '';
 }
 .workspace-account {
@@ -777,7 +767,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.6rem;
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 1px solid var(--z-color-border);
   padding: 1rem 0.55rem 0.2rem;
 }
 .workspace-account__avatar {
@@ -786,14 +776,15 @@
   height: 2.1rem;
   place-items: center;
   border-radius: 50%;
-  background: #dce8e1;
+  background: var(--z-color-surface-subtle);
+  border: 1px solid var(--z-color-border);
   color: var(--z-color-brand);
   font-size: var(--z-text-sm);
   font-weight: 850;
 }
 .workspace-shell--admin .workspace-account__avatar {
-  background: #d9e6e7;
-  color: #263d3e;
+  background: var(--z-color-surface-subtle);
+  color: var(--z-color-action);
 }
 .workspace-account__identity {
   display: grid;
@@ -806,7 +797,7 @@
 }
 .workspace-account__identity small {
   overflow: hidden;
-  color: rgb(255 255 255 / 55%);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 0.6rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -819,10 +810,10 @@
   border: 0;
   border-radius: var(--z-radius-sm);
   background: transparent;
-  color: rgb(255 255 255 / 60%);
+  color: rgba(255, 255, 255, 0.6);
 }
 .workspace-account__logout:hover {
-  background: rgb(255 255 255 / 8%);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
 .workspace-stage {
@@ -837,7 +828,7 @@
   align-items: center;
   gap: 0.85rem;
   border-bottom: 1px solid var(--z-color-border);
-  background: rgb(255 254 250 / 88%);
+  background: rgba(15, 17, 23, 0.85);
   padding: 0.75rem clamp(1rem, 3vw, 2.5rem);
   backdrop-filter: blur(16px);
 }

@@ -89,6 +89,7 @@ from zylora_api.db.lead_models import (
     LeadCreditAccount,
     LeadCreditLedger,
     Notification,
+    ProLead,
     TransactionalEmail,
 )
 from zylora_api.db.template_models import (
@@ -168,6 +169,7 @@ __all__ = [
     "PlanCatalog",
     "PlanEntitlement",
     "PlanPrice",
+    "ProLead",
     "ProductEvent",
     "Session",
     "Subscription",

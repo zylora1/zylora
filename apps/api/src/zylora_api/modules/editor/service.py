@@ -229,6 +229,13 @@ class EditorService:
         page.content = {**page.content, "components": components}
 
     def _add_page(self, website: Website, pages: list[WebsitePage], operation: AddPage) -> None:
+        if getattr(website, "site_origin", "TEMPLATE") == "TEMPLATE":
+            raise problem(
+                409,
+                "template_page_creation_denied",
+                "Template-origin websites have a fixed page set. "
+                "Additional pages cannot be created.",
+            )
         if len(pages) >= MAX_WEBSITE_PAGES:
             raise problem(
                 409, "website_page_capacity_reached", "This Website is at its safety limit."

@@ -23,8 +23,11 @@ vi.mock('@/components/turnstile-widget', async () => {
 function fillForm() {
   fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada Lovelace' } });
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ada@example.com' } });
-  fireEvent.change(screen.getByLabelText('Message'), {
-    target: { value: 'Please help us choose an approved Template.' },
+  fireEvent.change(screen.getByLabelText('Type of website you want'), {
+    target: { value: 'Dental clinic website for specialized practice' },
+  });
+  fireEvent.change(screen.getByLabelText('Preferred contact time'), {
+    target: { value: 'Weekdays 2-5 PM IST' },
   });
 }
 
@@ -33,12 +36,12 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('ContactPage', () => {
+describe('ContactPage (Zylora Pro Enquiry)', () => {
   it('fails closed until a required security challenge has completed', async () => {
     state.required = true;
     render(<ContactPage />);
     fillForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Pro Request' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Complete the security verification before sending.',
@@ -46,37 +49,48 @@ describe('ContactPage', () => {
     expect(state.apiRequest).not.toHaveBeenCalled();
   });
 
-  it('submits a validated message to the public contact command and confirms delivery', async () => {
-    state.apiRequest.mockResolvedValue({ status: 'accepted', id: 'contact-id' });
+  it('submits a validated Pro enquiry and displays the reference ID confirmation', async () => {
+    state.apiRequest.mockResolvedValue({
+      id: 'pro-1',
+      reference_id: 'ZPRO-849201',
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      website_type: 'Dental clinic website for specialized practice',
+      preferred_contact_time: 'Weekdays 2-5 PM IST',
+      status: 'PENDING',
+      submitted_at: '2026-08-16T22:00:00Z',
+    });
     render(<ContactPage />);
     fillForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Pro Request' }));
 
     await waitFor(() => expect(state.apiRequest).toHaveBeenCalledOnce());
     expect(state.apiRequest).toHaveBeenCalledWith(
-      '/api/v1/public/contact',
+      '/api/v1/public/pro-enquiry',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
           name: 'Ada Lovelace',
           email: 'ada@example.com',
-          message: 'Please help us choose an approved Template.',
+          website_type: 'Dental clinic website for specialized practice',
+          preferred_contact_time: 'Weekdays 2-5 PM IST',
+          company_website_url: null,
           turnstile_token: null,
         }),
       }),
     );
-    expect(await screen.findByRole('status')).toHaveTextContent('safely queued');
+    expect(await screen.findByRole('status')).toHaveTextContent('ZPRO-849201');
   });
 
   it('shows the server error without losing an accessible retry path', async () => {
-    state.apiRequest.mockRejectedValue(new Error('Contact is temporarily unavailable.'));
+    state.apiRequest.mockRejectedValue(new Error('Too many Pro enquiries from this IP address.'));
     render(<ContactPage />);
     fillForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Pro Request' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Contact is temporarily unavailable.',
+      'Too many Pro enquiries from this IP address.',
     );
-    expect(screen.getByRole('button', { name: 'Send message' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Submit Pro Request' })).toBeEnabled();
   });
 });
