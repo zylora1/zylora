@@ -44,10 +44,10 @@ describe('Phase 7 commerce surfaces', () => {
     render(<PricingCatalog />);
     expect(await screen.findByText('₹399')).toBeVisible();
     expect(screen.getByText('₹999')).toBeVisible();
-    expect(screen.getByText('₹1,999')).toBeVisible();
+    expect(screen.getByText('Custom')).toBeVisible();
     expect(screen.getByText('MOST POPULAR')).toBeVisible();
     expect(screen.queryByText(/annual/i)).not.toBeInTheDocument();
-    expect(screen.getAllByText('Unlimited Lead capture')).toHaveLength(4);
+    expect(screen.getAllByText('Unlimited Lead capture')).toHaveLength(3);
   });
 
   it('shows an existing subscription without enabling a placeholder checkout', async () => {

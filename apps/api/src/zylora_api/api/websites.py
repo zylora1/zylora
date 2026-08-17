@@ -52,7 +52,7 @@ async def response(
         id=website.id,
         owner_user_id=website.owner_user_id,
         source_template_version_id=website.source_template_version_id,
-        site_origin=getattr(website, "site_origin", "TEMPLATE"),
+        site_origin=getattr(website, "site_origin", None) or "TEMPLATE",
         display_name=website.display_name,
         status=website.status,
         revision=website.revision or 0,

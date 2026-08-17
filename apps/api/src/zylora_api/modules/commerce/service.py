@@ -278,6 +278,13 @@ class SubscriptionService:
             raise problem(404, "plan_not_found", "Plan not found for your billing region.")
         if bundle.plan.code == "FREE":
             raise problem(409, "free_plan_requires_no_payment", "The Free plan needs no checkout.")
+        if bundle.plan.code in {"BUSINESS", "PRO"}:
+            raise problem(
+                409,
+                "pro_plan_sales_assisted",
+                "The Pro plan is a managed service and cannot be purchased via instant checkout. "
+                "Please get in touch with our team.",
+            )
         payment = Payment(
             user_id=user_id,
             plan_id=bundle.plan.id,

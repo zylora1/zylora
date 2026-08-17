@@ -87,6 +87,7 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
         "plans",
         "subscriptions",
         "website_ownerships",
+        "pro_leads",
         "users",
     }
     assert OutboxEvent.__table__.c.id.server_default is not None

@@ -15,6 +15,8 @@ from zylora_api.db.lead_models import ProLead
 from zylora_api.db.models import OutboxEvent
 from zylora_api.modules.auth.challenge import ChallengeService
 from zylora_api.modules.auth.errors import AuthProblem
+from zylora_api.modules.auth.security import AuthCrypto
+from zylora_api.modules.notifications.email import TransactionalEmailService
 from zylora_api.modules.pro_leads.schemas import (
     ProLeadCreateRequest,
     ProLeadSummaryResponse,
@@ -32,11 +34,13 @@ class ProLeadService:
         settings: Settings,
         challenge_service: ChallengeService | None = None,
         redis_client: Redis | None = None,
+        crypto: AuthCrypto | None = None,
     ) -> None:
         self.session = session
         self.settings = settings
         self.challenge_service = challenge_service
         self.redis_client = redis_client
+        self.crypto = crypto
 
     async def _generate_reference_id(self) -> str:
         for _ in range(10):
@@ -163,8 +167,9 @@ class ProLeadService:
             return existing_duplicate
 
         # 6. Save ProLead
+        now = datetime.now(UTC)
         reference_id = await self._generate_reference_id()
-        idempotency_key = f"pro-lead:{fingerprint}:{int(datetime.now(UTC).timestamp())}"
+        idempotency_key = f"pro-lead:{fingerprint}:{int(now.timestamp())}"
         pro_lead = ProLead(
             reference_id=reference_id,
             name=payload.name,
@@ -175,11 +180,12 @@ class ProLeadService:
             idempotency_key=idempotency_key,
             request_fingerprint=fingerprint,
             is_spam=False,
+            submitted_at=now,
         )
         self.session.add(pro_lead)
         await self.session.flush()
 
-        # 7. Outbox Events for Admin & Customer Emails
+        # 7. Outbox Events for Admin & Customer Notifications
         self.session.add(
             OutboxEvent(
                 aggregate_type="ProLead",
@@ -193,10 +199,34 @@ class ProLeadService:
                     "email": pro_lead.email,
                     "website_type": pro_lead.website_type,
                     "preferred_contact_time": pro_lead.preferred_contact_time,
-                    "submitted_at": pro_lead.submitted_at.isoformat(),
+                    "submitted_at": (pro_lead.submitted_at or now).isoformat(),
                 },
             )
         )
+
+        # 8. Send transactional confirmation email to prospect
+        if self.crypto:
+            await TransactionalEmailService(self.session, self.crypto).queue(
+                recipient_email=pro_lead.email,
+                recipient_user_id=None,
+                kind="PRO_PROSPECT_CONFIRMATION",
+                resource_type="pro_lead",
+                resource_id=pro_lead.id,
+                idempotency_key=f"pro-confirm:{pro_lead.id}",
+                subject=f"We've received your Zylora Pro enquiry [{reference_id}]",
+                body=(
+                    f"Hello {pro_lead.name},\n\n"
+                    f"Thank you for contacting Zylora about the Pro plan. "
+                    f"We have received your enquiry for a {pro_lead.website_type} website.\n\n"
+                    f"Our team will review your requirements and get in touch with you "
+                    f"around your preferred contact time: {pro_lead.preferred_contact_time}.\n\n"
+                    f"Your Reference ID: {reference_id}\n\n"
+                    f"Note: This email confirms receipt of your request. "
+                    f"It does not activate a subscription or charge payment.\n\n"
+                    f"Best regards,\nThe Zylora Team"
+                ),
+                correlation_id=correlation_id,
+            )
 
         return pro_lead
 

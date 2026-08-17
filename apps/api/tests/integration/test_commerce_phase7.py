@@ -270,9 +270,9 @@ async def test_permanent_regional_catalog_and_entitlements() -> None:
         assert india.items[2].most_popular and world.items[2].most_popular
         assert all(item.interval == "MONTHLY" for item in india.items + world.items)
         expected = {
-            "FREE": (1, False, False, 15, 0, "BASIC", "AUTOMATIC_BASIC"),
+            "FREE": (2, False, False, 15, 0, "BASIC", "AUTOMATIC_BASIC"),
             "BASIC": (5, True, True, 100, 150, "STANDARD", "FULL_STANDARD"),
-            "GROWTH": (20, True, True, 500, 750, "ADVANCED", "ADVANCED_AI"),
+            "GROWTH": (8, True, True, 500, 750, "ADVANCED", "ADVANCED_AI"),
             "BUSINESS": (
                 "UNLIMITED",
                 True,

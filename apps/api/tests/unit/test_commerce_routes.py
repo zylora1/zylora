@@ -47,7 +47,7 @@ def plan(code: str = "FREE") -> PlanResponse:
         price=MoneyResponse(amount_minor=0 if code == "FREE" else 99900, currency="USD"),
         interval="MONTHLY",
         entitlements={
-            "max_pages": 1,
+            "max_pages": 2,
             "custom_domain": False,
             "ai_monthly_credits": 15,
             "whatsapp_monthly_notifications": 0,

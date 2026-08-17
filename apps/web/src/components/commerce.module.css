@@ -9,9 +9,9 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--z-color-border);
-  background: rgb(255 254 250 / 90%);
+  background: rgba(14, 18, 23, 0.9);
   padding: 0 clamp(1.25rem, 5vw, 5rem);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
 }
 .nav div {
   display: flex;
@@ -25,22 +25,24 @@
   text-decoration: none;
 }
 .main {
-  width: min(var(--z-content-wide), calc(100% - 3rem));
+  width: min(92rem, calc(100% - 3rem));
   margin: 0 auto;
-  padding: clamp(3.5rem, 7vw, 6.5rem) 0;
+  padding: clamp(4.5rem, 8vw, 7.5rem) 0;
 }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 0.65fr);
-  gap: clamp(2rem, 7vw, 6rem);
+  grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.6fr);
+  gap: clamp(2rem, 6vw, 5rem);
   align-items: end;
-  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--z-color-border);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
 }
 .hero h1 {
-  max-width: 11ch;
+  max-width: 12ch;
   margin: 0;
-  font: 600 clamp(3.4rem, 7vw, 6rem)/0.92 var(--z-font-display);
+  font: 600 clamp(3.4rem, 6.8vw, 6.5rem) / 0.92 var(--z-font-display);
   letter-spacing: -0.065em;
+  color: #ffffff;
 }
 .hero p {
   margin: 0;
@@ -55,74 +57,92 @@
 .plans {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 2rem;
+  gap: 1rem;
+  margin-top: 2.5rem;
 }
 .plan {
   position: relative;
   display: grid;
   align-content: start;
   min-width: 0;
+  min-height: 28rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-lg);
-  background: var(--z-color-surface-raised);
-  padding: 1.35rem;
+  background: var(--z-color-surface);
+  padding: 1.5rem;
   box-shadow: var(--z-shadow-card);
+  transition:
+    transform var(--z-motion-standard) var(--z-ease-standard),
+    border-color var(--z-motion-standard) var(--z-ease-standard),
+    box-shadow var(--z-motion-standard) var(--z-ease-standard);
+}
+.plan:hover {
+  border-color: var(--z-color-border-strong);
+  transform: translateY(-0.25rem);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4);
 }
 .planPopular {
-  border-color: #dca185;
-  background: #fffaf6;
-  box-shadow: 0 0.75rem 2.2rem rgb(216 109 74 / 13%);
+  border-color: rgba(212, 255, 50, 0.35);
+  background: linear-gradient(180deg, var(--z-color-surface-raised) 0%, var(--z-color-surface) 100%);
+  box-shadow: 0 0 30px rgba(212, 255, 50, 0.08);
   transform: translateY(-0.4rem);
+}
+.planPopular:hover {
+  border-color: var(--z-color-brand);
+  box-shadow: 0 0 40px rgba(212, 255, 50, 0.15);
 }
 .badge {
   width: max-content;
-  margin: -0.2rem 0 0.7rem;
+  margin: -0.2rem 0 0.75rem;
   border-radius: var(--z-radius-round);
-  background: var(--z-color-action);
-  color: white;
-  padding: 0.32rem 0.52rem;
-  font-size: 0.58rem;
-  font-weight: 900;
+  background: var(--z-color-brand);
+  color: var(--z-color-brand-text, #0a1102);
+  padding: 0.28rem 0.6rem;
+  font-size: 0.625rem;
+  font-weight: 850;
   letter-spacing: 0.08em;
 }
 .plan h2 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
 }
 .description {
-  min-height: 4.2rem;
+  min-height: 3.8rem;
   color: var(--z-color-ink-muted);
   font-size: var(--z-text-sm);
   line-height: 1.55;
+  margin: 0.4rem 0 0;
 }
 .price {
-  margin: 0.8rem 0 0;
-  font: 600 2.4rem/1 var(--z-font-display);
+  margin: 0.85rem 0 0;
+  font: 600 2.4rem / 1 var(--z-font-display);
   letter-spacing: -0.05em;
+  color: #ffffff;
 }
 .price small {
   color: var(--z-color-ink-muted);
-  font: 500 0.7rem/1 var(--z-font-body);
+  font: 500 0.75rem / 1 var(--z-font-body);
   letter-spacing: 0;
 }
 .features {
   display: grid;
   gap: 0.65rem;
   margin: 1.5rem 0 0;
-  padding: 1.2rem 0 0;
+  padding: 1.25rem 0 0;
   border-top: 1px solid var(--z-color-border);
   list-style: none;
 }
 .features li {
   color: var(--z-color-ink-soft);
-  font-size: 0.74rem;
-  line-height: 1.42;
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 .features li::before {
-  color: var(--z-color-success);
+  color: var(--z-color-brand);
   content: '\2713';
-  margin-right: 0.45rem;
+  margin-right: 0.5rem;
   font-weight: 900;
 }
 .loading {
@@ -130,7 +150,7 @@
 }
 .billing {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 .subscription {
   display: grid;
@@ -138,13 +158,14 @@
   gap: 1.5rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-lg);
-  background: var(--z-color-surface-raised);
+  background: var(--z-color-surface);
   padding: 1.5rem;
   box-shadow: var(--z-shadow-card);
 }
 .subscription h2 {
   margin: 0 0 0.45rem;
-  font: 600 1.8rem/1.1 var(--z-font-display);
+  font: 600 1.8rem / 1.1 var(--z-font-display);
+  color: #ffffff;
 }
 .subscription p {
   margin: 0.25rem 0;
@@ -154,7 +175,7 @@
 .compactPlans {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 .compactPlan {
   display: grid;
@@ -162,43 +183,54 @@
   gap: 0.65rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-md);
-  background: var(--z-color-surface-raised);
-  padding: 1rem;
+  background: var(--z-color-surface);
+  padding: 1.2rem;
+  box-shadow: var(--z-shadow-card);
 }
 .compactPlan h3,
 .compactPlan p {
   margin: 0;
 }
+.compactPlan h3 {
+  font-size: 1rem;
+  color: #ffffff;
+}
 .compactPlan p {
   color: var(--z-color-ink-muted);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
 }
 .current {
-  color: var(--z-color-success);
-  font-size: 0.62rem;
+  color: var(--z-color-brand);
+  font-size: 0.625rem;
   font-weight: 900;
   letter-spacing: 0.08em;
 }
 .button {
   min-height: 2.65rem;
-  border: 1px solid var(--z-color-brand);
+  border: 1px solid rgba(212, 255, 50, 0.4);
   border-radius: var(--z-radius-sm);
   background: var(--z-color-brand);
-  color: #022c22;
+  color: var(--z-color-brand-text, #0a1102);
   padding: 0.65rem 0.85rem;
   font: inherit;
   font-size: 0.75rem;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(212, 255, 50, 0.2);
+  transition: all var(--z-motion-fast) var(--z-ease-standard);
 }
 .button:hover:not(:disabled) {
   background: var(--z-color-brand-hover);
+  box-shadow: 0 4px 14px rgba(212, 255, 50, 0.35);
+  transform: translateY(-1px);
 }
 .button:disabled {
   border-color: var(--z-color-border);
   background: var(--z-color-surface-subtle);
   color: var(--z-color-ink-muted);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 .publish,
 .exitControls {
@@ -220,8 +252,9 @@
   min-height: 2.65rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-sm);
-  background: var(--z-color-surface);
-  padding: 0.55rem;
+  background: var(--z-color-surface-raised);
+  color: var(--z-color-ink);
+  padding: 0.55rem 0.75rem;
 }
 .evaluation {
   display: grid;
@@ -237,7 +270,7 @@
   font-size: var(--z-text-sm);
 }
 .evaluation li[data-eligible='true'] {
-  border-color: var(--z-color-success);
+  border-color: var(--z-color-brand);
 }
 .evaluation strong {
   margin-right: 0.45rem;
@@ -247,7 +280,7 @@
   font-size: var(--z-text-sm);
 }
 .success {
-  color: var(--z-color-success);
+  color: var(--z-color-brand);
   font-size: var(--z-text-sm);
 }
 .customDomain {
@@ -263,10 +296,10 @@
 .domainStatus {
   display: grid;
   gap: 0.45rem;
-  border-left: 3px solid var(--z-color-action);
+  border-left: 3px solid var(--z-color-brand);
   border-radius: 0 var(--z-radius-sm) var(--z-radius-sm) 0;
-  background: #fff7f2;
-  padding: 0.75rem;
+  background: var(--z-color-surface-raised);
+  padding: 0.85rem;
 }
 .domainStatus p {
   margin: 0;
@@ -274,13 +307,15 @@
 }
 .domainStatus code {
   overflow-wrap: anywhere;
+  color: var(--z-color-brand);
 }
 .exitControls h3,
 .exitControls p {
   margin: 0;
 }
 .exitControls h3 {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  color: #ffffff;
 }
 .exitControls p,
 .exitControls label {
@@ -327,78 +362,6 @@
   .plans,
   .compactPlans {
     grid-template-columns: 1fr;
-  }
-}
-
-/* World-class dark product surface */
-.main {
-  width: min(92rem, calc(100% - 3rem));
-  padding: clamp(5rem, 9vw, 8rem) 0;
-}
-.hero {
-  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.55fr);
-  border-bottom: 1px solid rgb(255 255 255 / 9%);
-  padding-bottom: clamp(2.5rem, 6vw, 5rem);
-}
-.hero h1 {
-  max-width: 12ch;
-  color: #f4f7fb;
-  font-size: clamp(3.6rem, 6.8vw, 7rem);
-  line-height: 0.87;
-  letter-spacing: -0.075em;
-}
-.hero p,
-.region {
-  color: #8794a8;
-}
-.plans {
-  gap: 0.8rem;
-  margin-top: 2.5rem;
-}
-.plan {
-  min-height: 30rem;
-  border-color: rgb(255 255 255 / 9%);
-  border-radius: 1rem;
-  background: linear-gradient(145deg, #111722, #0d121b);
-  box-shadow: 0 1.4rem 4rem rgb(0 0 0 / 20%);
-  padding: 1.45rem;
-}
-.planPopular {
-  border-color: rgb(102 233 181 / 35%);
-  background: linear-gradient(145deg, #152820, #0e1718);
-  box-shadow: 0 1.5rem 4rem rgb(36 194 137 / 10%);
-}
-.badge {
-  background: #66e9b5;
-  color: #07110d;
-}
-.description,
-.price small,
-.features li {
-  color: #8490a4;
-}
-.price {
-  color: #f4f7fb;
-  font-family: var(--z-font-body);
-}
-.features {
-  border-color: rgb(255 255 255 / 9%);
-}
-.features li::before {
-  color: #66e9b5;
-}
-.subscription,
-.compactPlan {
-  border-color: var(--z-color-border);
-  background: var(--z-color-surface-raised);
-  box-shadow: var(--z-shadow-card);
-}
-.domainStatus {
-  background: var(--z-color-warning-surface);
-}
-@media (max-width: 42rem) {
-  .main {
-    width: min(100% - 2rem, 92rem);
   }
   .plan {
     min-height: auto;

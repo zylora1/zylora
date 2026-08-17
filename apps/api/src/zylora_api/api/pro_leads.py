@@ -68,6 +68,7 @@ async def submit_pro_enquiry(
         session,
         settings,
         challenge_service=challenge_service,
+        crypto=crypto,
     )
     ip = request_ip(request, settings)
     cid = correlation_id(request)

@@ -7,6 +7,7 @@ from zylora_api.modules.pro_leads.schemas import ProLeadCreateRequest
 from zylora_api.modules.pro_leads.service import ProLeadService
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_pro_lead_free_text_website_type(async_session):
     settings = Settings()
@@ -34,6 +35,7 @@ async def test_pro_lead_free_text_website_type(async_session):
         )
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_pro_lead_honeypot_rejection(async_session):
     settings = Settings()
@@ -53,6 +55,7 @@ async def test_pro_lead_honeypot_rejection(async_session):
     assert result.id == "00000000-0000-0000-0000-000000000000"
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_pro_lead_duplicate_suppression(async_session):
     settings = Settings()
@@ -77,6 +80,7 @@ async def test_pro_lead_duplicate_suppression(async_session):
     assert ref1 == ref2
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_pro_lead_admin_status_transitions(async_session):
     settings = Settings()

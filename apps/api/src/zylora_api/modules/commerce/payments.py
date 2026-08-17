@@ -131,6 +131,8 @@ class PaymentService:
                 .where(Plan.id == payment.plan_id)
             )
         ).one()
+        if plan.code in {"FREE", "BUSINESS", "PRO"}:
+            raise problem(409, "invalid_paid_plan", "This plan cannot be activated via payment.")
         entitlement_rows = list(
             (
                 await self.session.scalars(

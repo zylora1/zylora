@@ -37,6 +37,9 @@ class FakeService:
     async def list_for_owner(self, owner_id: UUID) -> list[Website]:
         return [self.website]
 
+    async def get_draft_status(self, owner_id: UUID) -> tuple[int, str | None, object]:
+        return (1, None, None)
+
     async def get_for_owner(self, website_id: UUID, owner_id: UUID) -> Website:
         return self.website
 

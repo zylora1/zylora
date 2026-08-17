@@ -7,6 +7,7 @@ from zylora_api.modules.pro_leads.schemas import ProLeadCreateRequest
 from zylora_api.modules.pro_leads.service import ProLeadService
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_pro_lead_and_website_lead_isolation(
     async_session, sample_user, sample_template_version

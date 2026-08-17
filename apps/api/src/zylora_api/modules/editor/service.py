@@ -369,6 +369,21 @@ class EditorService:
                 "website_revision_conflict",
                 "This Draft changed elsewhere. Refresh before applying this edit.",
             )
+        has_add_page = any(isinstance(op, AddPage) for op in plan.operations)
+        if has_add_page and getattr(website, "site_origin", "TEMPLATE") == "AI":
+            from zylora_api.modules.commerce.service import SubscriptionService
+
+            effective = await SubscriptionService(self.session).effective(owner_user_id, "ZZ")
+            max_pages = effective.entitlements.get("max_pages")
+            if isinstance(max_pages, int) and len(pages) >= max_pages:
+                raise problem(
+                    409,
+                    "plan_page_limit_exceeded",
+                    (
+                        f"Your current plan allows up to {max_pages} pages. "
+                        "Upgrade your plan to add more pages."
+                    ),
+                )
         for operation in plan.operations:
             self._apply_operation(website, pages, operation, owner_user_id)
         website.updated_at = datetime.now(UTC)

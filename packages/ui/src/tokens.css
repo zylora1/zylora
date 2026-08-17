@@ -1,25 +1,29 @@
 :root {
   color-scheme: dark;
-  --z-color-canvas: #08090b;
-  --z-color-surface: #0f1117;
-  --z-color-surface-raised: #161922;
-  --z-color-surface-subtle: #1c212e;
+  --z-color-canvas: #090b0e;
+  --z-color-shell: #0e1217;
+  --z-color-surface: #13171f;
+  --z-color-surface-raised: #181e28;
+  --z-color-surface-subtle: #1f2633;
+  --z-color-surface-hover: #262e3d;
   --z-color-surface-inverse: #f8fafc;
-  --z-color-ink: #f8fafc;
+  --z-color-ink: #f1f5f9;
   --z-color-ink-soft: #cbd5e1;
-  --z-color-ink-muted: #8494a7;
-  --z-color-border: #212634;
-  --z-color-border-strong: #31394d;
-  --z-color-brand: #10b981;
-  --z-color-brand-hover: #34d399;
-  --z-color-brand-soft: rgba(16, 185, 129, 0.12);
-  --z-color-action: #10b981;
-  --z-color-action-hover: #34d399;
+  --z-color-ink-muted: #7c8899;
+  --z-color-border: rgba(255, 255, 255, 0.08);
+  --z-color-border-strong: rgba(255, 255, 255, 0.16);
+  --z-color-border-glow: rgba(212, 255, 50, 0.28);
+  --z-color-brand: #d4ff32;
+  --z-color-brand-hover: #e2fd52;
+  --z-color-brand-soft: rgba(212, 255, 50, 0.12);
+  --z-color-brand-text: #0a1102;
+  --z-color-action: #d4ff32;
+  --z-color-action-hover: #e2fd52;
   --z-color-info: #38bdf8;
   --z-color-success: #10b981;
   --z-color-warning: #fbbf24;
   --z-color-danger: #f87171;
-  --z-color-focus: #10b981;
+  --z-color-focus: #d4ff32;
   --z-color-info-surface: rgba(56, 189, 248, 0.1);
   --z-color-success-surface: rgba(16, 185, 129, 0.1);
   --z-color-warning-surface: rgba(251, 191, 36, 0.1);
@@ -46,11 +50,12 @@
   --z-radius-sm: 0.5rem;
   --z-radius-md: 0.75rem;
   --z-radius-lg: 1rem;
-  --z-radius-xl: 1.5rem;
+  --z-radius-xl: 1.25rem;
   --z-radius-round: 999px;
-  --z-shadow-raised: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-  --z-shadow-overlay: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
-  --z-shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 4px 16px -4px rgba(0, 0, 0, 0.5);
+  --z-shadow-raised: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --z-shadow-overlay: 0 24px 60px -12px rgba(0, 0, 0, 0.85);
+  --z-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+  --z-shadow-glow: 0 0 24px rgba(212, 255, 50, 0.15);
   --z-motion-fast: 140ms;
   --z-motion-standard: 200ms;
   --z-motion-deliberate: 360ms;
@@ -85,11 +90,12 @@
   gap: var(--z-space-2);
   border: 1px solid transparent;
   border-radius: var(--z-radius-md);
-  padding: 0.625rem 0.9rem;
-  font: 750 var(--z-text-sm)/1 var(--z-font-body);
+  padding: 0.625rem 1rem;
+  font: 750 var(--z-text-sm) / 1 var(--z-font-body);
   letter-spacing: -0.01em;
   text-decoration: none;
   cursor: pointer;
+  box-sizing: border-box;
   transition:
     background-color var(--z-motion-fast) var(--z-ease-standard),
     border-color var(--z-motion-fast) var(--z-ease-standard),
@@ -105,59 +111,69 @@
 }
 .z-button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 .z-button--primary {
   background: var(--z-color-brand);
-  box-shadow: 0 0.2rem 0.75rem rgb(61 226 163 / 12%);
-  color: #06110d;
+  border-color: rgba(212, 255, 50, 0.4);
+  box-shadow: 0 2px 10px rgba(212, 255, 50, 0.2);
+  color: var(--z-color-brand-text);
+  font-weight: 800;
 }
 .z-button--primary:hover:not(:disabled) {
   background: var(--z-color-brand-hover);
-  box-shadow: 0 0.5rem 1.25rem rgb(61 226 163 / 18%);
+  box-shadow: 0 4px 20px rgba(212, 255, 50, 0.35);
+  color: var(--z-color-brand-text);
 }
 .z-button--secondary {
-  border-color: var(--z-color-border);
+  border-color: var(--z-color-border-strong);
   background: var(--z-color-surface-raised);
   color: var(--z-color-ink);
 }
 .z-button--secondary:hover:not(:disabled) {
   border-color: var(--z-color-brand);
-  background: var(--z-color-brand-soft);
-  color: var(--z-color-brand);
+  background: var(--z-color-surface-hover);
+  color: #ffffff;
 }
 .z-button--quiet {
   background: transparent;
-  color: var(--z-color-brand);
+  color: var(--z-color-ink-soft);
 }
 .z-button--quiet:hover:not(:disabled) {
   background: var(--z-color-brand-soft);
+  color: var(--z-color-brand);
 }
 .z-button--danger {
-  background: var(--z-color-danger);
-  color: #fff;
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
 }
 .z-button--danger:hover:not(:disabled) {
-  background: #95362f;
+  background: var(--z-color-danger);
+  border-color: var(--z-color-danger);
+  color: #0b0d10;
+  font-weight: 800;
 }
 
 .z-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.38rem;
-  border: 1px solid color-mix(in srgb, currentColor 20%, var(--z-color-border));
+  gap: 0.42rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, var(--z-color-border));
   border-radius: var(--z-radius-round);
-  padding: 0.25rem 0.55rem;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  padding: 0.28rem 0.625rem;
   color: var(--z-color-ink-muted);
-  font: 750 0.66rem/1.2 var(--z-font-body);
+  font: 750 0.6875rem / 1.2 var(--z-font-body);
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
 .z-status::before {
-  width: 0.38rem;
-  height: 0.38rem;
+  width: 0.42rem;
+  height: 0.42rem;
   border-radius: 50%;
   background: currentColor;
+  box-shadow: 0 0 6px currentColor;
   content: '';
 }
 .z-status--info {
@@ -222,7 +238,7 @@
 .z-empty h2,
 .z-error h2 {
   margin: 0;
-  font: 600 clamp(1.55rem, 3vw, 2.35rem)/1.08 var(--z-font-display);
+  font: 600 clamp(1.55rem, 3vw, 2.35rem) / 1.08 var(--z-font-display);
   letter-spacing: -0.04em;
 }
 .z-empty > p:not(.z-empty__eyebrow),
@@ -254,7 +270,7 @@
   place-items: center;
   border-radius: 50%;
   background: var(--z-color-danger);
-  color: #fff;
+  color: #090b0e;
   font-weight: 900;
 }
 
@@ -264,7 +280,7 @@
   background: linear-gradient(
     90deg,
     var(--z-color-surface-subtle) 25%,
-    #2a3040 50%,
+    #252d3d 50%,
     var(--z-color-surface-subtle) 75%
   );
   background-size: 200% 100%;
@@ -285,15 +301,16 @@
 }
 .z-page-header h1 {
   margin: 0;
-  font: 600 clamp(2.15rem, 4vw, 3.55rem)/0.98 var(--z-font-display);
-  letter-spacing: -0.052em;
+  font: 600 clamp(2rem, 3.5vw, 3.25rem) / 1.05 var(--z-font-display);
+  letter-spacing: -0.04em;
+  color: #ffffff;
 }
 .z-page-header > div > p:not(.z-page-header__eyebrow) {
-  max-width: 42rem;
-  margin: var(--z-space-3) 0 0;
+  max-width: 44rem;
+  margin: var(--z-space-2) 0 0;
   color: var(--z-color-ink-muted);
   font-size: var(--z-text-base);
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 @media (max-width: 40rem) {

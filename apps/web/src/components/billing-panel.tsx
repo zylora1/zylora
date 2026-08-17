@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Notice } from '@zylora/ui';
 
 import { apiRequest } from '@/lib/api';
-import { formatMoney, type PlanCatalog, type Subscription } from './commerce-types';
+import { formatMoney, planDisplayName, type PlanCatalog, type Subscription } from './commerce-types';
 import styles from './commerce.module.css';
 
 export function BillingPanel() {
@@ -66,7 +66,7 @@ export function BillingPanel() {
               <span className={styles.current}>CURRENT</span>
             ) : null}
             {plan.most_popular ? <span className={styles.badge}>MOST POPULAR</span> : null}
-            <h3>{plan.name}</h3>
+            <h3>{planDisplayName(plan)}</h3>
             <p>{formatMoney(plan.price)} / month</p>
             <p>
               {plan.entitlements.max_pages === 'UNLIMITED'

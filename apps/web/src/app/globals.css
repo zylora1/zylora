@@ -255,15 +255,17 @@ summary {
 }
 .primary-button {
   min-height: 3.2rem;
-  border: 1px solid var(--z-color-brand);
+  border: 1px solid rgba(212, 255, 50, 0.4);
   background: var(--z-color-brand);
-  box-shadow: 0 0.25rem 0.8rem rgb(23 58 54 / 14%);
-  color: #fff;
+  box-shadow: 0 0.25rem 1rem rgba(212, 255, 50, 0.2);
+  color: var(--z-color-brand-text, #0a1102);
+  font-weight: 800;
   padding: 0.75rem 1rem;
 }
 .primary-button:hover:not(:disabled) {
   background: var(--z-color-brand-hover);
-  box-shadow: 0 0.45rem 1.2rem rgb(23 58 54 / 19%);
+  box-shadow: 0 0.45rem 1.4rem rgba(212, 255, 50, 0.35);
+  color: var(--z-color-brand-text, #0a1102);
   transform: translateY(-1px);
 }
 .google-button {
@@ -280,7 +282,8 @@ summary {
 }
 .google-button:hover:not(:disabled) {
   border-color: var(--z-color-brand);
-  background: var(--z-color-brand-soft);
+  background: var(--z-color-surface-hover);
+  color: #ffffff;
 }
 .google-glyph {
   display: grid;
@@ -322,12 +325,12 @@ summary {
 .form-message--error {
   border: 1px solid color-mix(in srgb, var(--z-color-danger) 35%, var(--z-color-border));
   background: var(--z-color-danger-surface);
-  color: #7d332b;
+  color: #fca5a5;
 }
 .form-message--success {
   border: 1px solid color-mix(in srgb, var(--z-color-success) 35%, var(--z-color-border));
   background: var(--z-color-success-surface);
-  color: #185239;
+  color: #86efac;
 }
 .auth-links {
   display: flex;
@@ -391,7 +394,7 @@ button:disabled {
   justify-content: center;
   border-radius: var(--z-radius-md);
   background: var(--z-color-brand);
-  color: #fff;
+  color: var(--z-color-brand-text, #0a1102);
   padding: 0.65rem 1.1rem;
   font-size: 0.86rem;
   font-weight: 800;

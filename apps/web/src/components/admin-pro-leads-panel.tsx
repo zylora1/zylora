@@ -137,19 +137,19 @@ export function AdminProLeadsPanel() {
         </article>
         <article className="admin-overview__card">
           <p className="admin-overview__label">Closed</p>
-          <p className="admin-overview__value" style={{ color: '#166534' }}>
+          <p className="admin-overview__value" style={{ color: 'var(--z-color-success)' }}>
             {summary.closed}
           </p>
         </article>
         <article className="admin-overview__card">
           <p className="admin-overview__label">Not Closed</p>
-          <p className="admin-overview__value" style={{ color: '#991b1b' }}>
+          <p className="admin-overview__value" style={{ color: 'var(--z-color-danger)' }}>
             {summary.not_closed}
           </p>
         </article>
         <article className="admin-overview__card">
           <p className="admin-overview__label">Pending</p>
-          <p className="admin-overview__value" style={{ color: '#854d0e' }}>
+          <p className="admin-overview__value" style={{ color: 'var(--z-color-warning)' }}>
             {summary.pending}
           </p>
         </article>

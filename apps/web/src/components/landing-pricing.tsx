@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { apiRequest } from '@/lib/api';
-import { formatMoney, planFeatures, type PlanCatalog } from './commerce-types';
+import { formatMoney, planDisplayName, planFeatures, type PlanCatalog } from './commerce-types';
 import styles from './landing-page.module.css';
 
 export function LandingPricing() {
@@ -34,6 +34,8 @@ export function LandingPricing() {
         {catalog ? (
           catalog.items.map((plan) => {
             const features = planFeatures(plan);
+            const isPro = plan.code === 'BUSINESS' || plan.code === 'PRO';
+            const name = planDisplayName(plan);
             return (
               <article
                 key={plan.id}
@@ -84,7 +86,7 @@ export function LandingPricing() {
                       color: '#fff',
                     }}
                   >
-                    {plan.name}
+                    {name}
                   </h3>
                   <p
                     style={{
@@ -101,23 +103,36 @@ export function LandingPricing() {
                 <div style={{ marginBottom: '1.5rem' }}>
                   <strong
                     style={{
-                      fontSize: '2.5rem',
+                      fontSize: isPro ? '2rem' : '2.5rem',
                       fontWeight: 700,
                       color: '#fff',
                       letterSpacing: '-0.04em',
                     }}
                   >
-                    {formatMoney(plan.price)}
+                    {isPro ? 'Custom' : formatMoney(plan.price)}
                   </strong>
-                  <span
-                    style={{
-                      fontSize: '0.85rem',
-                      color: 'var(--z-color-ink-muted)',
-                      marginLeft: '0.4rem',
-                    }}
-                  >
-                    / month
-                  </span>
+                  {!isPro ? (
+                    <span
+                      style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--z-color-ink-muted)',
+                        marginLeft: '0.4rem',
+                      }}
+                    >
+                      / month
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--z-color-brand)',
+                        marginLeft: '0.4rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      Managed by experts
+                    </span>
+                  )}
                 </div>
 
                 <ul
@@ -153,10 +168,10 @@ export function LandingPricing() {
                       ? 'z-button z-button--primary'
                       : 'z-button z-button--secondary'
                   }
-                  href="/signup"
+                  href={isPro ? '/contact' : '/signup'}
                   style={{ width: '100%', minHeight: '2.75rem', textDecoration: 'none' }}
                 >
-                  {plan.code === 'FREE' ? 'Start Free' : 'Get Started'}
+                  {isPro ? 'Get in Touch' : plan.code === 'FREE' ? 'Start Free' : 'Get Started'}
                 </Link>
               </article>
             );

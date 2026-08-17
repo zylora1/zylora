@@ -10,6 +10,7 @@ from zylora_api.modules.websites.service import WebsiteService
 UTC = UTC
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_draft_cap_and_warnings(async_session, sample_user, sample_template_version):
     service = WebsiteService(async_session)
@@ -79,6 +80,7 @@ async def test_draft_cap_and_warnings(async_session, sample_user, sample_templat
     assert exc_info.value.title == "draft_limit_reached"
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_oldest_untouched_draft_suggestion(
     async_session, sample_user, sample_template_version
@@ -117,6 +119,7 @@ async def test_oldest_untouched_draft_suggestion(
     assert suggested.display_name == "Draft B (Oldest Untouched)"
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_draft_deletion_safety(async_session, sample_user, sample_template_version):
     service = WebsiteService(async_session)

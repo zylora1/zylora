@@ -8,6 +8,7 @@ from zylora_api.modules.editor.service import EditorService
 from zylora_api.modules.websites.service import WebsiteService
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_template_site_origin_page_restriction(
     async_session, sample_user, sample_template_version
@@ -49,6 +50,7 @@ async def test_template_site_origin_page_restriction(
     assert exc_info.value.title == "template_page_creation_denied"
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_ai_site_origin_page_expansion(async_session, sample_user, sample_template_version):
     # 1. Create an AI-origin website

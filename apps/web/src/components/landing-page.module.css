@@ -1,14 +1,14 @@
 .main {
-  --landing-bg: #070808;
-  --landing-panel: #101210;
-  --landing-panel-raised: #171a16;
-  --landing-line: rgb(255 255 255 / 10%);
-  --landing-line-strong: rgb(255 255 255 / 18%);
-  --landing-muted: #a7aaa3;
-  --landing-accent: #d9ff6b;
+  --landing-bg: #090b0e;
+  --landing-panel: #0e1217;
+  --landing-panel-raised: #13171f;
+  --landing-line: rgba(255, 255, 255, 0.08);
+  --landing-line-strong: rgba(255, 255, 255, 0.16);
+  --landing-muted: #8c99a8;
+  --landing-accent: #d4ff32;
   overflow: clip;
   background: var(--landing-bg);
-  color: #f5f6f2;
+  color: #f8fafc;
 }
 
 .main h1,

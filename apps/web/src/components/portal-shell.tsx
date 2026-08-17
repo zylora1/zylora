@@ -159,9 +159,11 @@ export function PortalShell({ admin = false, children }: { admin?: boolean; chil
                     ? 'workspace-navigation__link workspace-navigation__link--active'
                     : 'workspace-navigation__link'
                 }
+                data-label={item.label}
                 href={item.href}
                 key={item.href}
                 onClick={() => setMenuOpen(false)}
+                title={item.label}
               >
                 <Icon size={18} />
                 <span>{item.label}</span>

@@ -7,7 +7,7 @@ export type Money = {
 
 export type Plan = {
   id: string;
-  code: 'FREE' | 'BASIC' | 'GROWTH' | 'BUSINESS';
+  code: 'FREE' | 'BASIC' | 'STARTER' | 'GROWTH' | 'BUSINESS' | 'PRO';
   name: string;
   description: string;
   slot: number;
@@ -63,10 +63,21 @@ export function formatMoney(money: Money): string {
 }
 
 export function planFeatures(plan: Plan): string[] {
+  const isPro = plan.code === 'BUSINESS' || plan.code === 'PRO';
+  if (isPro) {
+    return [
+      'Managed by experts',
+      'Custom websites & web applications',
+      'E-commerce & SaaS solutions',
+      'Dedicated hosting & maintenance',
+      'Custom integrations & automation',
+      'SEO & marketing management',
+    ];
+  }
   const entitlements = plan.entitlements;
   const pages =
     entitlements.max_pages === 'UNLIMITED'
-      ? 'Unlimited published pages'
+      ? 'Custom / managed pages'
       : `Up to ${String(entitlements.max_pages)} published ${entitlements.max_pages === 1 ? 'page' : 'pages'}`;
   const domain = entitlements.custom_domain ? 'Custom domain included' : 'Zylora subdomain only';
   const branding = entitlements.remove_branding
@@ -85,3 +96,23 @@ export function planFeatures(plan: Plan): string[] {
     `${seo} SEO`,
   ];
 }
+
+export function planDisplayName(planOrCode: string | { name?: string; code?: string }): string {
+  if (typeof planOrCode === 'string') {
+    const code = planOrCode.toUpperCase().trim();
+    if (code === 'BUSINESS' || code === 'PRO') return 'Pro';
+    if (code === 'BASIC' || code === 'STARTER') return 'Starter';
+    if (code === 'GROWTH') return 'Growth';
+    if (code === 'FREE') return 'Free';
+    return planOrCode;
+  }
+  const code = (planOrCode.code || '').toUpperCase().trim();
+  const name = (planOrCode.name || '').trim();
+  if (code === 'BUSINESS' || code === 'PRO' || name.toLowerCase() === 'business') return 'Pro';
+  if (code === 'BASIC' || code === 'STARTER' || name.toLowerCase() === 'basic') return 'Starter';
+  if (code === 'GROWTH' || name.toLowerCase() === 'growth') return 'Growth';
+  if (code === 'FREE' || name.toLowerCase() === 'free') return 'Free';
+  return name || code;
+}
+
+
