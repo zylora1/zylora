@@ -236,7 +236,7 @@ class TransactionalEmail(Base):
             "'AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT',"
             "'WEBSITE_PUBLISHED','WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED',"
             "'EXPORT_READY','BILLING_STATE','DOMAIN_STATE','ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION',"
-            "'MONTHLY_WEBSITE_DIGEST')",
+            "'MONTHLY_WEBSITE_DIGEST','PRO_PROSPECT_CONFIRMATION')",
             name="ck_transactional_emails_kind",
         ),
         CheckConstraint(

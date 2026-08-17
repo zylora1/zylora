@@ -46,6 +46,14 @@ def upgrade() -> None:
           AND plan_entitlements.capability_key = 'max_pages';
         """
     )
+    op.drop_constraint("ck_transactional_emails_kind", "transactional_emails", type_="check")
+    op.create_check_constraint(
+        "ck_transactional_emails_kind",
+        "transactional_emails",
+        "kind IN ('AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT','WEBSITE_PUBLISHED',"
+        "'WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED','EXPORT_READY','BILLING_STATE','DOMAIN_STATE',"
+        "'ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION','MONTHLY_WEBSITE_DIGEST','PRO_PROSPECT_CONFIRMATION')",
+    )
 
 
 def downgrade() -> None:
@@ -68,4 +76,12 @@ def downgrade() -> None:
           AND plans.code = 'GROWTH'
           AND plan_entitlements.capability_key = 'max_pages';
         """
+    )
+    op.drop_constraint("ck_transactional_emails_kind", "transactional_emails", type_="check")
+    op.create_check_constraint(
+        "ck_transactional_emails_kind",
+        "transactional_emails",
+        "kind IN ('AUTH_VERIFICATION','AUTH_PASSWORD_RESET','LEAD_OWNER_ALERT','WEBSITE_PUBLISHED',"
+        "'WEBSITE_PUBLISH_FAILED','TRANSFER_COMPLETED','EXPORT_READY','BILLING_STATE','DOMAIN_STATE',"
+        "'ADMIN_TRANSACTIONAL','CONTACT_SUBMISSION','MONTHLY_WEBSITE_DIGEST')",
     )
