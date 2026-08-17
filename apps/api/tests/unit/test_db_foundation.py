@@ -103,8 +103,10 @@ def test_metadata_contains_platform_auth_template_and_website_tables() -> None:
 
 def test_async_database_url_normalization_is_idempotent() -> None:
     plain = "postgresql://user:password@db.example/zylora"
+    postgres_plain = "postgres://user:password@db.example/zylora"
     async_url = "postgresql+psycopg://user:password@db.example/zylora"
     assert normalize_async_database_url(plain) == async_url
+    assert normalize_async_database_url(postgres_plain) == async_url
     assert normalize_async_database_url(async_url) == async_url
 
 
