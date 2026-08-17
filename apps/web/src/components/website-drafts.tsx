@@ -380,11 +380,10 @@ export function WebsiteDrafts() {
                     <PublishControls websiteId={item.id} status={item.status} />
                     <WebsiteExitControls websiteId={item.id} />
                     <button
-                      className="z-button z-button--ghost"
+                      className="z-button z-button--secondary"
                       type="button"
                       onClick={() => handleDeleteDraft(item.id, item.display_name)}
                       disabled={deletingId === item.id}
-                      style={{ color: '#dc2626' }}
                     >
                       {deletingId === item.id ? 'Deleting…' : 'Delete draft'}
                     </button>

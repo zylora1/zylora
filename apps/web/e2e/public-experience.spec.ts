@@ -145,26 +145,40 @@ test('public template and blog routes remain semantic and contained', async ({
 test('public contact gives accessible confirmation and keeps the server command narrow', async ({
   page,
 }) => {
-  await page.route('**/api/v1/public/contact', async (route) => {
+  await page.route('**/api/v1/public/pro-enquiry', async (route) => {
     expect(route.request().postDataJSON()).toEqual({
       name: 'Ada Lovelace',
       email: 'ada@example.com',
-      message: 'Please help us select an approved Template.',
+      website_type: 'Dental clinic website for specialized practice',
+      preferred_contact_time: 'Weekdays 2-5 PM IST',
+      company_website_url: null,
       turnstile_token: null,
     });
     await route.fulfill({
-      status: 202,
+      status: 201,
       contentType: 'application/json',
-      body: JSON.stringify({ status: 'accepted', id: 'opaque-contact-id' }),
+      body: JSON.stringify({
+        id: 'opaque-contact-id',
+        reference_id: 'ZPRO-849201',
+        name: 'Ada Lovelace',
+        email: 'ada@example.com',
+        website_type: 'Dental clinic website for specialized practice',
+        preferred_contact_time: 'Weekdays 2-5 PM IST',
+        status: 'PENDING',
+        submitted_at: '2026-08-16T22:00:00Z',
+      }),
     });
   });
 
   await page.goto('/contact');
   await page.getByLabel('Name').fill('Ada Lovelace');
   await page.getByLabel('Email').fill('ada@example.com');
-  await page.getByLabel('Message').fill('Please help us select an approved Template.');
-  await page.getByRole('button', { name: 'Send message' }).click();
-  await expect(page.getByRole('status')).toContainText('safely queued');
+  await page
+    .getByLabel('Type of website you want')
+    .fill('Dental clinic website for specialized practice');
+  await page.getByLabel('Preferred contact time').fill('Weekdays 2-5 PM IST');
+  await page.getByRole('button', { name: 'Submit Pro Request' }).click();
+  await expect(page.getByRole('status')).toContainText('ZPRO-849201');
   await assertNoHorizontalOverflow(page);
 });
 

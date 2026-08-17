@@ -28,6 +28,7 @@ function websiteFixture(count: number) {
     source_template_version_id: 'template-version-1',
     display_name: 'Atlas Directory Draft',
     status: 'DRAFT',
+    site_origin: 'AI',
     pages,
     navigation: pages
       .filter((page) => page.parent_page_id === null && page.show_in_navigation)

@@ -20,10 +20,10 @@
   font-family: var(--z-font-body);
 }
 .workspace-shell--admin {
-  --workspace-sidebar: #17201e;
-  --workspace-sidebar-muted: #c4d3cd;
-  --workspace-sidebar-active: #293532;
-  background: #eceeea;
+  --workspace-sidebar: #0a0c10;
+  --workspace-sidebar-muted: rgba(248, 250, 252, 0.45);
+  --workspace-sidebar-active: #161922;
+  background: var(--z-color-canvas);
 }
 .workspace-sidebar {
   position: sticky;
@@ -37,7 +37,7 @@
   overflow: hidden;
   border-right: 1px solid rgb(255 255 255 / 12%);
   background: var(--workspace-sidebar, var(--z-color-brand));
-  color: var(--z-color-surface);
+  color: var(--z-color-ink);
 }
 .workspace-sidebar__brand {
   display: flex;
@@ -48,7 +48,7 @@
   padding: 0 var(--z-space-5);
 }
 .workspace-sidebar__brand .brand-mark {
-  color: var(--z-color-surface);
+  color: var(--z-color-ink);
 }
 .workspace-sidebar__brand .brand-glyph {
   width: 2rem;
@@ -668,7 +668,7 @@
 }
 
 .workspace-shell .z-button--primary {
-  color: #fff;
+  color: #06110d;
 }
 .workspace-topbar > div .z-status--success {
   color: #34d399;
@@ -721,7 +721,7 @@
 }
 .workspace-navigation__label {
   margin: 0.2rem 0.65rem 0.55rem;
-  color: rgba(248, 250, 252, 0.45);
+  color: rgba(248, 250, 252, 0.72);
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -837,7 +837,7 @@
   gap: 0.12rem;
 }
 .workspace-topbar > div span {
-  color: var(--z-color-ink-muted);
+  color: var(--z-color-ink-soft);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -942,8 +942,8 @@
   display: grid;
   align-content: start;
   gap: 1.25rem;
-  background: var(--z-color-surface-inverse);
-  color: #fff;
+  background: var(--z-color-surface-raised);
+  color: var(--z-color-ink);
   padding: clamp(1.4rem, 3vw, 2rem);
 }
 .first-use-boundary .workspace-kicker {
@@ -969,7 +969,7 @@
 .first-use-boundary .z-status {
   width: fit-content;
   border-color: rgb(255 255 255 / 25%);
-  color: #dfece7;
+  color: var(--z-color-ink);
 }
 .workspace-loading {
   display: grid;
@@ -1386,7 +1386,7 @@
   gap: 0.5rem;
 }
 .workspace-shell--admin .workspace-topbar {
-  background: rgb(246 248 246 / 90%);
+  background: rgba(15, 17, 23, 0.85);
 }
 
 @media (max-width: 920px) {

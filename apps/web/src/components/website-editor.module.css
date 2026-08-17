@@ -32,7 +32,7 @@
 .tabs button[aria-pressed='true'],
 .toolbar button[aria-pressed='true'] {
   background: var(--z-color-brand);
-  color: white;
+  color: #022c22;
 }
 .header {
   display: flex;
@@ -77,13 +77,13 @@
   border-radius: var(--z-radius-sm);
   background: var(--z-color-success-surface);
   padding: 0.75rem 0.9rem;
-  color: #21523a;
+  color: var(--z-color-ink);
   font-size: 0.76rem;
 }
 .error {
   border-color: color-mix(in srgb, var(--z-color-danger) 32%, var(--z-color-border));
   background: var(--z-color-danger-surface);
-  color: #7c332b;
+  color: var(--z-color-ink);
 }
 .grid {
   display: grid;
@@ -159,7 +159,7 @@
   border: 1px solid var(--z-color-brand);
   border-radius: var(--z-radius-sm);
   background: var(--z-color-brand);
-  color: white;
+  color: #022c22;
 }
 .controls button:disabled,
 .history button:disabled {
@@ -207,7 +207,7 @@
   justify-content: space-between;
   gap: 1rem;
   border-bottom: 1px solid var(--z-color-border);
-  background: #fbfcf8;
+  background: var(--z-color-surface-raised);
   padding: 0.55rem 0.75rem;
 }
 .toolbar > div {
@@ -232,13 +232,14 @@
   min-height: 43rem;
   justify-content: center;
   overflow: auto;
-  background: #e2e8e2;
+  background: var(--z-color-canvas);
   padding: clamp(0.75rem, 2vw, 1.35rem);
 }
 .preview > div {
   max-width: 100%;
   overflow: hidden;
   background: white;
+  color: #0f172a;
   box-shadow: 0 1rem 3rem rgb(18 34 27 / 16%);
   transition: width var(--z-motion-standard) var(--z-ease-standard);
 }
@@ -263,8 +264,11 @@
   gap: 0.7rem;
   border: 1px solid var(--z-color-border);
   border-radius: var(--z-radius-sm);
-  background: #fafbf7;
+  background: var(--z-color-surface);
   padding: 0.8rem;
+}
+.componentCard label {
+  color: var(--z-color-ink-soft);
 }
 .componentCard > strong {
   color: var(--z-color-brand);
